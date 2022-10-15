@@ -1,0 +1,64 @@
+name: Clippy checks
+
+on:
+  push:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y openslide-tools
+    - name: Install latest nightly
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        override: true
+        components: rustfmt, clippy
+
+    - name: Run cargo clippy
+      uses: actions-rs/cargo@v1
+      with:
+        command: clippy
+        args: --all --fix --all-targets --allow-dirty
+
+    - name: Run cargo fmt
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --all
+
+    - name: Run cargo check
+      uses: actions-rs/cargo@v1
+      with:
+        command: check
+        args: --workspace --verbose
+
+    - name: Commit and push changes
+      continue-on-error: true
+      uses: peter-evans/create-pull-request@v4
+      with:
+        token: ${{ secrets.SCOPED_GITHUB_TOKEN }}
+        commit-message: Run clippy on the code base
+        committer: GitHub <noreply@github.com>
+        author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+        title: '[Clippy] Code maintenance'
+        body: |
+          🤖 This is an automatic PR 🤖
+          Clippy suggests the following changes
+        labels: not_in_changelog
+        team-reviewers: hove-io/coreteam
+        branch: auto/clippy
+        base: master
+    - name: Check outputs
+      if: ${{ success() }}
+      run: |
+        echo "Pull Request Number - ${{ env.PULL_REQUEST_NUMBER }}"
+        echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"

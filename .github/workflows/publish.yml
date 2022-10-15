@@ -1,0 +1,36 @@
+name: Publish
+on:
+  release:
+    types: [published]
+
+jobs:
+  validate:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: MeilCli/regex-match@v1.5.14
+        name: SemVer Validation
+        id: regex-match
+        with:
+          search_string: ${{ github.event.release.tag_name }}
+          regex_pattern: '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
+          # SemVer Regex https://ihateregex.io/expr/semver/
+      - name: SemVer check failed
+        if: ${{ steps.regex-match.outputs.matched == 'false' }}
+        run: exit 1
+
+env:
+  CARGO_TERM_COLOR: always
+
+publish:
+    runs-on: ubuntu-20.04
+    needs: [validate]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: katyo/publish-crates@v1
+        with:
+          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
