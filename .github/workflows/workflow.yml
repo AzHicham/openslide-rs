@@ -44,7 +44,9 @@ jobs:
         sudo apt update
         sudo apt install -y openslide-tools
     - name: Build & Test
-      run: cargo test --workspace ${{ matrix.build_type.flag }} --features "${{ matrix.features }}"
+      run: |
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+        cargo test --workspace ${{ matrix.build_type.flag }} --features "${{ matrix.features }}"
 
   pre-commit:
     runs-on: ubuntu-latest
