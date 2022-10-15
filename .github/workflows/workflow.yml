@@ -46,6 +46,8 @@ jobs:
     - name: Build & Test
       run: |
         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu
+        cd /usr && ls  -lRt |grep openslide
+        echo $LD_LIBRARY_PATH
         cargo test --workspace ${{ matrix.build_type.flag }} --features "${{ matrix.features }}"
 
   pre-commit:
