@@ -25,3 +25,4 @@ image = { version = "0.24.4", optional = true}
 [dev-dependencies]
 rstest = "0.15.0"
 assert_approx_eq = "1.1.0"
+cc = "1.0.73"
