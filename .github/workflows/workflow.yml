@@ -17,10 +17,10 @@ jobs:
         fail-fast: false
         matrix:
           build_type:
-            - name: "Release"
+            - name: "Release with DeepZoom"
               flag: "--release"
               features: "deepzoom"
-            - name: "Debug"
+            - name: "Debug with DeepZoom"
               flag: ""
               features: "deepzoom"
             - name: "Release"
@@ -45,7 +45,7 @@ jobs:
         sudo apt install -y openslide-tools
     - name: Build & Test
       run: |
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/x86_64-linux-gnu
         cargo test --workspace ${{ matrix.build_type.flag }} --features "${{ matrix.features }}"
 
   pre-commit:
