@@ -1,5 +1,5 @@
 use assert_approx_eq::assert_approx_eq;
-use openslide_rs::{OpenSlide, Size};
+use openslide_rs::{Offset, OpenSlide, Size};
 use rstest::rstest;
 use std::path::Path;
 
@@ -11,6 +11,16 @@ fn test_open_slide(#[case] filename: String) {
     let slide = OpenSlide::new(filename);
 
     assert!(slide.is_ok())
+}
+
+#[rstest]
+#[case("tests/data/boxes.tiff", "generic-tiff")]
+#[case("tests/data/small.svs", "aperio")]
+fn test_detect_vendor(#[case] filename: String, #[case] expected_vendor: String) {
+    let filename = Path::new(filename.as_str());
+    let vendor = OpenSlide::detect_vendor(filename).unwrap();
+
+    assert_eq!(vendor, expected_vendor)
 }
 
 #[rstest]
@@ -93,4 +103,50 @@ fn test_slide_info(#[case] filename: String) {
             "tiff.YResolution"
         ]
     );
+
+    assert_eq!(
+        slide.get_property_value("tiff.YResolution").unwrap(),
+        "28.340000157438311"
+    );
+    assert_eq!(
+        slide.get_property_value("tiff.XResolution").unwrap(),
+        "28.340000157438311"
+    );
+    assert_eq!(
+        slide.get_property_value("tiff.YResolution").unwrap(),
+        "28.340000157438311"
+    );
+
+    assert_eq!(slide.get_best_level_for_downsample(1.0).unwrap(), 0);
+    assert_eq!(slide.get_best_level_for_downsample(2.0).unwrap(), 1);
+    assert_eq!(slide.get_best_level_for_downsample(4.0).unwrap(), 1);
+    assert_eq!(slide.get_best_level_for_downsample(4.1).unwrap(), 2);
+    assert_eq!(slide.get_best_level_for_downsample(8.0).unwrap(), 2);
+    assert_eq!(slide.get_best_level_for_downsample(8.1).unwrap(), 3);
+}
+
+#[rstest]
+#[case("tests/data/boxes.tiff")]
+fn test_associated_images(#[case] filename: String) {
+    let filename = Path::new(filename.as_str());
+    let slide = OpenSlide::new(filename).unwrap();
+
+    assert_eq!(
+        slide.get_associated_image_names().unwrap(),
+        Vec::<String>::new()
+    );
+}
+
+#[rstest]
+#[case("tests/data/boxes.tiff")]
+fn test_slide_read_region(#[case] filename: String) {
+    let filename = Path::new(filename.as_str());
+    let slide = OpenSlide::new(filename).unwrap();
+
+    let size = slide.get_level0_dimensions().unwrap();
+    let offset = Offset { x: 0, y: 0 };
+    let level = 0;
+
+    let buffer = slide.read_region(&offset, level, &size).unwrap();
+    assert_eq!(buffer.len(), (size.height * size.width * 4) as usize);
 }

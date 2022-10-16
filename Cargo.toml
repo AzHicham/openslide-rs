@@ -5,15 +5,16 @@ version = "0.1.0"
 authors = ["AzHicham <hicham.azimani1@gmail.com>"]
 description = "Rust bindings of OpenSlide C library"
 repository = "https://github.com/AzHicham/openslide-rs"
+homepage = "https://github.com/AzHicham/openslide-rs"
 readme = "README.md"
 keywords = ["openslide", "histopathology", "microscopy"]
 categories = ["science"]
 license = "MIT/Apache-2.0"
 
 [features]
-default = []
-image = ["dep:image"]
+default = ["deepzoom"]
 deepzoom = ["image"]
+image = ["dep:image"]
 
 [dependencies]
 libc = "0.2.135"
@@ -25,4 +26,3 @@ image = { version = "0.24.4", optional = true}
 [dev-dependencies]
 rstest = "0.15.0"
 assert_approx_eq = "1.1.0"
-cc = "1.0.73"
