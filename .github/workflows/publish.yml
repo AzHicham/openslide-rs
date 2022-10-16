@@ -19,9 +19,6 @@ jobs:
         if: ${{ steps.regex-match.outputs.matched == 'false' }}
         run: exit 1
 
-env:
-  CARGO_TERM_COLOR: always
-
   publish:
     runs-on: ubuntu-20.04
     needs: [validate]
