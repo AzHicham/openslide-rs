@@ -22,7 +22,7 @@ jobs:
 env:
   CARGO_TERM_COLOR: always
 
-publish:
+  publish:
     runs-on: ubuntu-20.04
     needs: [validate]
     steps:
