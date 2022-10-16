@@ -18,10 +18,6 @@ jobs:
         sudo apt install -y openslide-tools
     - name: Install latest nightly
       uses: actions-rs/toolchain@v1
-      with:
-        toolchain: nightly
-        override: true
-        components: rustfmt, clippy
 
     - name: Run cargo clippy
       uses: actions-rs/cargo@v1

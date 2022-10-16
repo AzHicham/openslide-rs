@@ -19,9 +19,6 @@ jobs:
             sudo apt install -y openslide-tools
             sudo ln -s /usr/lib/x86_64-linux-gnu/libopenslide.so.0 /usr/lib/x86_64-linux-gnu/libopenslide.so
       - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
       - name: Install llvm-cov & Build & Tests
         run: |
           rustup component add llvm-tools-preview

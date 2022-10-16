@@ -1,4 +1,4 @@
-mod test_base;
+mod test_openslide;
 mod test_properties;
 
 #[cfg(feature = "deepzoom")]

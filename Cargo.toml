@@ -19,7 +19,7 @@ image = ["dep:image"]
 [dependencies]
 libc = "0.2.135"
 thiserror = "1.0.37"
-regex = "1"
+regex = "1.6.0"
 lazy_static = "1.4.0"
 image = { version = "0.24.4", optional = true}
 
