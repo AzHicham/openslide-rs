@@ -5,6 +5,8 @@ and [openslide-python library](https://github.com/openslide/openslide-python)
 
 # OpenSlide Rust
 
+![CI](https://github.com/AzHicham/openslide-rs/actions/workflows/workflow.yml/badge.svg)
+[![codecov](https://codecov.io/gh/AzHicham/openslide-rs/branch/main/graph/badge.svg?token=Q848D95AF8)](https://codecov.io/gh/AzHicham/openslide-rs)
 Rust bindings to OpenSlide ([https://openslide.org/](https://openslide.org/)).
 
 This work has no affiliations with the official OpenSlide project.

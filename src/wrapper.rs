@@ -28,7 +28,6 @@ impl OpenSlide {
             if let Ok(value) = bindings::get_property_value(osr, &name) {
                 Some((name, value))
             } else {
-                // log warning
                 None
             }
         });
