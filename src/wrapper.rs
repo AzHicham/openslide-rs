@@ -1,4 +1,4 @@
-use crate::{bindings, errors::OpenSlideError, Offset, OpenSlide, Properties, Result, Size};
+use crate::{bindings, errors::OpenSlideError, OpenSlide, Properties, Region, Result, Size};
 use std::path::Path;
 
 #[cfg(feature = "image")]
@@ -62,8 +62,8 @@ impl OpenSlide {
     pub fn get_level0_dimensions(&self) -> Result<Size> {
         let (width, height) = bindings::get_level0_dimensions(*self.osr)?;
         Ok(Size {
-            width: width.try_into()?,
-            height: height.try_into()?,
+            w: width.try_into()?,
+            h: height.try_into()?,
         })
     }
 
@@ -74,8 +74,8 @@ impl OpenSlide {
     pub fn get_level_dimensions(&self, level: u32) -> Result<Size> {
         let (width, height) = bindings::get_level_dimensions(*self.osr, level.try_into()?)?;
         Ok(Size {
-            width: width.try_into()?,
-            height: height.try_into()?,
+            w: width.try_into()?,
+            h: height.try_into()?,
         })
     }
 
@@ -86,8 +86,8 @@ impl OpenSlide {
         for level in 0..nb_levels {
             let (width, height) = bindings::get_level_dimensions(*self.osr, level.try_into()?)?;
             res.push(Size {
-                width: width.try_into()?,
-                height: height.try_into()?,
+                w: width.try_into()?,
+                h: height.try_into()?,
             });
         }
         Ok(res)
@@ -136,14 +136,14 @@ impl OpenSlide {
     ///     size: (width, height) in pixels of the outputted region
     ///
     /// Size of output Vec is Width * Height * 4 (RGBA pixels)
-    pub fn read_region(&self, offset: &Offset, level: u32, size: &Size) -> Result<Vec<u8>> {
+    pub fn read_region(&self, region: &Region) -> Result<Vec<u8>> {
         bindings::read_region(
             *self.osr,
-            offset.x as i64,
-            offset.y as i64,
-            level.try_into()?,
-            size.width as i64,
-            size.height as i64,
+            region.address.x as i64,
+            region.address.y as i64,
+            region.level.try_into()?,
+            region.size.w as i64,
+            region.size.h as i64,
         )
     }
 
@@ -163,8 +163,8 @@ impl OpenSlide {
     pub fn read_associated_buffer(&self, name: &str) -> Result<(Size, Vec<u8>)> {
         let ((width, height), buffer) = bindings::read_associated_image(*self.osr, name)?;
         let size = Size {
-            width: width.try_into()?,
-            height: height.try_into()?,
+            w: width.try_into()?,
+            h: height.try_into()?,
         };
         Ok((size, buffer))
     }
@@ -173,8 +173,8 @@ impl OpenSlide {
     pub fn get_associated_image_dimensions(&self, name: &str) -> Result<Size> {
         let (width, height) = bindings::get_associated_image_dimensions(*self.osr, name)?;
         Ok(Size {
-            width: width.try_into()?,
-            height: height.try_into()?,
+            w: width.try_into()?,
+            h: height.try_into()?,
         })
     }
 
@@ -187,7 +187,7 @@ impl OpenSlide {
     #[cfg(feature = "image")]
     pub fn read_associated_image(&self, name: &str) -> Result<RgbaImage> {
         let (size, buffer) = self.read_associated_buffer(name)?;
-        let mut image = RgbaImage::from_vec(size.width, size.height, buffer).unwrap(); // Should be safe because buffer is big enough
+        let mut image = RgbaImage::from_vec(size.w, size.h, buffer).unwrap(); // Should be safe because buffer is big enough
         _bgra_to_rgba_inplace(&mut image);
         Ok(image)
     }
@@ -201,9 +201,10 @@ impl OpenSlide {
     ///     level: At which level to grab the region from
     ///     size: (width, height) in pixels of the outputted region
     #[cfg(feature = "image")]
-    pub fn read_image(&self, offset: &Offset, level: u32, size: &Size) -> Result<RgbaImage> {
-        let buffer = self.read_region(offset, level, size)?;
-        let mut image = RgbaImage::from_vec(size.width, size.height, buffer).unwrap(); // Should be safe because buffer is big enough
+    pub fn read_image(&self, region: &Region) -> Result<RgbaImage> {
+        let buffer = self.read_region(region)?;
+        let size = region.size;
+        let mut image = RgbaImage::from_vec(size.w, size.h, buffer).unwrap(); // Should be safe because buffer is big enough
         _bgra_to_rgba_inplace(&mut image);
         Ok(image)
     }

@@ -1,5 +1,5 @@
 use assert_approx_eq::assert_approx_eq;
-use openslide_rs::{Offset, OpenSlide, Size};
+use openslide_rs::{Address, OpenSlide, Region, Size};
 use rstest::rstest;
 use std::path::Path;
 
@@ -32,37 +32,19 @@ fn test_slide_info(#[case] filename: String) {
     assert_eq!(slide.get_level_count().unwrap(), 4);
     assert_eq!(
         slide.get_level0_dimensions().unwrap(),
-        Size {
-            width: 300,
-            height: 250
-        }
+        Size { w: 300, h: 250 }
     );
     assert_eq!(
         slide.get_level_dimensions(3).unwrap(),
-        Size {
-            width: 37,
-            height: 31
-        }
+        Size { w: 37, h: 31 }
     );
     assert_eq!(
         slide.get_all_level_dimensions().unwrap(),
         vec![
-            Size {
-                width: 300,
-                height: 250
-            },
-            Size {
-                width: 150,
-                height: 125
-            },
-            Size {
-                width: 75,
-                height: 62
-            },
-            Size {
-                width: 37,
-                height: 31
-            }
+            Size { w: 300, h: 250 },
+            Size { w: 150, h: 125 },
+            Size { w: 75, h: 62 },
+            Size { w: 37, h: 31 }
         ]
     );
     assert_approx_eq!(slide.get_level_downsample(2).unwrap(), 4.016129032258064);
@@ -144,9 +126,15 @@ fn test_slide_read_region(#[case] filename: String) {
     let slide = OpenSlide::new(filename).unwrap();
 
     let size = slide.get_level0_dimensions().unwrap();
-    let offset = Offset { x: 0, y: 0 };
+    let address = Address { x: 0, y: 0 };
     let level = 0;
 
-    let buffer = slide.read_region(&offset, level, &size).unwrap();
-    assert_eq!(buffer.len(), (size.height * size.width * 4) as usize);
+    let buffer = slide
+        .read_region(&Region {
+            size,
+            level,
+            address,
+        })
+        .unwrap();
+    assert_eq!(buffer.len(), (size.h * size.w * 4) as usize);
 }
