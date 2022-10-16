@@ -1,4 +1,6 @@
-use crate::{bindings, errors::OpenSlideError, OpenSlide, Properties, Region, Result, Size};
+use crate::{
+    bindings, errors::OpenSlideError, Address, OpenSlide, Properties, Region, Result, Size,
+};
 use std::path::Path;
 
 #[cfg(feature = "image")]
@@ -206,6 +208,30 @@ impl OpenSlide {
         let size = region.size;
         let mut image = RgbaImage::from_vec(size.w, size.h, buffer).unwrap(); // Should be safe because buffer is big enough
         _bgra_to_rgba_inplace(&mut image);
+        Ok(image)
+    }
+
+    #[cfg(feature = "image")]
+    pub fn thumbnail(&self, size: &Size) -> Result<RgbaImage> {
+        let dimension_level0 = self.get_level0_dimensions()?;
+
+        let downsample = (
+            dimension_level0.w as f64 / size.w as f64,
+            dimension_level0.h as f64 / size.h as f64,
+        );
+        let downsample = f64::max(downsample.0, downsample.1);
+
+        let level = self.get_best_level_for_downsample(downsample)?;
+
+        let region = Region {
+            size: self.get_level_dimensions(level)?,
+            level,
+            address: Address { x: 0, y: 0 },
+        };
+
+        let image = self.read_image(&region)?;
+        let image = image::imageops::thumbnail(&image, size.w, size.h);
+
         Ok(image)
     }
 }
