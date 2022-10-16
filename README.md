@@ -3,16 +3,17 @@
 This work is based mainly on [openslide-rust library](https://github.com/ojskrede/openslide-rust)
 and [openslide-python library](https://github.com/openslide/openslide-python)
 
-# OpenSlide Rust
+# openslide-rs
 
 ![CI](https://github.com/AzHicham/openslide-rs/actions/workflows/workflow.yml/badge.svg)
 [![codecov](https://codecov.io/gh/AzHicham/openslide-rs/branch/main/graph/badge.svg?token=Q848D95AF8)](https://codecov.io/gh/AzHicham/openslide-rs)
+
 Rust bindings to OpenSlide ([https://openslide.org/](https://openslide.org/)).
 
 This work has no affiliations with the official OpenSlide project.
 
 
-OpenSlide Rust is a Python interface to the OpenSlide library.
+openslide-rs is a rust interface to the OpenSlide library.
 
 [OpenSlide] is a C library that provides a simple interface for reading
 whole-slide images, also known as virtual slides, which are high-resolution
@@ -55,11 +56,11 @@ OpenSlide can read virtual slides in several formats:
 
 ## Installation
 
-OpenSlide Rust requires [OpenSlide].  For instructions on installing both
+openslide-rs requires [OpenSlide]. For instructions on installing both
 components so OpenSlide Rust can find OpenSlide, see the package
 [documentation][installing].
 
-[installing]: https://openslide.org/api/python/#installing
+[installing]: https://openslide.org/
 
 In some systems it's necessary to run this command to allow Rust compiler to found OpenSlide :
 
@@ -68,7 +69,6 @@ In some systems it's necessary to run this command to allow Rust compiler to fou
 ## More Information
 
 - [API documentation](https://docs.rs/openslide_rs/latest/openslide/)
-- [Changelog](https://github.com/openslide/openslide-rs/blob/main/CHANGELOG.md)
 - [Website][OpenSlide]
-- [GitHub](https://github.com/openslide/openslide-rs)
+- [GitHub](https://github.com/AzHicham/openslide-rs)
 - [Sample data](https://openslide.cs.cmu.edu/download/openslide-testdata/)
