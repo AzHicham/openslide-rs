@@ -1,5 +1,4 @@
-use bencher::Bencher;
-use bencher::{benchmark_group, benchmark_main};
+use bencher::{benchmark_group, benchmark_main, Bencher};
 
 use image::imageops::FilterType;
 use openslide_rs::{Address, DeepZoomGenerator, OpenSlide, Region, Size};
@@ -57,14 +56,14 @@ fn deepzoom_read_image_256(bench: &mut Bencher) {
     let slide = OpenSlide::new(Path::new("tests/assets/default.svs")).unwrap();
     let dz = DeepZoomGenerator::new(&slide, 256, 0, false).unwrap();
 
-    bench.iter(|| dz.get_tile(12, Address { x: 0, y: 0 }, FilterType::Nearest));
+    bench.iter(|| dz.get_tile(12, Address { x: 0, y: 0 }, FilterType::Lanczos3));
 }
 
 fn deepzoom_read_image_512(bench: &mut Bencher) {
     let slide = OpenSlide::new(Path::new("tests/assets/default.svs")).unwrap();
     let dz = DeepZoomGenerator::new(&slide, 512, 0, false).unwrap();
 
-    bench.iter(|| dz.get_tile(12, Address { x: 0, y: 0 }, FilterType::Nearest));
+    bench.iter(|| dz.get_tile(12, Address { x: 0, y: 0 }, FilterType::Lanczos3));
 }
 
 benchmark_group!(

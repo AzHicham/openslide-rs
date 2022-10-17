@@ -141,7 +141,9 @@ pub fn get_level_count(osr: *const OpenSlideT) -> Result<i32> {
     let num_levels = unsafe { openslide_get_level_count(osr) };
     if num_levels == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::CoreError("Cannot get level count".to_string()));
+        return Err(OpenSlideError::CoreError(
+            "Cannot get level count".to_string(),
+        ));
     }
     Ok(num_levels)
 }
@@ -154,7 +156,9 @@ pub fn get_level0_dimensions(osr: *const OpenSlideT) -> Result<(i64, i64)> {
     }
     if width == -1 || height == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::CoreError("Cannot get dimensions of level 0".to_string()));
+        return Err(OpenSlideError::CoreError(
+            "Cannot get dimensions of level 0".to_string(),
+        ));
     }
     Ok((width, height))
 }
@@ -219,7 +223,9 @@ pub fn get_property_names(osr: *const OpenSlideT) -> Result<Vec<String>> {
         let null_terminated_array_ptr = openslide_get_property_names(osr);
         if null_terminated_array_ptr.is_null() {
             get_error(osr)?;
-            return Err(OpenSlideError::CoreError("Cannot get property names".to_string()));
+            return Err(OpenSlideError::CoreError(
+                "Cannot get property names".to_string(),
+            ));
         }
         let mut counter = 0;
         let mut loc = null_terminated_array_ptr;
@@ -261,7 +267,9 @@ pub fn get_associated_image_names(osr: *const OpenSlideT) -> Result<Vec<String>>
         let null_terminated_array_ptr = openslide_get_associated_image_names(osr);
         if null_terminated_array_ptr.is_null() {
             get_error(osr)?;
-            return Err(OpenSlideError::CoreError("Cannot get associated image names".to_string()));
+            return Err(OpenSlideError::CoreError(
+                "Cannot get associated image names".to_string(),
+            ));
         }
         let mut counter = 0;
         let mut loc = null_terminated_array_ptr;
@@ -291,7 +299,9 @@ pub fn get_associated_image_dimensions(osr: *const OpenSlideT, name: &str) -> Re
     }
     if width == -1 || height == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::CoreError("Unknown associated image".to_string()));
+        return Err(OpenSlideError::CoreError(
+            "Unknown associated image".to_string(),
+        ));
     }
     Ok((width, height))
 }
