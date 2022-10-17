@@ -3,30 +3,30 @@ use openslide_rs::{Address, OpenSlide, Region, Size};
 use rstest::rstest;
 use std::path::Path;
 
+mod fixture;
+use fixture::{boxes_tiff, small_svs};
+
 #[rstest]
-#[case("tests/data/boxes.tiff")]
-#[case("tests/data/small.svs")]
-fn test_open_slide(#[case] filename: String) {
-    let filename = Path::new(filename.as_str());
+#[case(small_svs())]
+#[case(boxes_tiff())]
+fn test_open_slide(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename);
 
     assert!(slide.is_ok())
 }
 
 #[rstest]
-#[case("tests/data/boxes.tiff", "generic-tiff")]
-#[case("tests/data/small.svs", "aperio")]
-fn test_detect_vendor(#[case] filename: String, #[case] expected_vendor: String) {
-    let filename = Path::new(filename.as_str());
+#[case(boxes_tiff(), "generic-tiff")]
+#[case(small_svs(), "aperio")]
+fn test_detect_vendor(#[case] filename: &Path, #[case] expected_vendor: String) {
     let vendor = OpenSlide::detect_vendor(filename).unwrap();
 
     assert_eq!(vendor, expected_vendor)
 }
 
 #[rstest]
-#[case("tests/data/boxes.tiff")]
-fn test_slide_info(#[case] filename: String) {
-    let filename = Path::new(filename.as_str());
+#[case(boxes_tiff())]
+fn test_slide_info(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
     assert_eq!(slide.get_level_count().unwrap(), 4);
@@ -108,9 +108,8 @@ fn test_slide_info(#[case] filename: String) {
 }
 
 #[rstest]
-#[case("tests/data/boxes.tiff")]
-fn test_associated_images(#[case] filename: String) {
-    let filename = Path::new(filename.as_str());
+#[case(boxes_tiff())]
+fn test_associated_images(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
     assert_eq!(
@@ -120,9 +119,8 @@ fn test_associated_images(#[case] filename: String) {
 }
 
 #[rstest]
-#[case("tests/data/boxes.tiff")]
-fn test_slide_read_region(#[case] filename: String) {
-    let filename = Path::new(filename.as_str());
+#[case(boxes_tiff())]
+fn test_slide_read_region(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
     let size = slide.get_level0_dimensions().unwrap();

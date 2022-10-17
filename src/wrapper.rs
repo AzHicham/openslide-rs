@@ -3,6 +3,7 @@ use crate::{
 };
 use std::path::Path;
 
+use crate::errors::map_try_error;
 #[cfg(feature = "image")]
 use image::RgbaImage;
 
@@ -18,11 +19,13 @@ impl OpenSlide {
     /// This function can be expensive; avoid calling it unnecessarily. For example, a tile server
     /// should not create a new object on every tile request. Instead, it should maintain a cache
     /// of OpenSlide objects and reuse them when possible.
-    pub fn new(filename: &Path) -> Result<OpenSlide> {
-        let filename = filename
-            .to_str()
-            .ok_or_else(|| OpenSlideError::PathToStringError(filename.to_path_buf()))?;
-        let osr = bindings::open(filename)?;
+    pub fn new(path: &Path) -> Result<OpenSlide> {
+        if !path.exists() {
+            return Err(OpenSlideError::MissingFile(path.display().to_string()));
+        }
+
+        let filename = path.display().to_string();
+        let osr = bindings::open(&filename)?;
 
         let property_names = bindings::get_property_names(osr)?;
 
@@ -43,17 +46,19 @@ impl OpenSlide {
     }
 
     /// Quickly determine whether a whole slide image is recognized.
-    pub fn detect_vendor(filename: &Path) -> Result<String> {
-        let filename = filename
-            .to_str()
-            .ok_or_else(|| OpenSlideError::PathToStringError(filename.to_path_buf()))?;
-        bindings::detect_vendor(filename)
+    pub fn detect_vendor(path: &Path) -> Result<String> {
+        if !path.exists() {
+            return Err(OpenSlideError::MissingFile(path.display().to_string()));
+        }
+        let filename = path.display().to_string();
+        bindings::detect_vendor(&filename)
     }
 
     /// Get the number of levels in the whole slide image.
     pub fn get_level_count(&self) -> Result<u32> {
         let level_count = bindings::get_level_count(*self.osr)?;
-        Ok(level_count.try_into()?)
+        let level_count: u32 = level_count.try_into().map_err(map_try_error)?;
+        Ok(level_count)
     }
 
     /// Get the dimensions of level 0 (the largest level).
@@ -64,8 +69,8 @@ impl OpenSlide {
     pub fn get_level0_dimensions(&self) -> Result<Size> {
         let (width, height) = bindings::get_level0_dimensions(*self.osr)?;
         Ok(Size {
-            w: width.try_into()?,
-            h: height.try_into()?,
+            w: width.try_into().map_err(map_try_error)?,
+            h: height.try_into().map_err(map_try_error)?,
         })
     }
 
@@ -74,10 +79,11 @@ impl OpenSlide {
     /// This method returns the Size { width, height } number of pixels of the whole slide image at the
     /// specified level. Returns an error if the level is invalid
     pub fn get_level_dimensions(&self, level: u32) -> Result<Size> {
-        let (width, height) = bindings::get_level_dimensions(*self.osr, level.try_into()?)?;
+        let level: i32 = level.try_into().map_err(map_try_error)?;
+        let (width, height) = bindings::get_level_dimensions(*self.osr, level)?;
         Ok(Size {
-            w: width.try_into()?,
-            h: height.try_into()?,
+            w: width.try_into().map_err(map_try_error)?,
+            h: height.try_into().map_err(map_try_error)?,
         })
     }
 
@@ -86,10 +92,11 @@ impl OpenSlide {
         let nb_levels = self.get_level_count()?;
         let mut res = Vec::with_capacity(nb_levels as usize);
         for level in 0..nb_levels {
-            let (width, height) = bindings::get_level_dimensions(*self.osr, level.try_into()?)?;
+            let level: i32 = level.try_into().map_err(map_try_error)?;
+            let (width, height) = bindings::get_level_dimensions(*self.osr, level)?;
             res.push(Size {
-                w: width.try_into()?,
-                h: height.try_into()?,
+                w: width.try_into().map_err(map_try_error)?,
+                h: height.try_into().map_err(map_try_error)?,
             });
         }
         Ok(res)
@@ -97,7 +104,8 @@ impl OpenSlide {
 
     /// Get the downsampling factor of a given level.
     pub fn get_level_downsample(&self, level: u32) -> Result<f64> {
-        bindings::get_level_downsample(*self.osr, level.try_into()?)
+        let level: i32 = level.try_into().map_err(map_try_error)?;
+        bindings::get_level_downsample(*self.osr, level)
     }
 
     /// Get all downsampling factors for all available levels.
@@ -113,9 +121,7 @@ impl OpenSlide {
 
     /// Get the best level to use for displaying the given downsample factor.
     pub fn get_best_level_for_downsample(&self, downsample: f64) -> Result<u32> {
-        bindings::get_best_level_for_downsample(*self.osr, downsample)?
-            .try_into()
-            .map_err(OpenSlideError::ConversionError)
+        Ok(bindings::get_best_level_for_downsample(*self.osr, downsample)? as u32)
     }
 
     /// Get the list of all available properties.
@@ -143,7 +149,7 @@ impl OpenSlide {
             *self.osr,
             region.address.x as i64,
             region.address.y as i64,
-            region.level.try_into()?,
+            region.level.try_into().map_err(map_try_error)?,
             region.size.w as i64,
             region.size.h as i64,
         )
@@ -165,8 +171,8 @@ impl OpenSlide {
     pub fn read_associated_buffer(&self, name: &str) -> Result<(Size, Vec<u8>)> {
         let ((width, height), buffer) = bindings::read_associated_image(*self.osr, name)?;
         let size = Size {
-            w: width.try_into()?,
-            h: height.try_into()?,
+            w: width.try_into().map_err(map_try_error)?,
+            h: height.try_into().map_err(map_try_error)?,
         };
         Ok((size, buffer))
     }
@@ -175,8 +181,8 @@ impl OpenSlide {
     pub fn get_associated_image_dimensions(&self, name: &str) -> Result<Size> {
         let (width, height) = bindings::get_associated_image_dimensions(*self.osr, name)?;
         Ok(Size {
-            w: width.try_into()?,
-            h: height.try_into()?,
+            w: width.try_into().map_err(map_try_error)?,
+            h: height.try_into().map_err(map_try_error)?,
         })
     }
 
