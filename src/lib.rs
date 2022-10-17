@@ -29,28 +29,41 @@ pub struct OpenSlide {
 #[cfg(feature = "deepzoom")]
 #[derive(Debug)]
 pub struct DeepZoomGenerator<'a> {
-    osr: &'a OpenSlide,
-    t_dimensions: Vec<Size>,
-    l_dimensions: Vec<Size>,
-    z_dimensions: Vec<Size>,
-    slide_from_dz_level: Vec<u32>,
-    l_z_downsamples: Vec<f64>,
+    slide: &'a OpenSlide,
+
+    level_count: usize,
+    level_tiles: Vec<Size>,
+    level_dimensions: Vec<Size>,
+
+    tile_size: u32,
     overlap: u32,
-    z_t_downsample: u32,
-    l0_offset: Offset,
+
+    l0_offset: Address,
+    slide_level_dimensions: Vec<Size>,
+    slide_from_dz_level: Vec<u32>,
     l0_l_downsamples: Vec<f64>,
+    l_z_downsamples: Vec<f64>,
 }
 
-/// Size struct
+/// Region struct
+/// Used to retrieve a tile in a WSI
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Region {
+    pub size: Size,
+    pub level: u32,
+    pub address: Address,
+}
+
+/// Simple Size struct
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Size {
-    pub width: u32,
-    pub height: u32,
+    pub w: u32,
+    pub h: u32,
 }
 
-/// Offset struct
+/// Simple Address struct
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Offset {
+pub struct Address {
     pub x: u32,
     pub y: u32,
 }
