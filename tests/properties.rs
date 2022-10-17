@@ -2,13 +2,60 @@ use openslide_rs::OpenSlide;
 use rstest::rstest;
 use std::path::Path;
 
+mod fixture;
+use fixture::boxes_tiff;
+
 #[rstest]
-#[case("tests/data/boxes.tiff")]
-fn test_slide_properties(#[case] filename: String) {
-    let filename = Path::new(filename.as_str());
+#[case(boxes_tiff())]
+fn test_slide_properties(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
     println!("{slide:?}");
+
+    assert_eq!(
+        slide.get_property_names(),
+        vec![
+            "openslide.level-count",
+            "openslide.level[0].downsample",
+            "openslide.level[0].height",
+            "openslide.level[0].tile-height",
+            "openslide.level[0].tile-width",
+            "openslide.level[0].width",
+            "openslide.level[1].downsample",
+            "openslide.level[1].height",
+            "openslide.level[1].tile-height",
+            "openslide.level[1].tile-width",
+            "openslide.level[1].width",
+            "openslide.level[2].downsample",
+            "openslide.level[2].height",
+            "openslide.level[2].tile-height",
+            "openslide.level[2].tile-width",
+            "openslide.level[2].width",
+            "openslide.level[3].downsample",
+            "openslide.level[3].height",
+            "openslide.level[3].tile-height",
+            "openslide.level[3].tile-width",
+            "openslide.level[3].width",
+            "openslide.quickhash-1",
+            "openslide.vendor",
+            "tiff.ResolutionUnit",
+            "tiff.XResolution",
+            "tiff.YResolution"
+        ]
+    );
+
+    assert_eq!(
+        slide.get_property_value("tiff.YResolution").unwrap(),
+        "28.340000157438311"
+    );
+    assert_eq!(
+        slide.get_property_value("tiff.XResolution").unwrap(),
+        "28.340000157438311"
+    );
+    assert_eq!(
+        slide.get_property_value("tiff.YResolution").unwrap(),
+        "28.340000157438311"
+    );
 
     let properties = &slide.properties;
 

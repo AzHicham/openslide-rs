@@ -140,7 +140,8 @@ pub fn close(osr: *const OpenSlideT) {
 pub fn get_level_count(osr: *const OpenSlideT) -> Result<i32> {
     let num_levels = unsafe { openslide_get_level_count(osr) };
     if num_levels == -1 {
-        force_error(osr)?
+        get_error(osr)?;
+        return Err(OpenSlideError::CoreError(format!("Cannot get level count")));
     }
     Ok(num_levels)
 }
@@ -152,7 +153,10 @@ pub fn get_level0_dimensions(osr: *const OpenSlideT) -> Result<(i64, i64)> {
         openslide_get_level0_dimensions(osr, &mut width, &mut height);
     }
     if width == -1 || height == -1 {
-        force_error(osr)?
+        get_error(osr)?;
+        return Err(OpenSlideError::CoreError(format!(
+            "Cannot get dimensions of level 0"
+        )));
     }
     Ok((width, height))
 }
@@ -164,7 +168,8 @@ pub fn get_level_dimensions(osr: *const OpenSlideT, level: i32) -> Result<(i64, 
         openslide_get_level_dimensions(osr, level, &mut width, &mut height);
     }
     if width == -1 || height == -1 {
-        force_error(osr)?
+        get_error(osr)?;
+        return Err(OpenSlideError::CoreError(format!("Invalid level {level}")));
     }
     Ok((width, height))
 }
@@ -172,7 +177,10 @@ pub fn get_level_dimensions(osr: *const OpenSlideT, level: i32) -> Result<(i64, 
 pub fn get_level_downsample(osr: *const OpenSlideT, level: i32) -> Result<f64> {
     let downsampling_factor = unsafe { openslide_get_level_downsample(osr, level) };
     if downsampling_factor == -1.0 {
-        force_error(osr)?
+        get_error(osr)?;
+        return Err(OpenSlideError::CoreError(format!(
+            "Cannot compute downsample for level {level}"
+        )));
     }
     Ok(downsampling_factor)
 }
@@ -180,7 +188,10 @@ pub fn get_level_downsample(osr: *const OpenSlideT, level: i32) -> Result<f64> {
 pub fn get_best_level_for_downsample(osr: *const OpenSlideT, downsample: f64) -> Result<i32> {
     let level = unsafe { openslide_get_best_level_for_downsample(osr, downsample) };
     if level == -1 {
-        force_error(osr)?
+        get_error(osr)?;
+        return Err(OpenSlideError::CoreError(format!(
+            "Cannot compute level for downsample {downsample}"
+        )));
     }
     Ok(level)
 }
@@ -209,7 +220,10 @@ pub fn get_property_names(osr: *const OpenSlideT) -> Result<Vec<String>> {
     let string_values = unsafe {
         let null_terminated_array_ptr = openslide_get_property_names(osr);
         if null_terminated_array_ptr.is_null() {
-            get_error(osr)?
+            get_error(osr)?;
+            return Err(OpenSlideError::CoreError(format!(
+                "Cannot get property names"
+            )));
         }
         let mut counter = 0;
         let mut loc = null_terminated_array_ptr;
@@ -234,7 +248,14 @@ pub fn get_property_value(osr: *const OpenSlideT, name: &str) -> Result<String> 
     let c_name = ffi::CString::new(name).map_err(map_string_error)?;
     let value = unsafe {
         let c_value = openslide_get_property_value(osr, c_name.as_ptr());
-        ffi::CStr::from_ptr(c_value).to_string_lossy().into_owned()
+        if c_value.is_null() {
+            get_error(osr)?;
+            return Err(OpenSlideError::CoreError(format!(
+                "Error with property named {name}"
+            )));
+        } else {
+            ffi::CStr::from_ptr(c_value).to_string_lossy().into_owned()
+        }
     };
     Ok(value)
 }
@@ -243,7 +264,10 @@ pub fn get_associated_image_names(osr: *const OpenSlideT) -> Result<Vec<String>>
     let string_values = unsafe {
         let null_terminated_array_ptr = openslide_get_associated_image_names(osr);
         if null_terminated_array_ptr.is_null() {
-            get_error(osr)?
+            get_error(osr)?;
+            return Err(OpenSlideError::CoreError(format!(
+                "Cannot get associated image names"
+            )));
         }
         let mut counter = 0;
         let mut loc = null_terminated_array_ptr;
@@ -272,7 +296,10 @@ pub fn get_associated_image_dimensions(osr: *const OpenSlideT, name: &str) -> Re
         openslide_get_associated_image_dimensions(osr, c_name.as_ptr(), &mut width, &mut height);
     }
     if width == -1 || height == -1 {
-        force_error(osr)?
+        get_error(osr)?;
+        return Err(OpenSlideError::CoreError(format!(
+            "Unknown associated image"
+        )));
     }
     Ok((width, height))
 }
@@ -303,9 +330,4 @@ pub fn get_error(osr: *const OpenSlideT) -> Result<()> {
         }
     };
     value
-}
-
-pub fn force_error(osr: *const OpenSlideT) -> Result<()> {
-    get_error(osr)?;
-    Err(OpenSlideError::CoreError("Unknown error".to_string()))
 }
