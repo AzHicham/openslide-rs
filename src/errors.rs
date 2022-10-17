@@ -6,7 +6,7 @@ use std::{ffi::NulError, num::TryFromIntError};
 use thiserror::Error;
 
 /// Enum defining all possible error when manipulating OpenSlide struct
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Clone)]
 pub enum OpenSlideError {
     /// FFI string conversion error
     /// Integer conversion error
