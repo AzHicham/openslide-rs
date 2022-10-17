@@ -1,6 +1,5 @@
-#[macro_use]
-extern crate bencher;
 use bencher::Bencher;
+use bencher::{benchmark_group, benchmark_main};
 
 use image::imageops::FilterType;
 use openslide_rs::{Address, DeepZoomGenerator, OpenSlide, Region, Size};
