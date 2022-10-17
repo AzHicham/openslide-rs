@@ -33,6 +33,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
     - uses: Swatinem/rust-cache@v2
       with:
         key: ${{ matrix.build_type.name }}-${{ matrix.features }}
@@ -40,10 +43,9 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y openslide-tools
-    - name: Build & Test
-      run: |
         sudo ln -s /usr/lib/x86_64-linux-gnu/libopenslide.so.0 /usr/lib/x86_64-linux-gnu/libopenslide.so
-        cargo test --workspace ${{ matrix.build_type.flag }} --features "${{ matrix.features }}"
+    - name: Build & Test
+      run: cargo test --workspace ${{ matrix.build_type.flag }} --features "${{ matrix.features }}"
 
   pre-commit:
     runs-on: ubuntu-latest
