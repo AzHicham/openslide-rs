@@ -57,33 +57,14 @@ impl OpenSlide {
     /// should not create a new object on every tile request. Instead, it should maintain a cache
     /// of OpenSlide objects and reuse them when possible.
     pub fn new_with_cache(path: &Path, cache_capacity: usize) -> Result<OpenSlide> {
-        if !path.exists() {
-            return Err(OpenSlideError::MissingFile(path.display().to_string()));
-        }
+        let mut openslide = OpenSlide::new(path)?;
 
-        let filename = path.display().to_string();
-        let osr = bindings::open(&filename)?;
-
-        let property_names = bindings::get_property_names(osr)?;
-
-        let property_iter = property_names.into_iter().filter_map(|name| {
-            if let Ok(value) = bindings::get_property_value(osr, &name) {
-                Some((name, value))
-            } else {
-                None
-            }
-        });
-
-        let properties = Properties::new(property_iter);
-
+        // Make cache
         let cache = bindings::make_cache(cache_capacity)?;
-        bindings::attach_cache(osr, cache);
+        bindings::attach_cache(*openslide.osr, cache);
+        openslide.cache = Some(bindings::OpenSlideCacheWrapper(cache));
 
-        Ok(OpenSlide {
-            osr: bindings::OpenSlideWrapper(osr),
-            cache: Some(bindings::OpenSlideCacheWrapper(cache)),
-            properties,
-        })
+        Ok(openslide)
     }
 
     /// Quickly determine whether a whole slide image is recognized.
