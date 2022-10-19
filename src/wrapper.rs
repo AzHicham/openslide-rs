@@ -3,13 +3,17 @@ use crate::{
 };
 use std::path::Path;
 
-use crate::errors::map_try_error;
+use crate::{bindings::OpenSlideCache, errors::map_try_error};
 #[cfg(feature = "image")]
 use image::RgbaImage;
 
 impl Drop for OpenSlide {
     fn drop(&mut self) {
-        bindings::close(*self.osr)
+        if let Some(cache) = &mut self.cache {
+            let cache_ptr = cache.0 as *mut OpenSlideCache;
+            bindings::release_cache(cache_ptr);
+        }
+        bindings::close(*self.osr);
     }
 }
 
@@ -41,6 +45,43 @@ impl OpenSlide {
 
         Ok(OpenSlide {
             osr: bindings::OpenSlideWrapper(osr),
+            cache: None,
+            properties,
+        })
+    }
+
+    /// This method tries to open the slide at the given filename location,
+    /// and attach an Openslide cache with the specified capacity
+    ///
+    /// This function can be expensive; avoid calling it unnecessarily. For example, a tile server
+    /// should not create a new object on every tile request. Instead, it should maintain a cache
+    /// of OpenSlide objects and reuse them when possible.
+    pub fn new_with_cache(path: &Path, cache_capacity: usize) -> Result<OpenSlide> {
+        if !path.exists() {
+            return Err(OpenSlideError::MissingFile(path.display().to_string()));
+        }
+
+        let filename = path.display().to_string();
+        let osr = bindings::open(&filename)?;
+
+        let property_names = bindings::get_property_names(osr)?;
+
+        let property_iter = property_names.into_iter().filter_map(|name| {
+            if let Ok(value) = bindings::get_property_value(osr, &name) {
+                Some((name, value))
+            } else {
+                None
+            }
+        });
+
+        let properties = Properties::new(property_iter);
+
+        let cache = bindings::make_cache(cache_capacity)?;
+        bindings::attach_cache(osr, cache);
+
+        Ok(OpenSlide {
+            osr: bindings::OpenSlideWrapper(osr),
+            cache: Some(bindings::OpenSlideCacheWrapper(cache)),
             properties,
         })
     }

@@ -13,6 +13,11 @@ use std::{ffi, ops::Deref};
 #[allow(improper_ctypes)]
 pub struct OpenSlideT {}
 
+/// wrapper around openslide_t "C" type in OpenSlide
+#[repr(C)]
+#[allow(improper_ctypes)]
+pub struct OpenSlideCache {}
+
 /// wrapper around OpenSlideT, this is usefull for implementing Send and Sync
 #[derive(Debug)]
 pub(crate) struct OpenSlideWrapper(pub *const OpenSlideT);
@@ -28,83 +33,109 @@ impl Deref for OpenSlideWrapper {
 unsafe impl Send for OpenSlideWrapper {}
 unsafe impl Sync for OpenSlideWrapper {}
 
+/// wrapper around OpenSlideT, this is usefull for implementing Send and Sync
+#[derive(Debug)]
+pub(crate) struct OpenSlideCacheWrapper(pub *const OpenSlideCache);
+
+impl Deref for OpenSlideCacheWrapper {
+    type Target = *const OpenSlideCache;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+unsafe impl Send for OpenSlideCacheWrapper {}
+unsafe impl Sync for OpenSlideCacheWrapper {}
+
+// Openslide C API
 #[link(name = "openslide")]
 extern "C" {
-    pub fn openslide_detect_vendor(filename: *const libc::c_char) -> *const libc::c_char;
+    pub fn openslide_detect_vendor(filename: *const libc::c_schar) -> *const libc::c_schar;
 
     #[allow(improper_ctypes)]
-    pub fn openslide_open(filename: *const libc::c_char) -> *const OpenSlideT;
+    pub fn openslide_open(filename: *const libc::c_schar) -> *const OpenSlideT;
 
     #[allow(improper_ctypes)]
     pub fn openslide_close(osr: *const OpenSlideT) -> libc::c_void;
 
     #[allow(improper_ctypes)]
-    fn openslide_get_level_count(osr: *const OpenSlideT) -> i32;
+    fn openslide_get_level_count(osr: *const OpenSlideT) -> libc::c_int;
 
     #[allow(improper_ctypes)]
     fn openslide_get_level0_dimensions(
         osr: *const OpenSlideT,
-        w: *mut i64,
-        h: *mut i64,
+        w: *mut libc::c_longlong,
+        h: *mut libc::c_longlong,
     ) -> libc::c_void;
 
     #[allow(improper_ctypes)]
     fn openslide_get_level_dimensions(
         osr: *const OpenSlideT,
-        level: i32,
-        w: *mut i64,
-        h: *mut i64,
+        level: libc::c_int,
+        w: *mut libc::c_longlong,
+        h: *mut libc::c_longlong,
     ) -> libc::c_void;
 
     #[allow(improper_ctypes)]
-    fn openslide_get_level_downsample(osr: *const OpenSlideT, level: i32) -> libc::c_double;
+    fn openslide_get_level_downsample(osr: *const OpenSlideT, level: libc::c_int)
+        -> libc::c_double;
 
     #[allow(improper_ctypes)]
     fn openslide_get_best_level_for_downsample(
         slide: *const OpenSlideT,
         downsample_factor: libc::c_double,
-    ) -> i32;
+    ) -> libc::c_int;
 
     #[allow(improper_ctypes)]
     fn openslide_read_region(
         osr: *const OpenSlideT,
-        dest: *mut u32,
-        x: i64,
-        y: i64,
-        level: i32,
-        w: i64,
-        h: i64,
+        dest: *mut libc::c_uint,
+        x: libc::c_longlong,
+        y: libc::c_longlong,
+        level: libc::c_int,
+        w: libc::c_longlong,
+        h: libc::c_longlong,
     ) -> libc::c_void;
 
     #[allow(improper_ctypes)]
-    fn openslide_get_error(osr: *const OpenSlideT) -> *const libc::c_char;
+    fn openslide_get_error(osr: *const OpenSlideT) -> *const libc::c_schar;
 
     #[allow(improper_ctypes)]
-    fn openslide_get_property_names(osr: *const OpenSlideT) -> *const *const libc::c_char;
+    fn openslide_get_property_names(osr: *const OpenSlideT) -> *const *const libc::c_schar;
 
     #[allow(improper_ctypes)]
     fn openslide_get_property_value(
         osr: *const OpenSlideT,
-        name: *const libc::c_char,
-    ) -> *const libc::c_char;
+        name: *const libc::c_schar,
+    ) -> *const libc::c_schar;
 
     #[allow(improper_ctypes)]
-    fn openslide_get_associated_image_names(osr: *const OpenSlideT) -> *const *const libc::c_char;
+    fn openslide_get_associated_image_names(osr: *const OpenSlideT) -> *const *const libc::c_schar;
 
     #[allow(improper_ctypes)]
     fn openslide_get_associated_image_dimensions(
         osr: *const OpenSlideT,
-        name: *const libc::c_char,
-        w: *mut i64,
-        h: *mut i64,
+        name: *const libc::c_schar,
+        w: *mut libc::c_longlong,
+        h: *mut libc::c_longlong,
     ) -> libc::c_void;
 
     #[allow(improper_ctypes)]
     fn openslide_read_associated_image(
         osr: *const OpenSlideT,
-        name: *const libc::c_char,
-        dest: *mut u32,
+        name: *const libc::c_schar,
+        dest: *mut libc::c_uint,
     ) -> libc::c_void;
+
+    #[allow(improper_ctypes)]
+    pub fn openslide_cache_create(capacity: libc::size_t) -> *mut OpenSlideCache;
+
+    #[allow(improper_ctypes)]
+    pub fn openslide_set_cache(osr: *const OpenSlideT, cache: *mut OpenSlideCache) -> libc::c_void;
+
+    #[allow(improper_ctypes)]
+    pub fn openslide_cache_release(cache: *mut OpenSlideCache) -> libc::c_void;
 }
 
 pub fn detect_vendor(filename: &str) -> Result<String> {
@@ -332,4 +363,27 @@ pub fn get_error(osr: *const OpenSlideT) -> Result<()> {
         }
     };
     value
+}
+
+pub fn make_cache(capacity: libc::size_t) -> Result<*mut OpenSlideCache> {
+    let cache = unsafe { openslide_cache_create(capacity) };
+    if !cache.is_null() {
+        Ok(cache)
+    } else {
+        Err(OpenSlideError::CoreError(
+            "Create Openslide cache with capacity {capacity} failed".to_string(),
+        ))
+    }
+}
+
+pub fn attach_cache(osr: *const OpenSlideT, cache: *mut OpenSlideCache) {
+    unsafe {
+        openslide_set_cache(osr, cache);
+    }
+}
+
+pub fn release_cache(cache: *mut OpenSlideCache) {
+    unsafe {
+        openslide_cache_release(cache);
+    }
 }

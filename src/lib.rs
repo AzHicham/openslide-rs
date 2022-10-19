@@ -22,6 +22,7 @@ pub type Result<T, E = errors::OpenSlideError> = std::result::Result<T, E>;
 #[derive(Debug)]
 pub struct OpenSlide {
     osr: bindings::OpenSlideWrapper,
+    cache: Option<bindings::OpenSlideCacheWrapper>,
     pub properties: Properties,
 }
 
