@@ -58,7 +58,7 @@ fn test_slide_properties(#[case] filename: &Path) {
         "28.340000157438311"
     );
 
-    let properties = &slide.properties;
+    let properties = slide.properties();
 
     println!("{properties:?}");
     assert_eq!(

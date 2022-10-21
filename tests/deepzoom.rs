@@ -49,17 +49,53 @@ mod deepzoom {
                 Size { w: 300, h: 250 }
             ]
         );
+    }
+
+    #[rstest]
+    #[case(boxes_tiff())]
+    fn test_read_tile(#[case] filename: &Path) {
+        let slide = OpenSlide::new(filename).unwrap();
+        let dz = DeepZoomGenerator::new(&slide, 254, 1, false).unwrap();
 
         let image = dz
             .get_tile(9, Address { x: 1, y: 0 }, FilterType::Lanczos3)
             .unwrap();
         assert_eq!(image.width(), 47);
         assert_eq!(image.height(), 250);
+    }
 
-        let image = dz.get_tile(0, Address { x: 1, y: 0 }, FilterType::Lanczos3);
-        assert!(image.is_err());
+    #[rstest]
+    #[should_panic(expected = "CoreError(\"Invalid level\")")]
+    #[case(boxes_tiff())]
+    fn test_failure_read_tile_1(#[case] filename: &Path) {
+        let slide = OpenSlide::new(filename).unwrap();
+        let dz = DeepZoomGenerator::new(&slide, 254, 1, false).unwrap();
 
-        let image = dz.get_tile(10, Address { x: 0, y: 0 }, FilterType::Lanczos3);
-        assert!(image.is_err());
+        dz.get_tile(10, Address { x: 0, y: 0 }, FilterType::Lanczos3)
+            .unwrap();
+    }
+
+    #[rstest]
+    #[should_panic(expected = "CoreError(\"Invalid address\")")]
+    #[case(boxes_tiff())]
+    fn test_failure_read_tile_2(#[case] filename: &Path) {
+        let slide = OpenSlide::new(filename).unwrap();
+        let dz = DeepZoomGenerator::new(&slide, 254, 1, false).unwrap();
+
+        dz.get_tile(0, Address { x: 1, y: 0 }, FilterType::Lanczos3)
+            .unwrap();
+    }
+
+    #[rstest]
+    #[case(boxes_tiff())]
+    fn test_read_tile_with_limit_bound(#[case] filename: &Path) {
+        let slide = OpenSlide::new(filename).unwrap();
+        let dz = DeepZoomGenerator::new(&slide, 254, 1, true).unwrap();
+
+        let image = dz
+            .get_tile(9, Address { x: 1, y: 0 }, FilterType::Lanczos3)
+            .unwrap();
+        assert_eq!(image.width(), 47);
+        assert_eq!(image.height(), 250);
     }
 }
