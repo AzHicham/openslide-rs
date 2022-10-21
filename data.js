@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1666004616512,
+  "lastUpdate": 1666354893655,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
@@ -403,6 +403,62 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 7807431,
             "range": "± 17367",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "id": "03f0372ff745044928688e369fa4a20e4c7774a2",
+          "message": "refactor: Add SlideRead, SlideProperty trait",
+          "timestamp": "2022-10-18T20:17:18Z",
+          "url": "https://github.com/AzHicham/openslide-rs/pull/7/commits/03f0372ff745044928688e369fa4a20e4c7774a2"
+        },
+        "date": 1666354892578,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2508298,
+            "range": "± 374754",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 10226563,
+            "range": "± 933526",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2352915,
+            "range": "± 366105",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 9915788,
+            "range": "± 1597453",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2309371,
+            "range": "± 286300",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 9754444,
+            "range": "± 1214180",
             "unit": "ns/iter"
           }
         ]
