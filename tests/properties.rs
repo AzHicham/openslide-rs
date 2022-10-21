@@ -4,6 +4,7 @@ use std::path::Path;
 
 mod fixture;
 use fixture::boxes_tiff;
+use openslide_rs::SlideProperties;
 
 #[rstest]
 #[case(boxes_tiff())]
@@ -13,7 +14,7 @@ fn test_slide_properties(#[case] filename: &Path) {
     println!("{slide:?}");
 
     assert_eq!(
-        slide.get_property_names(),
+        slide.property_names(),
         vec![
             "openslide.level-count",
             "openslide.level[0].downsample",
@@ -45,15 +46,15 @@ fn test_slide_properties(#[case] filename: &Path) {
     );
 
     assert_eq!(
-        slide.get_property_value("tiff.YResolution").unwrap(),
+        slide.property_value("tiff.YResolution").unwrap(),
         "28.340000157438311"
     );
     assert_eq!(
-        slide.get_property_value("tiff.XResolution").unwrap(),
+        slide.property_value("tiff.XResolution").unwrap(),
         "28.340000157438311"
     );
     assert_eq!(
-        slide.get_property_value("tiff.YResolution").unwrap(),
+        slide.property_value("tiff.YResolution").unwrap(),
         "28.340000157438311"
     );
 

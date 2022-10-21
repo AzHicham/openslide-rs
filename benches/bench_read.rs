@@ -1,7 +1,7 @@
 use bencher::{benchmark_group, benchmark_main, Bencher};
 
 use image::imageops::FilterType;
-use openslide_rs::{Address, DeepZoomGenerator, OpenSlide, Region, Size};
+use openslide_rs::{Address, DeepZoomGenerator, OpenSlide, Region, Size, SlideReader};
 use std::path::Path;
 
 fn openslide_read_region_256(bench: &mut Bencher) {

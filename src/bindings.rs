@@ -42,13 +42,6 @@ extern "C" {
     fn openslide_get_level_count(osr: *const OpenSlideT) -> i32;
 
     #[allow(improper_ctypes)]
-    fn openslide_get_level0_dimensions(
-        osr: *const OpenSlideT,
-        w: *mut i64,
-        h: *mut i64,
-    ) -> libc::c_void;
-
-    #[allow(improper_ctypes)]
     fn openslide_get_level_dimensions(
         osr: *const OpenSlideT,
         level: i32,
@@ -146,21 +139,6 @@ pub fn get_level_count(osr: *const OpenSlideT) -> Result<i32> {
         ));
     }
     Ok(num_levels)
-}
-
-pub fn get_level0_dimensions(osr: *const OpenSlideT) -> Result<(i64, i64)> {
-    let mut width: i64 = 0;
-    let mut height: i64 = 0;
-    unsafe {
-        openslide_get_level0_dimensions(osr, &mut width, &mut height);
-    }
-    if width == -1 || height == -1 {
-        get_error(osr)?;
-        return Err(OpenSlideError::CoreError(
-            "Cannot get dimensions of level 0".to_string(),
-        ));
-    }
-    Ok((width, height))
 }
 
 pub fn get_level_dimensions(osr: *const OpenSlideT, level: i32) -> Result<(i64, i64)> {

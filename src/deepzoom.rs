@@ -2,21 +2,24 @@
 //! This module provides functionality for generating Deep Zoom images from OpenSlide objects.
 //! This is a simple translation of python DeepZoomGenerator implementation
 
-use crate::{errors::OpenSlideError, Address, DeepZoomGenerator, OpenSlide, Region, Result, Size};
+use crate::{
+    errors::OpenSlideError, Address, DeepZoomGenerator, Region, Result, Size, SlideProperties,
+    SlideReader,
+};
 use image::{imageops::FilterType, RgbaImage};
 
-impl<'a> DeepZoomGenerator<'a> {
+impl<'a, T: SlideReader + SlideProperties> DeepZoomGenerator<'a, T> {
     pub fn new(
-        slide: &'a OpenSlide,
+        slide: &'a T,
         tile_size: u32,
         overlap: u32,
         limit_bounds: bool,
-    ) -> Result<DeepZoomGenerator> {
+    ) -> Result<DeepZoomGenerator<T>> {
         let mut slide_level_dimensions: Vec<Size> = Vec::new();
         let mut l0_offset = Address { x: 0, y: 0 };
 
         if limit_bounds {
-            let os_property = &slide.properties.openslide_properties;
+            let os_property = &slide.properties().openslide_properties;
             let bounds_x = os_property.bounds_x.unwrap_or(0);
             let bounds_y = os_property.bounds_y.unwrap_or(0);
 
@@ -25,7 +28,7 @@ impl<'a> DeepZoomGenerator<'a> {
             l0_offset.y = bounds_y;
 
             // Slide level dimensions scale factor in each axis
-            let slide_dimensions = slide.get_level0_dimensions()?;
+            let slide_dimensions = slide.dimensions(0)?;
             let slide_dimensions = &slide_dimensions;
 
             let bounds_width = os_property.bounds_width.unwrap_or(slide_dimensions.w);
@@ -37,8 +40,8 @@ impl<'a> DeepZoomGenerator<'a> {
             );
 
             slide_level_dimensions.extend(
-                (0..slide.get_level_count()?)
-                    .filter_map(|level| slide.get_level_dimensions(level).ok())
+                (0..slide.level_count()?)
+                    .filter_map(|level| slide.dimensions(level).ok())
                     .map(|dimensions| Size {
                         w: (dimensions.w as f32 * size_scale.0).ceil() as _,
                         h: (dimensions.h as f32 * size_scale.1).ceil() as _,
@@ -46,8 +49,7 @@ impl<'a> DeepZoomGenerator<'a> {
             );
         } else {
             slide_level_dimensions.extend(
-                (0..slide.get_level_count().unwrap())
-                    .map(|level| slide.get_level_dimensions(level).unwrap()),
+                (0..slide.level_count().unwrap()).map(|level| slide.dimensions(level).unwrap()),
             );
         }
         let slide_level0_dimensions = slide_level_dimensions[0];
@@ -87,12 +89,12 @@ impl<'a> DeepZoomGenerator<'a> {
         // Preferred slide levels for each Deep Zoom level
         let slide_from_dz_level: Vec<u32> = l0_z_downsamples
             .iter()
-            .filter_map(|downsample| slide.get_best_level_for_downsample(*downsample).ok() as _)
+            .filter_map(|downsample| slide.best_level_for_downsample(*downsample).ok() as _)
             .collect();
 
         // Piecewise downsamples
-        let l0_l_downsamples: Vec<f64> = (0..slide.get_level_count()?)
-            .map(|level| slide.get_level_downsample(level).unwrap())
+        let l0_l_downsamples: Vec<f64> = (0..slide.level_count()?)
+            .map(|level| slide.downsample(level).unwrap())
             .collect();
 
         let l_z_downsamples: Vec<f64> = (0..level_count)
