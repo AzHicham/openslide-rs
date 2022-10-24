@@ -3,7 +3,7 @@
 //! This is a simple translation of python DeepZoomGenerator implementation
 
 use crate::{errors::OpenSlideError, Address, DeepZoomGenerator, OpenSlide, Region, Result, Size};
-use image::{RgbImage, RgbaImage};
+use image::{imageops::FilterType, RgbImage, RgbaImage};
 
 impl<'a> DeepZoomGenerator<'a> {
     pub fn new(
@@ -163,10 +163,11 @@ impl<'a> DeepZoomGenerator<'a> {
         };
 
         if final_size != size {
-            Ok(image::imageops::thumbnail(
+            Ok(image::imageops::resize(
                 &image,
                 final_size.w,
                 final_size.h,
+                FilterType::Lanczos3,
             ))
         } else {
             Ok(image)
