@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1666616029839,
+  "lastUpdate": 1666621840961,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
@@ -803,6 +803,62 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 8371392,
             "range": "± 140623",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "id": "d18e745f5aced4a8e47c175665c3c5a597d93073",
+          "message": "feat: use better filter for resize (deepzoom)",
+          "timestamp": "2022-10-24T14:16:15Z",
+          "url": "https://github.com/AzHicham/openslide-rs/pull/9/commits/d18e745f5aced4a8e47c175665c3c5a597d93073"
+        },
+        "date": 1666621839848,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2581660,
+            "range": "± 535901",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 10581303,
+            "range": "± 1060540",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2512694,
+            "range": "± 208267",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 10516652,
+            "range": "± 1108763",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2380808,
+            "range": "± 237153",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 10193609,
+            "range": "± 998351",
             "unit": "ns/iter"
           }
         ]
