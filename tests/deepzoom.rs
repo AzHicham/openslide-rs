@@ -3,7 +3,6 @@ mod fixture;
 #[cfg(feature = "deepzoom")]
 mod deepzoom {
 
-    use image::imageops::FilterType;
     use openslide_rs::{Address, DeepZoomGenerator, OpenSlide, Size};
     use rstest::rstest;
     use std::path::Path;
@@ -50,16 +49,14 @@ mod deepzoom {
             ]
         );
 
-        let image = dz
-            .get_tile_rgba(9, Address { x: 1, y: 0 }, FilterType::Lanczos3)
-            .unwrap();
+        let image = dz.get_tile_rgba(9, Address { x: 1, y: 0 }).unwrap();
         assert_eq!(image.width(), 47);
         assert_eq!(image.height(), 250);
 
-        let image = dz.get_tile_rgba(0, Address { x: 1, y: 0 }, FilterType::Lanczos3);
+        let image = dz.get_tile_rgba(0, Address { x: 1, y: 0 });
         assert!(image.is_err());
 
-        let image = dz.get_tile_rgba(10, Address { x: 0, y: 0 }, FilterType::Lanczos3);
+        let image = dz.get_tile_rgba(10, Address { x: 0, y: 0 });
         assert!(image.is_err());
     }
 }
