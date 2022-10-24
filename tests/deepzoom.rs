@@ -51,15 +51,15 @@ mod deepzoom {
         );
 
         let image = dz
-            .get_tile(9, Address { x: 1, y: 0 }, FilterType::Lanczos3)
+            .get_tile_rgba(9, Address { x: 1, y: 0 }, FilterType::Lanczos3)
             .unwrap();
         assert_eq!(image.width(), 47);
         assert_eq!(image.height(), 250);
 
-        let image = dz.get_tile(0, Address { x: 1, y: 0 }, FilterType::Lanczos3);
+        let image = dz.get_tile_rgba(0, Address { x: 1, y: 0 }, FilterType::Lanczos3);
         assert!(image.is_err());
 
-        let image = dz.get_tile(10, Address { x: 0, y: 0 }, FilterType::Lanczos3);
+        let image = dz.get_tile_rgba(10, Address { x: 0, y: 0 }, FilterType::Lanczos3);
         assert!(image.is_err());
     }
 }

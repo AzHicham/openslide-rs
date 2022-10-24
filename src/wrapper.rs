@@ -1,9 +1,10 @@
 use crate::{
     bindings, errors::OpenSlideError, Address, OpenSlide, Properties, Region, Result, Size,
 };
-use std::path::Path;
+use std::{iter::zip, path::Path};
 
 use crate::errors::map_try_error;
+use image::RgbImage;
 #[cfg(feature = "image")]
 use image::RgbaImage;
 
@@ -209,7 +210,23 @@ impl OpenSlide {
     ///     level: At which level to grab the region from
     ///     size: (width, height) in pixels of the outputted region
     #[cfg(feature = "image")]
-    pub fn read_image(&self, region: &Region) -> Result<RgbaImage> {
+    pub fn read_image_rgb(&self, region: &Region) -> Result<RgbImage> {
+        let buffer = self.read_region(region)?;
+        let size = region.size;
+        let image = RgbaImage::from_vec(size.w, size.h, buffer).unwrap(); // Should be safe because buffer is big enough
+        Ok(_bgra_to_rgb(&image))
+    }
+
+    /// Copy pre-multiplied ARGB data from a whole slide image.
+    ///
+    /// This function reads and decompresses a region of a whole slide image into an RgbImage
+    ///
+    /// Args:
+    ///     offset: (x, y) coordinate (increasing downwards/to the right) of top left pixel position
+    ///     level: At which level to grab the region from
+    ///     size: (width, height) in pixels of the outputted region
+    #[cfg(feature = "image")]
+    pub fn read_image_rgba(&self, region: &Region) -> Result<RgbaImage> {
         let buffer = self.read_region(region)?;
         let size = region.size;
         let mut image = RgbaImage::from_vec(size.w, size.h, buffer).unwrap(); // Should be safe because buffer is big enough
@@ -218,7 +235,7 @@ impl OpenSlide {
     }
 
     #[cfg(feature = "image")]
-    pub fn thumbnail(&self, size: &Size) -> Result<RgbaImage> {
+    pub fn thumbnail_rgb(&self, size: &Size) -> Result<RgbImage> {
         let dimension_level0 = self.get_level0_dimensions()?;
 
         let downsample = (
@@ -235,7 +252,31 @@ impl OpenSlide {
             address: Address { x: 0, y: 0 },
         };
 
-        let image = self.read_image(&region)?;
+        let image = self.read_image_rgb(&region)?;
+        let image = image::imageops::thumbnail(&image, size.w, size.h);
+
+        Ok(image)
+    }
+
+    #[cfg(feature = "image")]
+    pub fn thumbnail_rgba(&self, size: &Size) -> Result<RgbaImage> {
+        let dimension_level0 = self.get_level0_dimensions()?;
+
+        let downsample = (
+            dimension_level0.w as f64 / size.w as f64,
+            dimension_level0.h as f64 / size.h as f64,
+        );
+        let downsample = f64::max(downsample.0, downsample.1);
+
+        let level = self.get_best_level_for_downsample(downsample)?;
+
+        let region = Region {
+            size: self.get_level_dimensions(level)?,
+            level,
+            address: Address { x: 0, y: 0 },
+        };
+
+        let image = self.read_image_rgba(&region)?;
         let image = image::imageops::thumbnail(&image, size.w, size.h);
 
         Ok(image)
@@ -248,4 +289,14 @@ fn _bgra_to_rgba_inplace(image: &mut RgbaImage) {
         let [b, g, r, a] = pixel.0;
         pixel.0 = [r, g, b, a];
     }
+}
+
+#[cfg(feature = "image")]
+fn _bgra_to_rgb(image: &RgbaImage) -> RgbImage {
+    let mut rgb_image = RgbImage::new(image.width(), image.height());
+    for (pixel, rgb_pixel) in zip(image.pixels(), rgb_image.pixels_mut()) {
+        let [b, g, r, _] = pixel.0;
+        rgb_pixel.0 = [r, g, b];
+    }
+    rgb_image
 }

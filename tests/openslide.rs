@@ -183,6 +183,6 @@ fn test_slide_read_region(#[case] filename: &Path) {
 fn test_thumbnail(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
-    let thumbnail = slide.thumbnail(&Size { w: 100, h: 80 }).unwrap();
+    let thumbnail = slide.thumbnail_rgba(&Size { w: 100, h: 80 }).unwrap();
     assert_eq!(thumbnail.dimensions(), (100, 80));
 }
