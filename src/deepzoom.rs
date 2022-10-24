@@ -143,8 +143,8 @@ impl<'a> DeepZoomGenerator<'a> {
         let image = self.slide.read_image(&region)?;
 
         let size = Size {
-            w: final_size.w,
-            h: final_size.h,
+            w: image.width(),
+            h: image.height(),
         };
 
         if final_size != size {
