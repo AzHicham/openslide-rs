@@ -157,6 +157,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "fast_image_resize"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64168ddba40c03a3d329bbdd2aee194eb2c4076dddd5e52f5cc882ea6ff58901"
+dependencies = [
+ "num-traits",
+ "thiserror",
+]
+
+[[package]]
 name = "flate2"
 version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -479,10 +489,11 @@ checksum = "e82dad04139b71a90c080c8463fe0dc7902db5192d939bd0950f074d014339e1"
 
 [[package]]
 name = "openslide-rs"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
  "assert_approx_eq",
  "bencher",
+ "fast_image_resize",
  "image",
  "lazy_static",
  "libc",

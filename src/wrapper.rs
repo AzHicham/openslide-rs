@@ -3,7 +3,10 @@ use crate::{
 };
 use std::{iter::zip, path::Path};
 
-use crate::errors::map_try_error;
+use crate::{
+    errors::map_try_error,
+    utils::{resize_rgb_image, resize_rgba_image},
+};
 use image::RgbImage;
 #[cfg(feature = "image")]
 use image::RgbaImage;
@@ -253,7 +256,7 @@ impl OpenSlide {
         };
 
         let image = self.read_image_rgb(&region)?;
-        let image = image::imageops::thumbnail(&image, size.w, size.h);
+        let image = resize_rgb_image(image, size)?;
 
         Ok(image)
     }
@@ -277,7 +280,7 @@ impl OpenSlide {
         };
 
         let image = self.read_image_rgba(&region)?;
-        let image = image::imageops::thumbnail(&image, size.w, size.h);
+        let image = resize_rgba_image(image, size)?;
 
         Ok(image)
     }
