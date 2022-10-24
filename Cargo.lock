@@ -479,7 +479,7 @@ checksum = "e82dad04139b71a90c080c8463fe0dc7902db5192d939bd0950f074d014339e1"
 
 [[package]]
 name = "openslide-rs"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "assert_approx_eq",
  "bencher",
