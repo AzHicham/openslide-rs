@@ -2,8 +2,12 @@
 //! This module provides functionality for generating Deep Zoom images from OpenSlide objects.
 //! This is a simple translation of python DeepZoomGenerator implementation
 
-use crate::{errors::OpenSlideError, Address, DeepZoomGenerator, OpenSlide, Region, Result, Size};
-use image::{imageops::FilterType, RgbImage, RgbaImage};
+use crate::{
+    errors::OpenSlideError,
+    utils::{resize_rgb_image, resize_rgba_image},
+    Address, DeepZoomGenerator, OpenSlide, Region, Result, Size,
+};
+use image::{RgbImage, RgbaImage};
 
 impl<'a> DeepZoomGenerator<'a> {
     pub fn new(
@@ -135,6 +139,7 @@ impl<'a> DeepZoomGenerator<'a> {
 
     pub fn get_tile_rgba(&self, level: u32, location: Address) -> Result<RgbaImage> {
         let (region, final_size) = self.get_tile_info(level, location)?;
+
         let image = self.slide.read_image_rgba(&region)?;
 
         let size = Size {
@@ -143,11 +148,7 @@ impl<'a> DeepZoomGenerator<'a> {
         };
 
         if final_size != size {
-            Ok(image::imageops::thumbnail(
-                &image,
-                final_size.w,
-                final_size.h,
-            ))
+            Ok(resize_rgba_image(image, &final_size)?)
         } else {
             Ok(image)
         }
@@ -163,12 +164,7 @@ impl<'a> DeepZoomGenerator<'a> {
         };
 
         if final_size != size {
-            Ok(image::imageops::resize(
-                &image,
-                final_size.w,
-                final_size.h,
-                FilterType::Lanczos3,
-            ))
+            Ok(resize_rgb_image(image, &final_size)?)
         } else {
             Ok(image)
         }

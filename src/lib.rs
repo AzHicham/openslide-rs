@@ -8,6 +8,7 @@ mod bindings;
 pub mod deepzoom;
 pub mod errors;
 pub mod properties;
+mod utils;
 mod wrapper;
 
 /// The corresponding result type used by the crate.
