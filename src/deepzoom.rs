@@ -3,7 +3,7 @@
 //! This is a simple translation of python DeepZoomGenerator implementation
 
 use crate::{errors::OpenSlideError, Address, DeepZoomGenerator, OpenSlide, Region, Result, Size};
-use image::{imageops::FilterType, RgbaImage};
+use image::{RgbImage, RgbaImage};
 
 impl<'a> DeepZoomGenerator<'a> {
     pub fn new(
@@ -133,26 +133,40 @@ impl<'a> DeepZoomGenerator<'a> {
         self.level_tiles.iter().map(|&size| size.w * size.h).sum()
     }
 
-    pub fn get_tile(
-        &self,
-        level: u32,
-        location: Address,
-        resize_filter: FilterType,
-    ) -> Result<RgbaImage> {
+    pub fn get_tile_rgba(&self, level: u32, location: Address) -> Result<RgbaImage> {
         let (region, final_size) = self.get_tile_info(level, location)?;
-        let image = self.slide.read_image(&region)?;
+        let image = self.slide.read_image_rgba(&region)?;
 
         let size = Size {
-            w: final_size.w,
-            h: final_size.h,
+            w: image.width(),
+            h: image.height(),
         };
 
         if final_size != size {
-            Ok(image::imageops::resize(
+            Ok(image::imageops::thumbnail(
                 &image,
                 final_size.w,
                 final_size.h,
-                resize_filter,
+            ))
+        } else {
+            Ok(image)
+        }
+    }
+
+    pub fn get_tile_rgb(&self, level: u32, location: Address) -> Result<RgbImage> {
+        let (region, final_size) = self.get_tile_info(level, location)?;
+        let image = self.slide.read_image_rgb(&region)?;
+
+        let size = Size {
+            w: image.width(),
+            h: image.height(),
+        };
+
+        if final_size != size {
+            Ok(image::imageops::thumbnail(
+                &image,
+                final_size.w,
+                final_size.h,
             ))
         } else {
             Ok(image)

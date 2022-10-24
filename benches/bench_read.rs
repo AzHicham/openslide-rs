@@ -1,6 +1,5 @@
 use bencher::{benchmark_group, benchmark_main, Bencher};
 
-use image::imageops::FilterType;
 use openslide_rs::{Address, DeepZoomGenerator, OpenSlide, Region, Size};
 use std::path::Path;
 
@@ -32,7 +31,7 @@ fn openslide_read_image_256(bench: &mut Bencher) {
     let slide = OpenSlide::new(Path::new("tests/assets/default.svs")).unwrap();
 
     bench.iter(|| {
-        slide.read_image(&Region {
+        slide.read_image_rgb(&Region {
             address: Address { x: 0, y: 0 },
             level: 0,
             size: Size { w: 256, h: 256 },
@@ -44,7 +43,7 @@ fn openslide_read_image_512(bench: &mut Bencher) {
     let slide = OpenSlide::new(Path::new("tests/assets/default.svs")).unwrap();
 
     bench.iter(|| {
-        slide.read_image(&Region {
+        slide.read_image_rgb(&Region {
             address: Address { x: 0, y: 0 },
             level: 0,
             size: Size { w: 512, h: 512 },
@@ -54,16 +53,16 @@ fn openslide_read_image_512(bench: &mut Bencher) {
 
 fn deepzoom_read_image_256(bench: &mut Bencher) {
     let slide = OpenSlide::new(Path::new("tests/assets/default.svs")).unwrap();
-    let dz = DeepZoomGenerator::new(&slide, 256, 0, false).unwrap();
+    let dz = DeepZoomGenerator::new(&slide, 257, 0, false).unwrap();
 
-    bench.iter(|| dz.get_tile(12, Address { x: 0, y: 0 }, FilterType::Lanczos3));
+    bench.iter(|| dz.get_tile_rgb(12, Address { x: 0, y: 0 }));
 }
 
 fn deepzoom_read_image_512(bench: &mut Bencher) {
     let slide = OpenSlide::new(Path::new("tests/assets/default.svs")).unwrap();
-    let dz = DeepZoomGenerator::new(&slide, 512, 0, false).unwrap();
+    let dz = DeepZoomGenerator::new(&slide, 511, 0, false).unwrap();
 
-    bench.iter(|| dz.get_tile(12, Address { x: 0, y: 0 }, FilterType::Lanczos3));
+    bench.iter(|| dz.get_tile_rgb(12, Address { x: 0, y: 0 }));
 }
 
 benchmark_group!(
