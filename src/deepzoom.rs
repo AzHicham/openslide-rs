@@ -234,9 +234,9 @@ impl<'a> DeepZoomGenerator<'a> {
 
         // Round location down and size up, and add offset of active area
         let l0_location = Address {
-            x: (self.l0_l_downsamples[slide_level as usize] * l_location.0 as f64
+            x: (self.l0_l_downsamples[slide_level as usize] * l_location.0
                 + self.l0_offset.x as f64) as _,
-            y: (self.l0_l_downsamples[slide_level as usize] * l_location.1 as f64
+            y: (self.l0_l_downsamples[slide_level as usize] * l_location.1
                 + self.l0_offset.y as f64) as _,
         };
 
