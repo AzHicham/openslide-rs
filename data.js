@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1666632060652,
+  "lastUpdate": 1666689072943,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
@@ -1035,6 +1035,62 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 7802265,
             "range": "± 23101",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "id": "38a14429301723fe944727d72beef799f9352454",
+          "message": "fix: Compute offset in Deepzoom",
+          "timestamp": "2022-10-24T14:16:15Z",
+          "url": "https://github.com/AzHicham/openslide-rs/pull/11/commits/38a14429301723fe944727d72beef799f9352454"
+        },
+        "date": 1666689071859,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2130835,
+            "range": "± 24616",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 8720844,
+            "range": "± 176691",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2049767,
+            "range": "± 17661",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 8747574,
+            "range": "± 111645",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1970916,
+            "range": "± 19282",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 8410658,
+            "range": "± 97470",
             "unit": "ns/iter"
           }
         ]
