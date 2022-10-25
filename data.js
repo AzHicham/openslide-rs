@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1666689448924,
+  "lastUpdate": 1666689538645,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
@@ -1151,6 +1151,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 8425996,
             "range": "± 190910",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hicham.azimani@owkin.com",
+            "name": "Hicham AZIMANI",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "email": "hicham.azimani@owkin.com",
+            "name": "Hicham AZIMANI",
+            "username": "AzHicham"
+          },
+          "distinct": true,
+          "id": "e97ebef8cbbde60942ef5654cde5249a38db2b1c",
+          "message": "bump: 0.3.3",
+          "timestamp": "2022-10-25T11:14:26+02:00",
+          "tree_id": "db26d98fa8a866ed1ac810f502c18e022dea5320",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/e97ebef8cbbde60942ef5654cde5249a38db2b1c"
+        },
+        "date": 1666689537580,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2460376,
+            "range": "± 811156",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 10413107,
+            "range": "± 3551445",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2297520,
+            "range": "± 1167703",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 9944305,
+            "range": "± 5875619",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2415920,
+            "range": "± 523343",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 9481272,
+            "range": "± 1666764",
             "unit": "ns/iter"
           }
         ]
