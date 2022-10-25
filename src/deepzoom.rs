@@ -227,25 +227,23 @@ impl<'a> DeepZoomGenerator<'a> {
             y: address.y * self.tile_size,
         };
 
-        let l_location = Address {
-            x: (self.l_z_downsamples[level as usize] * (z_location.x - z_overlap_topleft.x) as f64)
-                .ceil() as _,
-            y: (self.l_z_downsamples[level as usize] * (z_location.y - z_overlap_topleft.y) as f64)
-                .ceil() as _,
-        };
+        let l_location = (
+            self.l_z_downsamples[level as usize] * (z_location.x - z_overlap_topleft.x) as f64,
+            self.l_z_downsamples[level as usize] * (z_location.y - z_overlap_topleft.y) as f64,
+        );
 
         // Round location down and size up, and add offset of active area
         let l0_location = Address {
-            x: (self.l0_l_downsamples[slide_level as usize] * l_location.x as f64
+            x: (self.l0_l_downsamples[slide_level as usize] * l_location.0
                 + self.l0_offset.x as f64) as _,
-            y: (self.l0_l_downsamples[slide_level as usize] * l_location.y as f64
+            y: (self.l0_l_downsamples[slide_level as usize] * l_location.1
                 + self.l0_offset.y as f64) as _,
         };
 
         let l_size = Size {
-            w: (slide_level_dimensions.w - l_location.x)
+            w: (slide_level_dimensions.w - l_location.0.ceil() as u32)
                 .min((self.l_z_downsamples[level as usize] * z_size.w as f64).ceil() as _),
-            h: (slide_level_dimensions.h - l_location.y)
+            h: (slide_level_dimensions.h - l_location.1.ceil() as u32)
                 .min((self.l_z_downsamples[level as usize] * z_size.h as f64).ceil() as _),
         };
 
