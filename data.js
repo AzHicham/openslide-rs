@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1666689538645,
+  "lastUpdate": 1667154224411,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
@@ -1211,6 +1211,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 9481272,
             "range": "± 1666764",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0c8be40ddcb4d2d99393926e74912a31f79bb6f9",
+          "message": "build(deps): bump libc from 0.2.135 to 0.2.137 (#13)\n\nBumps [libc](https://github.com/rust-lang/libc) from 0.2.135 to 0.2.137.\r\n- [Release notes](https://github.com/rust-lang/libc/releases)\r\n- [Commits](https://github.com/rust-lang/libc/compare/0.2.135...0.2.137)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: libc\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2022-10-30T19:19:21+01:00",
+          "tree_id": "7517877205955e89e28402aa0d5b78474ddcfa5f",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/0c8be40ddcb4d2d99393926e74912a31f79bb6f9"
+        },
+        "date": 1667154223958,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2138123,
+            "range": "± 32815",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 8704364,
+            "range": "± 125973",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2046748,
+            "range": "± 41995",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 8721413,
+            "range": "± 149276",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1970615,
+            "range": "± 21679",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 8404269,
+            "range": "± 175870",
             "unit": "ns/iter"
           }
         ]
