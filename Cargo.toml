@@ -17,7 +17,7 @@ deepzoom = ["image"]
 image = ["dep:image", "dep:fast_image_resize"]
 
 [dependencies]
-libc = "0.2.135"
+libc = "0.2.137"
 thiserror = "1.0.37"
 regex = "1.6.0"
 lazy_static = "1.4.0"
