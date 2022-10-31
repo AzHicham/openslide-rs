@@ -158,9 +158,9 @@ dependencies = [
 
 [[package]]
 name = "fast_image_resize"
-version = "1.0.0"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64168ddba40c03a3d329bbdd2aee194eb2c4076dddd5e52f5cc882ea6ff58901"
+checksum = "6aa9798abf7577fc28b2d20306a9d2d6ade5455b7b21eda489c8107ce9d944d3"
 dependencies = [
  "num-traits",
  "thiserror",
