@@ -37,12 +37,5 @@ jobs:
         run: make install-deps-apt
       - uses: katyo/publish-crates@v1
         with:
-          path: openslide-sys
           dry-run: ${{ github.event_name != 'release' }}
-          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-      - uses: katyo/publish-crates@v1
-        with:
-          path: .
-          dry-run: ${{ github.event_name != 'release' }}
-          no-verify: ${{ github.event_name != 'release' }}
           registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}

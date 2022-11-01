@@ -2,10 +2,21 @@
 //!
 //! `https://openslide.org/api/openslide_8h.html`.
 //!
+//!
 
-use crate::errors::map_string_error;
-use crate::{errors::OpenSlideError, Result};
-use openslide_sys as sys;
+#[allow(clippy::all)]
+#[allow(non_snake_case)]
+#[allow(non_camel_case_types)]
+#[allow(non_upper_case_globals)]
+#[allow(dead_code)]
+mod sys {
+    include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
+}
+
+use crate::{
+    errors::{map_string_error, OpenSlideError},
+    Result,
+};
 use std::{ffi, ops::Deref};
 
 /// wrapper around OpenSlideT, this is usefull for implementing Send and Sync

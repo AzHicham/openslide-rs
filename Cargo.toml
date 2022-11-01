@@ -21,7 +21,6 @@ libc = "0.2.137"
 thiserror = "1.0.37"
 regex = "1.6.0"
 lazy_static = "1.4.0"
-openslide-sys = { path = "openslide-sys", version = "3.1.4" }
 image = { version = "0.24.4", optional = true}
 fast_image_resize = { version = "1.0.0", optional = true}
 
@@ -30,11 +29,11 @@ rstest = "0.15.0"
 assert_approx_eq = "1.1.0"
 bencher = "0.1.5"
 
+[build-dependencies]
+bindgen = "0.61.0"
+cc = "1.0.74"
+pkg-config = "0.3.26"
+
 [[bench]]
 name = "bench_read"
 harness = false
-
-[workspace]
-members = [
-    "openslide-sys"
-]

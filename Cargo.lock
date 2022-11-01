@@ -579,23 +579,16 @@ version = "1.0.0-rc1"
 dependencies = [
  "assert_approx_eq",
  "bencher",
+ "bindgen",
+ "cc",
  "fast_image_resize",
  "image",
  "lazy_static",
  "libc",
- "openslide-sys",
+ "pkg-config",
  "regex",
  "rstest",
  "thiserror",
-]
-
-[[package]]
-name = "openslide-sys"
-version = "3.1.4"
-dependencies = [
- "bindgen",
- "cc",
- "pkg-config",
 ]
 
 [[package]]
