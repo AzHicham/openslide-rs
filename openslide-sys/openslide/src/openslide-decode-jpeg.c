@@ -3,7 +3,6 @@
  *
  *  Copyright (c) 2007-2015 Carnegie Mellon University
  *  Copyright (c) 2011 Google, Inc.
- *  Copyright (c) 2015 Benjamin Gilbert
  *  All rights reserved.
  *
  *  OpenSlide is free software: you can redistribute it and/or modify
@@ -38,22 +37,6 @@
 #define JCS_EXT_BGRA 13
 #define JCS_EXT_ARGB 15
 #endif
-
-static const uint8_t one_pixel_rgb_jpeg[] = {
-  0xff, 0xd8, 0xff, 0xdb, 0x00, 0x43, 0x00, 0x08, 0x06, 0x06, 0x07, 0x06,
-  0x05, 0x08, 0x07, 0x07, 0x07, 0x09, 0x09, 0x08, 0x0a, 0x0c, 0x14, 0x0d,
-  0x0c, 0x0b, 0x0b, 0x0c, 0x19, 0x12, 0x13, 0x0f, 0x14, 0x1d, 0x1a, 0x1f,
-  0x1e, 0x1d, 0x1a, 0x1c, 0x1c, 0x20, 0x24, 0x2e, 0x27, 0x20, 0x22, 0x2c,
-  0x23, 0x1c, 0x1c, 0x28, 0x37, 0x29, 0x2c, 0x30, 0x31, 0x34, 0x34, 0x34,
-  0x1f, 0x27, 0x39, 0x3d, 0x38, 0x32, 0x3c, 0x2e, 0x33, 0x34, 0x32, 0xff,
-  0xc0, 0x00, 0x11, 0x08, 0x00, 0x01, 0x00, 0x01, 0x03, 0x52, 0x11, 0x00,
-  0x47, 0x11, 0x00, 0x42, 0x11, 0x00, 0xff, 0xc4, 0x00, 0x14, 0x00, 0x01,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x07, 0xff, 0xc4, 0x00, 0x14, 0x10, 0x01, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0xff, 0xda, 0x00, 0x0c, 0x03, 0x52, 0x00, 0x47, 0x00, 0x42,
-  0x00, 0x00, 0x3f, 0x00, 0x7f, 0x3f, 0x9f, 0xdf, 0xff, 0xd9
-};
 
 static GOnce jcs_alpha_extensions_detector = G_ONCE_INIT;
 
@@ -105,32 +88,48 @@ static void my_emit_message(j_common_ptr cinfo, int msg_level) {
   }
 }
 
+static struct jpeg_error_mgr *error_handler_init(struct openslide_jpeg_error_mgr *jerr,
+                                                 jmp_buf *env) {
+  jpeg_std_error(&jerr->base);
+  jerr->base.error_exit = my_error_exit;
+  jerr->base.output_message = my_output_message;
+  jerr->base.emit_message = my_emit_message;
+  jerr->env = env;
+  return (struct jpeg_error_mgr *) jerr;
+}
+
+
 // Detect support for JCS_ALPHA_EXTENSIONS.  Even if the extensions were
 // available at compile time, they may not be available at runtime because
 // support for JCS_ALPHA_EXTENSIONS isn't reflected in the libjpeg soname.
-// Previously used the detection method documented in jcstest.c, but
-// libjpeg-turbo 1.2.0 doesn't support JCS_ALPHA_EXTENSIONS for RGB JPEGs
-// and we need that for Aperio slides.  Instead, try enabling the extensions
-// while decoding a tiny RGB JPEG.
+// Uses the detection method documented in jcstest.c.
 static void *detect_jcs_alpha_extensions(void *arg G_GNUC_UNUSED) {
-  struct jpeg_decompress_struct *cinfo;
-  g_auto(_openslide_jpeg_decompress) dc =
-    _openslide_jpeg_decompress_create(&cinfo);
-
   jmp_buf env;
+  volatile bool alpha_extensions = false;
+
+  struct jpeg_compress_struct *cinfo =
+    g_slice_new0(struct jpeg_compress_struct);
+  struct openslide_jpeg_error_mgr *jerr =
+    g_slice_new0(struct openslide_jpeg_error_mgr);
+
   if (!setjmp(env)) {
-    _openslide_jpeg_decompress_init(dc, &env);
-    _openslide_jpeg_mem_src(cinfo, one_pixel_rgb_jpeg,
-                            sizeof(one_pixel_rgb_jpeg));
-    jpeg_read_header(cinfo, true);
-    cinfo->out_color_space = JCS_EXT_BGRA;
-    jpeg_start_decompress(cinfo);
-    return GINT_TO_POINTER(true);
+    cinfo->err = error_handler_init(jerr, &env);
+    jpeg_create_compress(cinfo);
+    cinfo->input_components = 3;
+    jpeg_set_defaults(cinfo);
+    cinfo->in_color_space = JCS_EXT_BGRA;
+    jpeg_default_colorspace(cinfo);
+    alpha_extensions = true;
   } else {
-    g_clear_error(&dc->jerr.err);
+    g_clear_error(&jerr->err);
     _openslide_performance_warn("Optimized libjpeg color space not available");
-    return GINT_TO_POINTER(false);
   }
+
+  jpeg_destroy_compress(cinfo);
+  g_slice_free(struct jpeg_compress_struct, cinfo);
+  g_slice_free(struct openslide_jpeg_error_mgr, jerr);
+  //g_debug("have JCS_ALPHA_EXTENSIONS: %d", alpha_extensions);
+  return GINT_TO_POINTER(alpha_extensions);
 }
 
 // the caller must assign the struct _openslide_jpeg_decompress * before
@@ -144,12 +143,7 @@ struct _openslide_jpeg_decompress *_openslide_jpeg_decompress_create(struct jpeg
 // after setjmp(), initialize error handler and start decompressing
 void _openslide_jpeg_decompress_init(struct _openslide_jpeg_decompress *dc,
                                      jmp_buf *env) {
-  jpeg_std_error(&dc->jerr.base);
-  dc->jerr.base.error_exit = my_error_exit;
-  dc->jerr.base.output_message = my_output_message;
-  dc->jerr.base.emit_message = my_emit_message;
-  dc->jerr.env = env;
-  dc->cinfo.err = (struct jpeg_error_mgr *) &dc->jerr;
+  dc->cinfo.err = error_handler_init(&dc->jerr, env);
   jpeg_create_decompress(&dc->cinfo);
 }
 
@@ -258,14 +252,15 @@ void _openslide_jpeg_decompress_destroy(struct _openslide_jpeg_decompress *dc) {
   g_slice_free(struct _openslide_jpeg_decompress, dc);
 }
 
-static bool jpeg_get_dimensions(struct _openslide_file *f,  // or:
+static bool jpeg_get_dimensions(FILE *f,  // or:
                                 const void *buf, uint32_t buflen,
                                 int32_t *w, int32_t *h,
                                 GError **err) {
+  volatile bool result = false;
   jmp_buf env;
 
   struct jpeg_decompress_struct *cinfo;
-  g_auto(_openslide_jpeg_decompress) dc =
+  struct _openslide_jpeg_decompress *dc =
     _openslide_jpeg_decompress_create(&cinfo);
 
   if (setjmp(env) == 0) {
@@ -274,41 +269,50 @@ static bool jpeg_get_dimensions(struct _openslide_file *f,  // or:
     if (f) {
       _openslide_jpeg_stdio_src(cinfo, f);
     } else {
-      _openslide_jpeg_mem_src(cinfo, buf, buflen);
+      _openslide_jpeg_mem_src(cinfo, (void *) buf, buflen);
     }
 
     if (jpeg_read_header(cinfo, true) != JPEG_HEADER_OK) {
       g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                   "Couldn't read JPEG header");
-      return false;
+      goto DONE;
     }
 
     jpeg_calc_output_dimensions(cinfo);
 
     *w = cinfo->output_width;
     *h = cinfo->output_height;
-    return true;
+    result = true;
   } else {
     // setjmp returned again
     _openslide_jpeg_propagate_error(err, dc);
-    return false;
   }
+
+DONE:
+  // free buffers
+  _openslide_jpeg_decompress_destroy(dc);
+
+  return result;
 }
 
 bool _openslide_jpeg_read_dimensions(const char *filename,
                                      int64_t offset,
                                      int32_t *w, int32_t *h,
                                      GError **err) {
-  g_autoptr(_openslide_file) f = _openslide_fopen(filename, err);
+  FILE *f = _openslide_fopen(filename, "rb", err);
   if (f == NULL) {
     return false;
   }
-  if (offset && !_openslide_fseek(f, offset, SEEK_SET, err)) {
-    g_prefix_error(err, "Cannot seek to offset: ");
+  if (offset && fseeko(f, offset, SEEK_SET) == -1) {
+    _openslide_io_error(err, "Cannot seek to offset");
+    fclose(f);
     return false;
   }
 
-  return jpeg_get_dimensions(f, NULL, 0, w, h, err);
+  bool success = jpeg_get_dimensions(f, NULL, 0, w, h, err);
+
+  fclose(f);
+  return success;
 }
 
 bool _openslide_jpeg_decode_buffer_dimensions(const void *buf, uint32_t len,
@@ -317,15 +321,16 @@ bool _openslide_jpeg_decode_buffer_dimensions(const void *buf, uint32_t len,
   return jpeg_get_dimensions(NULL, buf, len, w, h, err);
 }
 
-static bool jpeg_decode(struct _openslide_file *f,  // or:
+static bool jpeg_decode(FILE *f,  // or:
                         const void *buf, uint32_t buflen,
                         void *dest, bool grayscale,
                         int32_t w, int32_t h,
                         GError **err) {
+  volatile bool result = false;
   jmp_buf env;
 
   struct jpeg_decompress_struct *cinfo;
-  g_auto(_openslide_jpeg_decompress) dc =
+  struct _openslide_jpeg_decompress *dc =
     _openslide_jpeg_decompress_create(&cinfo);
 
   if (setjmp(env) == 0) {
@@ -335,26 +340,30 @@ static bool jpeg_decode(struct _openslide_file *f,  // or:
     if (f) {
       _openslide_jpeg_stdio_src(cinfo, f);
     } else {
-      _openslide_jpeg_mem_src(cinfo, buf, buflen);
+      _openslide_jpeg_mem_src(cinfo, (void *) buf, buflen);
     }
 
     // read header
     if (jpeg_read_header(cinfo, true) != JPEG_HEADER_OK) {
       g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                   "Couldn't read JPEG header");
-      return false;
+      goto DONE;
     }
 
     // decompress
     if (!_openslide_jpeg_decompress_run(dc, dest, grayscale, w, h, err)) {
-      return false;
+      goto DONE;
     }
-    return true;
+    result = true;
   } else {
     // setjmp has returned again
     _openslide_jpeg_propagate_error(err, dc);
-    return false;
   }
+
+DONE:
+  _openslide_jpeg_decompress_destroy(dc);
+
+  return result;
 }
 
 bool _openslide_jpeg_read(const char *filename,
@@ -364,16 +373,20 @@ bool _openslide_jpeg_read(const char *filename,
                           GError **err) {
   //g_debug("read JPEG: %s %"PRId64, filename, offset);
 
-  g_autoptr(_openslide_file) f = _openslide_fopen(filename, err);
+  FILE *f = _openslide_fopen(filename, "rb", err);
   if (f == NULL) {
     return false;
   }
-  if (offset && !_openslide_fseek(f, offset, SEEK_SET, err)) {
-    g_prefix_error(err, "Cannot seek to offset: ");
+  if (offset && fseeko(f, offset, SEEK_SET) == -1) {
+    _openslide_io_error(err, "Cannot seek to offset");
+    fclose(f);
     return false;
   }
 
-  return jpeg_decode(f, NULL, 0, dest, false, w, h, err);
+  bool success = jpeg_decode(f, NULL, 0, dest, false, w, h, err);
+
+  fclose(f);
+  return success;
 }
 
 bool _openslide_jpeg_decode_buffer(const void *buf, uint32_t len,

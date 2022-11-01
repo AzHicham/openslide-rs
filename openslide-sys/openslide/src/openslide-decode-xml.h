@@ -31,10 +31,6 @@
 
 /* libxml support code */
 
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(xmlDoc, xmlFreeDoc)
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(xmlXPathContext, xmlXPathFreeContext)
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(xmlXPathObject, xmlXPathFreeObject)
-
 xmlDoc *_openslide_xml_parse(const char *xml, GError **err);
 
 bool _openslide_xml_has_default_namespace(xmlDoc *doc, const char *ns);
@@ -60,9 +56,5 @@ void _openslide_xml_set_prop_from_xpath(openslide_t *osr,
                                         xmlXPathContext *ctx,
                                         const char *property_name,
                                         const char *xpath);
-
-void _openslide_xml_char_free(xmlChar *p);
-
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(xmlChar, _openslide_xml_char_free)
 
 #endif

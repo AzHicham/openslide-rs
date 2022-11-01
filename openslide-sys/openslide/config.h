@@ -17,8 +17,8 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
-/* Define to 1 if you have the proc_pidfdinfo function. */
-#define HAVE_PROC_PIDFDINFO 1
+/* Define to 1 if you have OpenJPEG >= 2.1.0. */
+#define HAVE_OPENJPEG2 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
@@ -41,6 +41,9 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
 
+/* Define to 1 if the system has the type `uintptr_t'. */
+#define HAVE_UINTPTR_T 1
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #define HAVE_UNISTD_H 1
 
@@ -51,14 +54,8 @@
    declarations. */
 #define HAVE_VISIBILITY 1
 
-/* Define to 1 if you have the `_wfopen' function. */
-/* #undef HAVE__WFOPEN */
-
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
 #define LT_OBJDIR ".libs/"
-
-/* Define to 1 if fopen() cannot atomically set FD_CLOEXEC. */
-#define NONATOMIC_CLOEXEC 1
 
 /* Name of package */
 #define PACKAGE "openslide"
@@ -76,7 +73,7 @@
 #define PACKAGE_TARNAME "openslide"
 
 /* Define to the home page for this package. */
-#define PACKAGE_URL "https://openslide.org"
+#define PACKAGE_URL "http://openslide.org"
 
 /* Define to the version of this package. */
 #define PACKAGE_VERSION "3.4.1"
@@ -100,3 +97,7 @@
 
 /* Define for large files, on AIX-style hosts. */
 /* #undef _LARGE_FILES */
+
+/* Define to the type of an unsigned integer type wide enough to hold a
+   pointer, if such a type exists, and if the system does not define it. */
+/* #undef uintptr_t */

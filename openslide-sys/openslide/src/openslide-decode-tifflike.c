@@ -32,6 +32,15 @@
 
 #include <tiff.h>
 
+#ifndef TIFF_VERSION_BIG
+// tiff.h is from libtiff < 4
+#define TIFF_VERSION_CLASSIC TIFF_VERSION
+#define TIFF_VERSION_BIG 43
+#define TIFF_LONG8 16
+#define TIFF_SLONG8 17
+#define TIFF_IFD8 18
+#endif
+
 #define NO_OFFSET UINT64_MAX
 
 #define NDPI_TAG 65420
@@ -42,7 +51,7 @@ struct _openslide_tifflike {
   bool big_endian;
   bool ndpi;
   GPtrArray *directories;
-  GMutex value_lock;
+  GMutex *value_lock;
 };
 
 struct tiff_directory {
@@ -97,12 +106,11 @@ static void fix_byte_order(void *data, int32_t size, int64_t count,
 }
 
 // only sets *ok on failure
-static uint64_t read_uint(struct _openslide_file *f, int32_t size,
-                          bool big_endian, bool *ok) {
+static uint64_t read_uint(FILE *f, int32_t size, bool big_endian, bool *ok) {
   g_assert(ok != NULL);
 
   uint8_t buf[size];
-  if (_openslide_fread(f, buf, size) != (size_t) size) {
+  if (fread(buf, size, 1, f) != 1) {
     *ok = false;
     return 0;
   }
@@ -184,7 +192,7 @@ static uint64_t fix_offset_ndpi(uint64_t diroff, uint64_t offset) {
     if (!OUT) {								\
       g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,		\
                   "Cannot allocate TIFF value array");			\
-      return false;							\
+      goto FAIL;							\
     }									\
   } while (0)
 
@@ -315,20 +323,26 @@ static bool set_item_values(struct tiff_item *item,
   // record that we've set all values
   item->offset = NO_OFFSET;
   return true;
+
+FAIL:
+  return false;
 }
 
 static bool populate_item(struct _openslide_tifflike *tl,
                           struct tiff_item *item,
                           GError **err) {
-  g_autoptr(GMutexLocker) locker G_GNUC_UNUSED =
-    g_mutex_locker_new(&tl->value_lock);
+  void *buf = NULL;
+  bool success = false;
+
+  g_mutex_lock(tl->value_lock);
   if (item->offset == NO_OFFSET) {
+    g_mutex_unlock(tl->value_lock);
     return true;
   }
 
-  g_autoptr(_openslide_file) f = _openslide_fopen(tl->filename, err);
+  FILE *f = _openslide_fopen(tl->filename, "rb", err);
   if (!f) {
-    return false;
+    goto FAIL;
   }
 
   uint64_t count = item->count;
@@ -336,30 +350,38 @@ static bool populate_item(struct _openslide_tifflike *tl,
   g_assert(value_size);
   ssize_t len = value_size * count;
 
-  g_autofree void *buf = g_try_malloc(len);
+  buf = g_try_malloc(len);
   if (buf == NULL) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Cannot allocate TIFF value");
-    return false;
+    goto FAIL;
   }
 
   //g_debug("reading tiff value: len: %"PRId64", offset %"PRIu64, len, item->offset);
-  if (!_openslide_fseek(f, item->offset, SEEK_SET, err)) {
-    g_prefix_error(err, "Couldn't seek to read TIFF value: ");
-    return false;
+  if (fseeko(f, item->offset, SEEK_SET)) {
+    _openslide_io_error(err, "Couldn't seek to read TIFF value");
+    goto FAIL;
   }
-  if (_openslide_fread(f, buf, len) != (size_t) len) {
+  if (fread(buf, len, 1, f) != 1) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Couldn't read TIFF value");
-    return false;
+    goto FAIL;
   }
 
   fix_byte_order(buf, value_size, count, tl->big_endian);
   if (!set_item_values(item, buf, err)) {
-    return false;
+    goto FAIL;
   }
 
-  return true;
+  success = true;
+
+FAIL:
+  g_mutex_unlock(tl->value_lock);
+  g_free(buf);
+  if (f) {
+    fclose(f);
+  }
+  return success;
 }
 
 static void tiff_directory_destroy(struct tiff_directory *d) {
@@ -369,9 +391,6 @@ static void tiff_directory_destroy(struct tiff_directory *d) {
   g_hash_table_unref(d->items);
   g_slice_free(struct tiff_directory, d);
 }
-
-typedef struct tiff_directory tiff_directory;
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(tiff_directory, tiff_directory_destroy)
 
 static void tiff_item_destroy(gpointer data) {
   struct tiff_item *item = data;
@@ -383,23 +402,24 @@ static void tiff_item_destroy(gpointer data) {
   g_slice_free(struct tiff_item, item);
 }
 
-static struct tiff_directory *read_directory(struct _openslide_file *f,
-                                             uint64_t *diroff,
+static struct tiff_directory *read_directory(FILE *f, int64_t *diroff,
                                              struct tiff_directory *first_dir,
                                              GHashTable *loop_detector,
                                              bool bigtiff,
                                              bool ndpi,
                                              bool big_endian,
                                              GError **err) {
-  uint64_t off = *diroff;
+  int64_t off = *diroff;
   *diroff = 0;
+  struct tiff_directory *d = NULL;
+  bool ok = true;
 
-  //  g_debug("diroff: %"PRIu64, off);
+  //  g_debug("diroff: %"PRId64, off);
 
-  if ((int64_t) off <= 0) {
+  if (off <= 0) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Bad offset");
-    return NULL;
+    goto FAIL;
   }
 
   // loop detection
@@ -407,32 +427,31 @@ static struct tiff_directory *read_directory(struct _openslide_file *f,
     // loop
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Loop detected");
-    return NULL;
+    goto FAIL;
   }
-  uint64_t *key = g_slice_new(uint64_t);
+  int64_t *key = g_slice_new(int64_t);
   *key = off;
   g_hash_table_insert(loop_detector, key, NULL);
 
   // no loop, let's seek
-  if (!_openslide_fseek(f, off, SEEK_SET, err)) {
-    g_prefix_error(err, "Cannot seek to offset: ");
-    return NULL;
+  if (fseeko(f, off, SEEK_SET) != 0) {
+    _openslide_io_error(err, "Cannot seek to offset");
+    goto FAIL;
   }
 
   // read directory count
-  bool ok = true;
   uint64_t dircount = read_uint(f, bigtiff ? 8 : 2, big_endian, &ok);
   if (!ok) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Cannot read dircount");
-    return NULL;
+    goto FAIL;
   }
 
   //  g_debug("dircount: %"PRIu64, dircount);
 
 
   // initial checks passed, initialize the directory
-  g_autoptr(tiff_directory) d = g_slice_new0(struct tiff_directory);
+  d = g_slice_new0(struct tiff_directory);
   d->items = g_hash_table_new_full(g_direct_hash, g_direct_equal,
                                    NULL, tiff_item_destroy);
   d->offset = off;
@@ -446,7 +465,7 @@ static struct tiff_directory *read_directory(struct _openslide_file *f,
     if (!ok) {
       g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                   "Cannot read tag, type, and count");
-      return NULL;
+      goto FAIL;
     }
 
     //    g_debug(" tag: %d, type: %d, count: %"PRId64, tag, type, count);
@@ -462,22 +481,22 @@ static struct tiff_directory *read_directory(struct _openslide_file *f,
     if (!value_size) {
       g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                   "Unknown type encountered: %d", type);
-      return NULL;
+      goto FAIL;
     }
 
     // check for overflow
     if (count > SSIZE_MAX / value_size) {
       g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                   "Value count too large");
-      return NULL;
+      goto FAIL;
     }
 
     // read in the value/offset
     uint8_t value[bigtiff ? 8 : 4];
-    if (_openslide_fread(f, value, sizeof(value)) != sizeof(value)) {
+    if (fread(value, sizeof(value), 1, f) != 1) {
       g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                   "Cannot read value/offset");
-      return NULL;
+      goto FAIL;
     }
 
     // does value/offset contain the value?
@@ -485,7 +504,7 @@ static struct tiff_directory *read_directory(struct _openslide_file *f,
       // yes
       fix_byte_order(value, value_size, count, big_endian);
       if (!set_item_values(item, value, err)) {
-        return NULL;
+        goto FAIL;
       }
 
     } else {
@@ -516,38 +535,46 @@ static struct tiff_directory *read_directory(struct _openslide_file *f,
   }
 
   // read the next dir offset
-  uint64_t nextdiroff = read_uint(f, (bigtiff || ndpi) ? 8 : 4,
-                                  big_endian, &ok);
+  int64_t nextdiroff = read_uint(f, (bigtiff || ndpi) ? 8 : 4,
+                                 big_endian, &ok);
   if (!ok) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Cannot read next directory offset");
-    return NULL;
+    goto FAIL;
   }
   *diroff = nextdiroff;
 
   // success
-  return g_steal_pointer(&d);
+  return d;
+
+
+FAIL:
+  tiff_directory_destroy(d);
+  return NULL;
 }
 
 struct _openslide_tifflike *_openslide_tifflike_create(const char *filename,
                                                        GError **err) {
+  struct _openslide_tifflike *tl = NULL;
+  GHashTable *loop_detector = NULL;
+
   // open file
-  g_autoptr(_openslide_file) f = _openslide_fopen(filename, err);
+  FILE *f = _openslide_fopen(filename, "rb", err);
   if (!f) {
-    return NULL;
+    goto FAIL;
   }
 
   // read and check magic
   uint16_t magic;
-  if (_openslide_fread(f, &magic, sizeof magic) != sizeof magic) {
+  if (fread(&magic, sizeof magic, 1, f) != 1) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Can't read TIFF magic number");
-    return NULL;
+    goto FAIL;
   }
   if (magic != TIFF_BIGENDIAN && magic != TIFF_LITTLEENDIAN) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Unrecognized TIFF magic number");
-    return NULL;
+    goto FAIL;
   }
   bool big_endian = (magic == TIFF_BIGENDIAN);
 
@@ -564,12 +591,12 @@ struct _openslide_tifflike *_openslide_tifflike_create(const char *filename,
     pad = read_uint(f, 2, big_endian, &ok);
   }
   // for classic TIFF, will mask off the high bytes after NDPI detection
-  uint64_t diroff = read_uint(f, 8, big_endian, &ok);
+  int64_t diroff = read_uint(f, 8, big_endian, &ok);
 
   if (!ok) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Can't read TIFF header");
-    return NULL;
+    goto FAIL;
   }
 
   //  g_debug("version: %d", version);
@@ -579,25 +606,26 @@ struct _openslide_tifflike *_openslide_tifflike_create(const char *filename,
     if (offset_size != 8 || pad != 0) {
       g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                   "Unexpected value in BigTIFF header");
-      return NULL;
+      goto FAIL;
     }
   } else if (version != TIFF_VERSION_CLASSIC) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Unrecognized TIFF version");
-    return NULL;
+    goto FAIL;
   }
 
   // allocate struct
-  g_autoptr(_openslide_tifflike) tl = g_slice_new0(struct _openslide_tifflike);
+  tl = g_slice_new0(struct _openslide_tifflike);
   tl->filename = g_strdup(filename);
   tl->big_endian = big_endian;
   tl->directories = g_ptr_array_new();
-  g_mutex_init(&tl->value_lock);
+  tl->value_lock = g_mutex_new();
 
   // initialize directory reading
-  g_autoptr(GHashTable) loop_detector =
-    g_hash_table_new_full(g_int64_hash, g_int64_equal,
-                          _openslide_int64_free, NULL);
+  loop_detector = g_hash_table_new_full(_openslide_int64_hash,
+                                        _openslide_int64_equal,
+                                        _openslide_int64_free,
+                                        NULL);
   struct tiff_directory *first_dir = NULL;
 
   // NDPI needs special quirks, since it is classic TIFF pretending to be
@@ -605,7 +633,7 @@ struct _openslide_tifflike *_openslide_tifflike_create(const char *filename,
   // the first directory -- when treated as a 64-bit value -- points to a
   // valid directory containing the NDPI_TAG.
   if (!bigtiff && diroff != 0) {
-    uint64_t trial_diroff = diroff;
+    int64_t trial_diroff = diroff;
     struct tiff_directory *d = read_directory(f, &trial_diroff,
                                               NULL,
                                               loop_detector,
@@ -648,7 +676,7 @@ struct _openslide_tifflike *_openslide_tifflike_create(const char *filename,
 
     // was the directory successfully read?
     if (d == NULL) {
-      return NULL;
+      goto FAIL;
     }
 
     // store result
@@ -662,10 +690,22 @@ struct _openslide_tifflike *_openslide_tifflike_create(const char *filename,
   if (tl->directories->len == 0) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "TIFF contains no directories");
-    return NULL;
+    goto FAIL;
   }
 
-  return g_steal_pointer(&tl);
+  g_hash_table_unref(loop_detector);
+  fclose(f);
+  return tl;
+
+FAIL:
+  _openslide_tifflike_destroy(tl);
+  if (loop_detector) {
+    g_hash_table_unref(loop_detector);
+  }
+  if (f) {
+    fclose(f);
+  }
+  return NULL;
 }
 
 
@@ -673,14 +713,14 @@ void _openslide_tifflike_destroy(struct _openslide_tifflike *tl) {
   if (tl == NULL) {
     return;
   }
-  g_mutex_lock(&tl->value_lock);
+  g_mutex_lock(tl->value_lock);
   for (uint32_t n = 0; n < tl->directories->len; n++) {
     tiff_directory_destroy(tl->directories->pdata[n]);
   }
-  g_mutex_unlock(&tl->value_lock);
+  g_mutex_unlock(tl->value_lock);
   g_ptr_array_free(tl->directories, true);
   g_free(tl->filename);
-  g_mutex_clear(&tl->value_lock);
+  g_mutex_free(tl->value_lock);
   g_slice_free(struct _openslide_tifflike, tl);
 }
 
@@ -780,11 +820,12 @@ static int tag_compare(gconstpointer a, gconstpointer b) {
 static void print_directory(struct _openslide_tifflike *tl,
                             int64_t dir) {
   struct tiff_directory *d = tl->directories->pdata[dir];
-  g_autoptr(GList) keys = g_hash_table_get_keys(d->items);
+  GList *keys = g_hash_table_get_keys(d->items);
   keys = g_list_sort(keys, tag_compare);
   for (GList *el = keys; el; el = el->next) {
     print_tag(tl, dir, GPOINTER_TO_INT(el->data));
   }
+  g_list_free(keys);
 
   printf("\n");
 }

@@ -11,6 +11,7 @@ fn link_library(s: &str) {
     pkg_config::Config::new().statik(true).probe(s).unwrap();
 }
 
+
 fn main() {
     let bindings = bindgen::Builder::default()
         .header("openslide/src/openslide.h")
@@ -52,7 +53,6 @@ fn main() {
         .file("openslide/src/openslide-decode-tifflike.c")
         .file("openslide/src/openslide-decode-xml.c")
         .file("openslide/src/openslide-error.c")
-        .file("openslide/src/openslide-file.c")
         .file("openslide/src/openslide-grid.c")
         .file("openslide/src/openslide-hash.c")
         .file("openslide/src/openslide-jdatasrc.c")
@@ -66,7 +66,6 @@ fn main() {
         .file("openslide/src/openslide-vendor-philips.c")
         .file("openslide/src/openslide-vendor-sakura.c")
         .file("openslide/src/openslide-vendor-trestle.c")
-        .file("openslide/src/openslide-vendor-synthetic.c")
         .file("openslide/src/openslide-vendor-ventana.c")
         .file("openslide/src/openslide.c")
         .flag_if_supported("-Wno-deprecated")
@@ -77,7 +76,6 @@ fn main() {
     link_library("cairo");
     link_library("libopenjp2");
     link_library("libxml-2.0");
-    link_library("libpng16");
     link_library("libtiff-4");
     link_library("libjpeg");
     link_library("sqlite3");

@@ -3,7 +3,6 @@
  *
  *  Copyright (c) 2007-2015 Carnegie Mellon University
  *  Copyright (c) 2011 Google, Inc.
- *  Copyright (c) 2022 Benjamin Gilbert
  *  All rights reserved.
  *
  *  OpenSlide is free software: you can redistribute it and/or modify
@@ -68,23 +67,23 @@ enum color_index {
   NUM_INDEXES = 3,
 };
 
-#define PREPARE_OR_RETURN(DEST, DB, SQL, RET) do {			\
+#define PREPARE_OR_FAIL(DEST, DB, SQL) do {				\
     DEST = _openslide_sqlite_prepare(DB, SQL, err);			\
     if (!DEST) {							\
-      return RET;							\
+      goto FAIL;							\
     }									\
   } while (0)
 
-#define BIND_TEXT_OR_RETURN(STMT, INDEX, STR, RET) do {			\
+#define BIND_TEXT_OR_FAIL(STMT, INDEX, STR) do {			\
     if (sqlite3_bind_text(STMT, INDEX, STR, -1, SQLITE_TRANSIENT)) {	\
       _openslide_sqlite_propagate_stmt_error(STMT, err);		\
-      return RET;							\
+      goto FAIL;							\
     }									\
   } while (0)
 
-#define STEP_OR_RETURN(STMT, RET) do {					\
+#define STEP_OR_FAIL(STMT) do {						\
     if (!_openslide_sqlite_step(STMT, err)) {				\
-      return RET;							\
+      goto FAIL;							\
     }									\
   } while (0)
 
@@ -107,25 +106,34 @@ struct associated_image {
 };
 
 static char *get_quoted_unique_table_name(sqlite3 *db, GError **err) {
-  g_autoptr(sqlite3_stmt) stmt = NULL;
-  PREPARE_OR_RETURN(stmt, db, "SELECT quote(TableName) FROM "
-                  "DataManagerSQLiteConfigXPO", NULL);
-  STEP_OR_RETURN(stmt, NULL);
-  g_autofree char *result =
-    g_strdup((const char *) sqlite3_column_text(stmt, 0));
+  sqlite3_stmt *stmt;
+  char *result = NULL;
+
+  PREPARE_OR_FAIL(stmt, db, "SELECT quote(TableName) FROM "
+                  "DataManagerSQLiteConfigXPO");
+  STEP_OR_FAIL(stmt);
+  result = g_strdup((const char *) sqlite3_column_text(stmt, 0));
 
   // we only expect to find one row
   if (sqlite3_step(stmt) != SQLITE_DONE) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Found > 1 unique tables");
-    return NULL;
+    g_free(result);
+    result = NULL;
   }
 
-  return g_steal_pointer(&result);
+FAIL:
+  sqlite3_finalize(stmt);
+  return result;
 }
 
 static bool sakura_detect(const char *filename,
                           struct _openslide_tifflike *tl, GError **err) {
+  sqlite3_stmt *stmt = NULL;
+  char *unique_table_name = NULL;
+  char *sql = NULL;
+  bool result = false;
+
   // reject TIFFs
   if (tl) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
@@ -134,32 +142,37 @@ static bool sakura_detect(const char *filename,
   }
 
   // open database
-  g_autoptr(sqlite3) db = _openslide_sqlite_open(filename, err);
+  sqlite3 *db = _openslide_sqlite_open(filename, err);
   if (!db) {
     return false;
   }
 
   // get name of unique table
-  g_autofree char *unique_table_name = get_quoted_unique_table_name(db, err);
+  unique_table_name = get_quoted_unique_table_name(db, err);
   if (!unique_table_name) {
-    return false;
+    goto FAIL;
   }
 
   // check ++MagicBytes from unique table
-  g_autofree char *sql =
-    g_strdup_printf("SELECT data FROM %s WHERE id = '++MagicBytes'",
-                    unique_table_name);
-  g_autoptr(sqlite3_stmt) stmt = NULL;
-  PREPARE_OR_RETURN(stmt, db, sql, false);
-  STEP_OR_RETURN(stmt, false);
+  sql = g_strdup_printf("SELECT data FROM %s WHERE id = '++MagicBytes'",
+                        unique_table_name);
+  PREPARE_OR_FAIL(stmt, db, sql);
+  STEP_OR_FAIL(stmt);
   const char *magic = (const char *) sqlite3_column_text(stmt, 0);
   if (strcmp(magic, MAGIC_BYTES)) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Magic number does not match");
-    return false;
+    goto FAIL;
   }
 
-  return true;
+  result = true;
+
+FAIL:
+  sqlite3_finalize(stmt);
+  g_free(sql);
+  g_free(unique_table_name);
+  _openslide_sqlite_close(db);
+  return result;
 }
 
 static void destroy_level(struct level *l) {
@@ -209,21 +222,25 @@ static bool parse_tileid(const char *tileid,
                          enum color_index *_color,
                          int32_t *_focal_plane,
                          GError **err) {
+  // T;x|y;downsample;color;0
+  gchar **fields = NULL;
+  gchar *synth_tileid = NULL;
+  bool success = false;
+
   // preliminary checks
   if (!g_str_has_prefix(tileid, "T;") || // not a tile
       g_str_has_suffix(tileid, "#")) {   // hash of a tile
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_NO_VALUE,
                 "Not a tile ID");
-    return false;
+    goto OUT;
   }
 
   // parse and check fields
-  // T;x|y;downsample;color;0
-  g_auto(GStrv) fields = g_strsplit_set(tileid, ";|", 0);
+  fields = g_strsplit_set(tileid, ";|", 0);
   if (g_strv_length(fields) != 6) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Bad field count in tile ID %s", tileid);
-    return false;
+    goto OUT;
   }
   int64_t x, y, downsample, color, focal_plane;
   if (!_parse_tileid_column(tileid, fields[1], &x, err) ||
@@ -231,21 +248,20 @@ static bool parse_tileid(const char *tileid,
       !_parse_tileid_column(tileid, fields[3], &downsample, err) ||
       !_parse_tileid_column(tileid, fields[4], &color, err) ||
       !_parse_tileid_column(tileid, fields[5], &focal_plane, err)) {
-    return false;
+    goto OUT;
   }
   if (downsample < 1 || color >= NUM_INDEXES) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Bad field value in tile ID %s", tileid);
-    return false;
+    goto OUT;
   }
 
   // verify round trip (no leading zeros, etc.)
-  g_autofree char *synth_tileid =
-    make_tileid(x, y, downsample, color, focal_plane);
+  synth_tileid = make_tileid(x, y, downsample, color, focal_plane);
   if (strcmp(tileid, synth_tileid)) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Couldn't round-trip tile ID %s", tileid);
-    return false;
+    goto OUT;
   }
 
   // commit
@@ -264,7 +280,12 @@ static bool parse_tileid(const char *tileid,
   if (_focal_plane) {
     *_focal_plane = focal_plane;
   }
-  return true;
+  success = true;
+
+OUT:
+  g_strfreev(fields);
+  g_free(synth_tileid);
+  return success;
 }
 
 static bool read_channel(uint8_t *channeldata,
@@ -276,20 +297,25 @@ static bool read_channel(uint8_t *channeldata,
                          sqlite3_stmt *stmt,
                          GError **err) {
   // compute tile id
-  g_autofree char *tileid = make_tileid(tile_col * tile_size * downsample,
-                                        tile_row * tile_size * downsample,
-                                        downsample, color, focal_plane);
+  char *tileid = make_tileid(tile_col * tile_size * downsample,
+                             tile_row * tile_size * downsample,
+                             downsample, color, focal_plane);
 
   // retrieve compressed tile
   sqlite3_reset(stmt);
-  BIND_TEXT_OR_RETURN(stmt, 1, tileid, false);
-  STEP_OR_RETURN(stmt, false);
+  BIND_TEXT_OR_FAIL(stmt, 1, tileid);
+  STEP_OR_FAIL(stmt);
   const void *buf = sqlite3_column_blob(stmt, 0);
   int buflen = sqlite3_column_bytes(stmt, 0);
+  g_free(tileid);
 
   // decompress
   return _openslide_jpeg_decode_buffer_gray(buf, buflen, channeldata,
                                             tile_size, tile_size, err);
+
+FAIL:
+  g_free(tileid);
+  return false;
 }
 
 static bool read_image(uint32_t *tiledata,
@@ -299,34 +325,38 @@ static bool read_image(uint32_t *tiledata,
                        int32_t tile_size,
                        sqlite3_stmt *stmt,
                        GError **err) {
-  g_auto(_openslide_slice) red_channel =
-    _openslide_slice_alloc(tile_size * tile_size);
-  g_auto(_openslide_slice) green_channel =
-    _openslide_slice_alloc(tile_size * tile_size);
-  g_auto(_openslide_slice) blue_channel =
-    _openslide_slice_alloc(tile_size * tile_size);
+  uint8_t *red_channel = g_slice_alloc(tile_size * tile_size);
+  uint8_t *green_channel = g_slice_alloc(tile_size * tile_size);
+  uint8_t *blue_channel = g_slice_alloc(tile_size * tile_size);
+  bool success = false;
 
-  if (!read_channel(red_channel.p, tile_col, tile_row, downsample,
+  if (!read_channel(red_channel, tile_col, tile_row, downsample,
                     INDEX_RED, focal_plane, tile_size, stmt, err)) {
-    return false;
+    goto OUT;
   }
-  if (!read_channel(green_channel.p, tile_col, tile_row, downsample,
+  if (!read_channel(green_channel, tile_col, tile_row, downsample,
                     INDEX_GREEN, focal_plane, tile_size, stmt, err)) {
-    return false;
+    goto OUT;
   }
-  if (!read_channel(blue_channel.p, tile_col, tile_row, downsample,
+  if (!read_channel(blue_channel, tile_col, tile_row, downsample,
                     INDEX_BLUE, focal_plane, tile_size, stmt, err)) {
-    return false;
+    goto OUT;
   }
 
   for (int32_t i = 0; i < tile_size * tile_size; i++) {
     tiledata[i] = 0xff000000 |
-                  (((uint8_t *) red_channel.p)[i] << 16) |
-                  (((uint8_t *) green_channel.p)[i] << 8) |
-                  ((uint8_t *) blue_channel.p)[i];
+                  (red_channel[i] << 16) |
+                  (green_channel[i] << 8) |
+                  blue_channel[i];
   }
 
-  return true;
+  success = true;
+
+OUT:
+  g_slice_free1(tile_size * tile_size, red_channel);
+  g_slice_free1(tile_size * tile_size, green_channel);
+  g_slice_free1(tile_size * tile_size, blue_channel);
+  return success;
 }
 
 static bool read_tile(openslide_t *osr,
@@ -342,16 +372,15 @@ static bool read_tile(openslide_t *osr,
   GError *tmp_err = NULL;
 
   // cache
-  g_autoptr(_openslide_cache_entry) cache_entry = NULL;
+  struct _openslide_cache_entry *cache_entry;
   uint32_t *tiledata = _openslide_cache_get(osr->cache,
                                             level, tile_col, tile_row,
                                             &cache_entry);
   if (!tiledata) {
-    g_auto(_openslide_slice) box =
-      _openslide_slice_alloc(tile_size * tile_size * 4);
+    tiledata = g_slice_alloc(tile_size * tile_size * 4);
 
     // read tile
-    if (!read_image(box.p, tile_col, tile_row, l->base.downsample,
+    if (!read_image(tiledata, tile_col, tile_row, l->base.downsample,
                     data->focal_plane, tile_size, stmt, &tmp_err)) {
       if (g_error_matches(tmp_err, OPENSLIDE_ERROR,
                           OPENSLIDE_ERROR_NO_VALUE)) {
@@ -360,21 +389,22 @@ static bool read_tile(openslide_t *osr,
         return true;
       } else {
         g_propagate_error(err, tmp_err);
+        g_slice_free1(tile_size * tile_size * 4, tiledata);
         return false;
       }
     }
 
     // clip, if necessary
-    if (!_openslide_clip_tile(box.p,
+    if (!_openslide_clip_tile(tiledata,
                               tile_size, tile_size,
                               l->base.w - tile_col * tile_size,
                               l->base.h - tile_row * tile_size,
                               err)) {
+      g_slice_free1(tile_size * tile_size * 4, tiledata);
       return false;
     }
 
     // put it in the cache
-    tiledata = _openslide_slice_steal(&box);
     _openslide_cache_put(osr->cache,
 			 level, tile_col, tile_row,
 			 tiledata, tile_size * tile_size * 4,
@@ -382,12 +412,16 @@ static bool read_tile(openslide_t *osr,
   }
 
   // draw it
-  g_autoptr(cairo_surface_t) surface =
-    cairo_image_surface_create_for_data((unsigned char *) tiledata,
-                                        CAIRO_FORMAT_ARGB32,
-                                        tile_size, tile_size, tile_size * 4);
+  cairo_surface_t *surface = cairo_image_surface_create_for_data((unsigned char *) tiledata,
+                                                                 CAIRO_FORMAT_ARGB32,
+                                                                 tile_size, tile_size,
+                                                                 tile_size * 4);
   cairo_set_source_surface(cr, surface, 0, 0);
+  cairo_surface_destroy(surface);
   cairo_paint(cr);
+
+  // done with the cache entry, release it
+  _openslide_cache_entry_unref(cache_entry);
 
   return true;
 }
@@ -399,19 +433,25 @@ static bool paint_region(openslide_t *osr, cairo_t *cr,
                          GError **err) {
   struct sakura_ops_data *data = osr->data;
   struct level *l = (struct level *) level;
+  sqlite3_stmt *stmt = NULL;
+  bool success = false;
 
-  g_autoptr(sqlite3) db = _openslide_sqlite_open(data->filename, err);
+  sqlite3 *db = _openslide_sqlite_open(data->filename, err);
   if (!db) {
     return false;
   }
-  g_autoptr(sqlite3_stmt) stmt = NULL;
-  PREPARE_OR_RETURN(stmt, db, data->data_sql, false);
+  PREPARE_OR_FAIL(stmt, db, data->data_sql);
 
-  return _openslide_grid_paint_region(l->grid, cr, stmt,
-                                      x / l->base.downsample,
-                                      y / l->base.downsample,
-                                      level, w, h,
-                                      err);
+  success = _openslide_grid_paint_region(l->grid, cr, stmt,
+                                         x / l->base.downsample,
+                                         y / l->base.downsample,
+                                         level, w, h,
+                                         err);
+
+FAIL:
+  sqlite3_finalize(stmt);
+  _openslide_sqlite_close(db);
+  return success;
 }
 
 static const struct _openslide_ops sakura_ops = {
@@ -423,25 +463,31 @@ static bool get_associated_image_data(struct _openslide_associated_image *_img,
                                       uint32_t *dest,
                                       GError **err) {
   struct associated_image *img = (struct associated_image *) _img;
+  bool success = false;
 
   //g_debug("read Sakura associated image: %s", img->data_sql);
 
   // open DB handle
-  g_autoptr(sqlite3) db = _openslide_sqlite_open(img->filename, err);
+  sqlite3 *db = _openslide_sqlite_open(img->filename, err);
   if (!db) {
     return false;
   }
 
   // read data
-  g_autoptr(sqlite3_stmt) stmt = NULL;
-  PREPARE_OR_RETURN(stmt, db, img->data_sql, false);
-  STEP_OR_RETURN(stmt, false);
+  sqlite3_stmt *stmt;
+  PREPARE_OR_FAIL(stmt, db, img->data_sql);
+  STEP_OR_FAIL(stmt);
   const void *buf = sqlite3_column_blob(stmt, 0);
   int buflen = sqlite3_column_bytes(stmt, 0);
 
   // decode it
-  return _openslide_jpeg_decode_buffer(buf, buflen, dest,
-                                       img->base.w, img->base.h, err);
+  success = _openslide_jpeg_decode_buffer(buf, buflen, dest,
+                                          img->base.w, img->base.h, err);
+
+FAIL:
+  sqlite3_finalize(stmt);
+  _openslide_sqlite_close(db);
+  return success;
 }
 
 static void destroy_associated_image(struct _openslide_associated_image *_img) {
@@ -463,24 +509,26 @@ static bool add_associated_image(openslide_t *osr,
                                  const char *name,
                                  const char *data_sql,
                                  GError **err) {
+  bool success = false;
+
   // read data
-  g_autoptr(sqlite3_stmt) stmt = NULL;
-  PREPARE_OR_RETURN(stmt, db, data_sql, false);
-  STEP_OR_RETURN(stmt, false);
+  sqlite3_stmt *stmt;
+  PREPARE_OR_FAIL(stmt, db, data_sql);
+  STEP_OR_FAIL(stmt);
   const void *buf = sqlite3_column_blob(stmt, 0);
   int buflen = sqlite3_column_bytes(stmt, 0);
 
   // read dimensions from JPEG header
   int32_t w, h;
   if (!_openslide_jpeg_decode_buffer_dimensions(buf, buflen, &w, &h, err)) {
-    return false;
+    goto FAIL;
   }
 
   // ensure there is only one row
   if (sqlite3_step(stmt) != SQLITE_DONE) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Query returned multiple rows: %s", data_sql);
-    return false;
+    goto FAIL;
   }
 
   // create struct
@@ -494,7 +542,11 @@ static bool add_associated_image(openslide_t *osr,
   // add it
   g_hash_table_insert(osr->associated_images, g_strdup(name), img);
 
-  return true;
+  success = true;
+
+FAIL:
+  sqlite3_finalize(stmt);
+  return success;
 }
 
 static gint compare_downsamples(const void *a, const void *b) {
@@ -514,13 +566,17 @@ static bool read_header(sqlite3 *db, const char *unique_table_name,
                         int64_t *image_width, int64_t *image_height,
                         int32_t *_tile_size, int32_t *_focal_planes,
                         GError **err) {
+  GInputStream *strm = NULL;
+  GDataInputStream *dstrm = NULL;
+  GError *tmp_err = NULL;
+  bool success = false;
+
   // load header
-  g_autofree char *sql =
-    g_strdup_printf("SELECT data FROM %s WHERE id = 'Header'",
-                    unique_table_name);
-  g_autoptr(sqlite3_stmt) stmt = NULL;
-  PREPARE_OR_RETURN(stmt, db, sql, false);
-  STEP_OR_RETURN(stmt, false);
+  char *sql = g_strdup_printf("SELECT data FROM %s WHERE id = 'Header'",
+                              unique_table_name);
+  sqlite3_stmt *stmt;
+  PREPARE_OR_FAIL(stmt, db, sql);
+  STEP_OR_FAIL(stmt);
   const void *buf = sqlite3_column_blob(stmt, 0);
   const int buflen = sqlite3_column_bytes(stmt, 0);
   if (!buf) {
@@ -528,42 +584,40 @@ static bool read_header(sqlite3 *db, const char *unique_table_name,
   }
 
   // create data stream
-  g_autoptr(GInputStream) strm =
-    g_memory_input_stream_new_from_data(buf, buflen, NULL);
-  g_autoptr(GDataInputStream) dstrm = g_data_input_stream_new(strm);
+  strm = g_memory_input_stream_new_from_data(buf, buflen, NULL);
+  dstrm = g_data_input_stream_new(strm);
   g_data_input_stream_set_byte_order(dstrm,
                                      G_DATA_STREAM_BYTE_ORDER_LITTLE_ENDIAN);
 
   // read fields
-  GError *tmp_err = NULL;
   uint32_t tile_size = g_data_input_stream_read_uint32(dstrm, NULL, &tmp_err);
   if (tmp_err) {
     g_propagate_error(err, tmp_err);
-    return false;
+    goto FAIL;
   }
   if (tile_size == 0 || tile_size > INT32_MAX) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Invalid tile size: %u", tile_size);
-    return false;
+    goto FAIL;
   }
   uint32_t w = g_data_input_stream_read_uint32(dstrm, NULL, &tmp_err);
   if (tmp_err) {
     g_propagate_error(err, tmp_err);
-    return false;
+    goto FAIL;
   }
   uint32_t h = g_data_input_stream_read_uint32(dstrm, NULL, &tmp_err);
   if (tmp_err) {
     g_propagate_error(err, tmp_err);
-    return false;
+    goto FAIL;
   }
   if (!g_seekable_seek(G_SEEKABLE(dstrm), 16, G_SEEK_SET, NULL, err)) {
-    return false;
+    goto FAIL;
   }
   uint32_t focal_planes = g_data_input_stream_read_uint32(dstrm, NULL,
                                                           &tmp_err);
   if (tmp_err) {
     g_propagate_error(err, tmp_err);
-    return false;
+    goto FAIL;
   }
 
   // commit
@@ -571,101 +625,111 @@ static bool read_header(sqlite3 *db, const char *unique_table_name,
   *image_height = h;
   *_tile_size = tile_size;
   *_focal_planes = focal_planes;
-  return true;
+  success = true;
+
+FAIL:
+  if (dstrm) {
+    g_object_unref(dstrm);
+  }
+  if (strm) {
+    g_object_unref(strm);
+  }
+  sqlite3_finalize(stmt);
+  g_free(sql);
+  return success;
 }
 
 static void add_properties(openslide_t *osr,
                            sqlite3 *db,
                            const char *unique_table_name) {
-  {
-    // build unified query
-    GString *query = g_string_new("SELECT ");
+  // build unified query
+  GString *query = g_string_new("SELECT ");
+  for (uint32_t i = 0; i < G_N_ELEMENTS(property_table); i++) {
+    const struct property *prop = &property_table[i];
+    g_string_append_printf(query, "%s%s.%s",
+                           i ? ", " : "",
+                           prop->table,
+                           prop->column);
+  }
+  g_string_append(query, " FROM SVSlideDataXPO JOIN SVHRScanDataXPO ON "
+                  "SVHRScanDataXPO.ParentSlide == SVSlideDataXPO.OID");
+  char *sql = g_string_free(query, false);
+  //g_debug("%s", sql);
+
+  // execute it
+  sqlite3_stmt *stmt = _openslide_sqlite_prepare(db, sql, NULL);
+  if (stmt && sqlite3_step(stmt) == SQLITE_ROW) {
+    // add properties
     for (uint32_t i = 0; i < G_N_ELEMENTS(property_table); i++) {
       const struct property *prop = &property_table[i];
-      g_string_append_printf(query, "%s%s.%s",
-                             i ? ", " : "",
-                             prop->table,
-                             prop->column);
-    }
-    g_string_append(query, " FROM SVSlideDataXPO JOIN SVHRScanDataXPO ON "
-                    "SVHRScanDataXPO.ParentSlide == SVSlideDataXPO.OID");
-    g_autofree char *sql = g_string_free(query, false);
-    //g_debug("%s", sql);
-
-    // execute it
-    g_autoptr(sqlite3_stmt) stmt = _openslide_sqlite_prepare(db, sql, NULL);
-    if (stmt && sqlite3_step(stmt) == SQLITE_ROW) {
-      // add properties
-      for (uint32_t i = 0; i < G_N_ELEMENTS(property_table); i++) {
-        const struct property *prop = &property_table[i];
-        switch (prop->type) {
-        case SQLITE_TEXT: {
-          const char *value = (const char *) sqlite3_column_text(stmt, i);
-          if (value[0]) {
-            g_hash_table_insert(osr->properties,
-                                g_strdup_printf("sakura.%s", prop->column),
-                                g_strdup(value));
-          }
-          break;
-        }
-        case SQLITE_FLOAT: {
-          // convert to text ourselves to ensure full precision
-          double value = sqlite3_column_double(stmt, i);
+      switch (prop->type) {
+      case SQLITE_TEXT: {
+        const char *value = (const char *) sqlite3_column_text(stmt, i);
+        if (value[0]) {
           g_hash_table_insert(osr->properties,
                               g_strdup_printf("sakura.%s", prop->column),
-                              _openslide_format_double(value));
-          break;
+                              g_strdup(value));
         }
-        default:
-          g_assert_not_reached();
-        }
+        break;
+      }
+      case SQLITE_FLOAT: {
+        // convert to text ourselves to ensure full precision
+        double value = sqlite3_column_double(stmt, i);
+        g_hash_table_insert(osr->properties,
+                            g_strdup_printf("sakura.%s", prop->column),
+                            _openslide_format_double(value));
+        break;
+      }
+      default:
+        g_assert_not_reached();
       }
     }
   }
+  sqlite3_finalize(stmt);
+  g_free(sql);
 
-  {
-    // set MPP and objective power
-    g_autoptr(sqlite3_stmt) stmt =
-      _openslide_sqlite_prepare(db, "SELECT ResolutionMmPerPix FROM "
-                                    "SVHRScanDataXPO JOIN SVSlideDataXPO ON "
-                                    "SVHRScanDataXPO.ParentSlide = "
-                                    "SVSlideDataXPO.OID", NULL);
-    if (stmt && sqlite3_step(stmt) == SQLITE_ROW) {
-      double mmpp = sqlite3_column_double(stmt, 0);
-      g_hash_table_insert(osr->properties,
-                          g_strdup(OPENSLIDE_PROPERTY_NAME_MPP_X),
-                          _openslide_format_double(mmpp * 1000));
-      g_hash_table_insert(osr->properties,
-                          g_strdup(OPENSLIDE_PROPERTY_NAME_MPP_Y),
-                          _openslide_format_double(mmpp * 1000));
-    }
-    _openslide_duplicate_double_prop(osr, "sakura.NominalLensMagnification",
-                                     OPENSLIDE_PROPERTY_NAME_OBJECTIVE_POWER);
+  // set MPP and objective power
+  stmt = _openslide_sqlite_prepare(db, "SELECT ResolutionMmPerPix FROM "
+                                   "SVHRScanDataXPO JOIN SVSlideDataXPO ON "
+                                   "SVHRScanDataXPO.ParentSlide = "
+                                   "SVSlideDataXPO.OID", NULL);
+  if (stmt && sqlite3_step(stmt) == SQLITE_ROW) {
+    double mmpp = sqlite3_column_double(stmt, 0);
+    g_hash_table_insert(osr->properties,
+                        g_strdup(OPENSLIDE_PROPERTY_NAME_MPP_X),
+                        _openslide_format_double(mmpp * 1000));
+    g_hash_table_insert(osr->properties,
+                        g_strdup(OPENSLIDE_PROPERTY_NAME_MPP_Y),
+                        _openslide_format_double(mmpp * 1000));
   }
+  sqlite3_finalize(stmt);
+  _openslide_duplicate_double_prop(osr, "sakura.NominalLensMagnification",
+                                   OPENSLIDE_PROPERTY_NAME_OBJECTIVE_POWER);
 
-  {
-    // add version property
-    g_autofree char *sql =
-      g_strdup_printf("SELECT data FROM %s WHERE id = '++VersionBytes'",
-                      unique_table_name);
-    g_autoptr(sqlite3_stmt) stmt = _openslide_sqlite_prepare(db, sql, NULL);
-    if (stmt && sqlite3_step(stmt) == SQLITE_ROW) {
-      const char *version = (const char *) sqlite3_column_text(stmt, 0);
-      g_hash_table_insert(osr->properties,
-                          g_strdup("sakura.VersionBytes"),
-                          g_strdup(version));
-    }
+  // add version property
+  sql = g_strdup_printf("SELECT data FROM %s WHERE id = '++VersionBytes'",
+                        unique_table_name);
+  stmt = _openslide_sqlite_prepare(db, sql, NULL);
+  if (stmt && sqlite3_step(stmt) == SQLITE_ROW) {
+    const char *version = (const char *) sqlite3_column_text(stmt, 0);
+    g_hash_table_insert(osr->properties,
+                        g_strdup("sakura.VersionBytes"),
+                        g_strdup(version));
   }
+  sqlite3_finalize(stmt);
+  g_free(sql);
 }
 
 static bool hash_columns(struct _openslide_hash *quickhash1,
                          sqlite3 *db,
                          const char *sql,
                          GError **err) {
+  bool success = false;
+
   //g_debug("%s", sql);
 
-  g_autoptr(sqlite3_stmt) stmt = NULL;
-  PREPARE_OR_RETURN(stmt, db, sql, false);
+  sqlite3_stmt *stmt;
+  PREPARE_OR_FAIL(stmt, db, sql);
   int ret;
   while ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
     for (int i = 0; i < sqlite3_column_count(stmt); i++) {
@@ -679,10 +743,14 @@ static bool hash_columns(struct _openslide_hash *quickhash1,
   }
   if (ret != SQLITE_DONE) {
     _openslide_sqlite_propagate_error(db, err);
-    return false;
+    goto FAIL;
   }
 
-  return true;
+  success = true;
+
+FAIL:
+  sqlite3_finalize(stmt);
+  return success;
 }
 
 static gint compare_tileids(const void *a, const void *b,
@@ -695,20 +763,22 @@ static bool hash_tiles(struct _openslide_hash *quickhash1,
                        const char *unique_table_name,
                        GQueue *tileids,
                        GError **err) {
+  bool success = false;
+
   // sort tile IDs
   g_queue_sort(tileids, compare_tileids, NULL);
 
   // prepare query
-  g_autofree char *sql = g_strdup_printf("SELECT data from %s WHERE id = ?",
-                                         unique_table_name);
-  g_autoptr(sqlite3_stmt) stmt = NULL;
-  PREPARE_OR_RETURN(stmt, db, sql, false);
+  char *sql = g_strdup_printf("SELECT data from %s WHERE id = ?",
+                              unique_table_name);
+  sqlite3_stmt *stmt;
+  PREPARE_OR_FAIL(stmt, db, sql);
 
   // hash tiles
   for (GList *cur = tileids->head; cur; cur = cur->next) {
     sqlite3_reset(stmt);
-    BIND_TEXT_OR_RETURN(stmt, 1, cur->data, false);
-    STEP_OR_RETURN(stmt, false);
+    BIND_TEXT_OR_FAIL(stmt, 1, cur->data);
+    STEP_OR_FAIL(stmt);
     const void *data = sqlite3_column_blob(stmt, 0);
     int datalen = sqlite3_column_bytes(stmt, 0);
 
@@ -716,7 +786,12 @@ static bool hash_tiles(struct _openslide_hash *quickhash1,
     _openslide_hash_data(quickhash1, data, datalen);
   }
 
-  return true;
+  success = true;
+
+FAIL:
+  sqlite3_finalize(stmt);
+  g_free(sql);
+  return success;
 }
 
 static void compute_quickhash1(struct _openslide_hash *quickhash1,
@@ -726,29 +801,31 @@ static void compute_quickhash1(struct _openslide_hash *quickhash1,
   if (!hash_columns(quickhash1, db, "SELECT SlideId, Date, Creator, "
                     "Description, Keywords FROM SVSlideDataXPO "
                     "ORDER BY OID", NULL)) {
-    _openslide_hash_disable(quickhash1);
-    return;
+    goto FAIL;
   }
   if (!hash_columns(quickhash1, db, "SELECT ScanId, Date, Name, Description "
                     "FROM SVHRScanDataXPO ORDER BY OID", NULL)) {
-    _openslide_hash_disable(quickhash1);
-    return;
+    goto FAIL;
   }
 
   // header blob
-  g_autofree char *sql =
-    g_strdup_printf("SELECT data FROM %s WHERE id = 'Header' ORDER BY rowid",
-                    unique_table_name);
-  if (!hash_columns(quickhash1, db, sql, NULL)) {
-    _openslide_hash_disable(quickhash1);
-    return;
+  char *sql = g_strdup_printf("SELECT data FROM %s WHERE id = 'Header' "
+                              "ORDER BY rowid", unique_table_name);
+  bool success = hash_columns(quickhash1, db, sql, NULL);
+  g_free(sql);
+  if (!success) {
+    goto FAIL;
   }
 
   // tiles in lowest-resolution level
   if (!hash_tiles(quickhash1, db, unique_table_name, tileids, NULL)) {
-    _openslide_hash_disable(quickhash1);
-    return;
+    goto FAIL;
   }
+
+  return;
+
+FAIL:
+  _openslide_hash_disable(quickhash1);
 }
 
 static void clear_tileids(GQueue *tileids) {
@@ -758,26 +835,32 @@ static void clear_tileids(GQueue *tileids) {
   }
 }
 
-static void free_tileid_queue(GQueue *tileids) {
-  g_queue_free_full(tileids, g_free);
-}
-
-typedef GQueue tileid_queue;
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(tileid_queue, free_tileid_queue)
-
 static bool sakura_open(openslide_t *osr, const char *filename,
                         struct _openslide_tifflike *tl G_GNUC_UNUSED,
                         struct _openslide_hash *quickhash1, GError **err) {
+  struct level **levels = NULL;
+  int32_t level_count = 0;
+  char *unique_table_name = NULL;
+  char *sql = NULL;
+  sqlite3_stmt *stmt = NULL;
+  GHashTable *level_hash =
+    g_hash_table_new_full(g_int64_hash, g_int64_equal, g_free,
+                          (GDestroyNotify) destroy_level);
+  GQueue *quickhash_tileids = g_queue_new();
+  int64_t quickhash_downsample = 0;
+  bool success = false;
+  GError *tmp_err = NULL;
+
   // open database
-  g_autoptr(sqlite3) db = _openslide_sqlite_open(filename, err);
+  sqlite3 *db = _openslide_sqlite_open(filename, err);
   if (!db) {
-    return false;
+    goto FAIL;
   }
 
   // get unique table name
-  g_autofree char *unique_table_name = get_quoted_unique_table_name(db, err);
+  unique_table_name = get_quoted_unique_table_name(db, err);
   if (!unique_table_name) {
-    return false;
+    goto FAIL;
   }
 
   // read header
@@ -789,7 +872,7 @@ static bool sakura_open(openslide_t *osr, const char *filename,
   if (!read_header(db, unique_table_name,
                    &image_width, &image_height,
                    &tile_size, &focal_planes, err)) {
-    return false;
+    goto FAIL;
   }
 
   // select middle focal plane
@@ -797,21 +880,13 @@ static bool sakura_open(openslide_t *osr, const char *filename,
   //g_debug("Using focal plane %d", chosen_focal_plane);
 
   // create levels; gather tileids for top level
-  g_autoptr(GHashTable) level_hash =
-    g_hash_table_new_full(g_int64_hash, g_int64_equal, g_free,
-                          (GDestroyNotify) destroy_level);
-  g_autoptr(tileid_queue) quickhash_tileids = g_queue_new();
-  int64_t quickhash_downsample = 0;
-  g_autofree char *sql =
-    g_strdup_printf("SELECT id FROM %s", unique_table_name);
-  g_autoptr(sqlite3_stmt) stmt = NULL;
-  PREPARE_OR_RETURN(stmt, db, sql, false);
+  sql = g_strdup_printf("SELECT id FROM %s", unique_table_name);
+  PREPARE_OR_FAIL(stmt, db, sql);
   int ret;
   while ((ret = sqlite3_step(stmt)) == SQLITE_ROW) {
     const char *tileid = (const char *) sqlite3_column_text(stmt, 0);
     int64_t downsample;
     int32_t focal_plane;
-    GError *tmp_err = NULL;
     if (!parse_tileid(tileid, NULL, NULL, &downsample, NULL, &focal_plane,
                       &tmp_err)) {
       if (g_error_matches(tmp_err, OPENSLIDE_ERROR,
@@ -821,7 +896,7 @@ static bool sakura_open(openslide_t *osr, const char *filename,
         continue;
       } else {
         g_propagate_error(err, tmp_err);
-        return false;
+        goto FAIL;
       }
     }
 
@@ -832,7 +907,7 @@ static bool sakura_open(openslide_t *osr, const char *filename,
       if (downsample <= 0 || (downsample & (downsample - 1))) {
         g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                     "Invalid downsample %"PRId64, downsample);
-        return false;
+        goto FAIL;
       }
 
       l = g_slice_new0(struct level);
@@ -865,18 +940,21 @@ static bool sakura_open(openslide_t *osr, const char *filename,
   }
   if (ret != SQLITE_DONE) {
     _openslide_sqlite_propagate_error(db, err);
-    return false;
+    goto FAIL;
   }
+  sqlite3_finalize(stmt);
+  stmt = NULL;
+  g_free(sql);
+  sql = NULL;
 
   // move levels to level array
-  int32_t level_count = g_hash_table_size(level_hash);
+  level_count = g_hash_table_size(level_hash);
   if (level_count == 0) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Couldn't find any tiles");
-    return false;
+    goto FAIL;
   }
-  // not autoptr; we can't fail after this
-  struct level **levels = g_new(struct level *, level_count);
+  levels = g_new(struct level *, level_count);
   GList *keys = g_hash_table_get_keys(level_hash);
   keys = g_list_sort(keys, compare_downsamples);
   int32_t i = 0;
@@ -884,9 +962,10 @@ static bool sakura_open(openslide_t *osr, const char *filename,
     levels[i] = g_hash_table_lookup(level_hash, cur->data);
     g_assert(levels[i]);
     g_hash_table_steal(level_hash, cur->data);
+    g_free(cur->data);
     i++;
   }
-  g_list_free_full(keys, g_free);
+  g_list_free(keys);
 
   // add properties
   add_properties(osr, db, unique_table_name);
@@ -925,7 +1004,24 @@ static bool sakura_open(openslide_t *osr, const char *filename,
   osr->data = data;
   osr->ops = &sakura_ops;
 
-  return true;
+  success = true;
+
+FAIL:
+  if (!success) {
+    for (int32_t i = 0; i < level_count; i++) {
+      destroy_level(levels[i]);
+    }
+    g_free(levels);
+  }
+
+  sqlite3_finalize(stmt);
+  _openslide_sqlite_close(db);
+  clear_tileids(quickhash_tileids);
+  g_queue_free(quickhash_tileids);
+  g_hash_table_destroy(level_hash);
+  g_free(sql);
+  g_free(unique_table_name);
+  return success;
 }
 
 const struct _openslide_format _openslide_format_sakura = {

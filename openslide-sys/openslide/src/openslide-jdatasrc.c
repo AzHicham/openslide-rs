@@ -32,11 +32,11 @@
 /* Expanded data source object for stdio input */
 
 typedef struct {
-  struct jpeg_source_mgr pub;		/* public fields */
+  struct jpeg_source_mgr pub;	/* public fields */
 
-  struct _openslide_file * infile;	/* source stream */
-  JOCTET * buffer;			/* start of buffer */
-  boolean start_of_file;		/* have we gotten any data yet? */
+  FILE * infile;		/* source stream */
+  JOCTET * buffer;		/* start of buffer */
+  boolean start_of_file;	/* have we gotten any data yet? */
 } my_source_mgr;
 
 typedef my_source_mgr * my_src_ptr;
@@ -104,7 +104,7 @@ static boolean fill_input_buffer (j_decompress_ptr cinfo)
   my_src_ptr src = (my_src_ptr) cinfo->src;
   size_t nbytes;
 
-  nbytes = _openslide_fread(src->infile, src->buffer, INPUT_BUF_SIZE);
+  nbytes = fread(src->buffer, 1, INPUT_BUF_SIZE, src->infile);
 
   if (nbytes <= 0) {
     if (src->start_of_file)	/* Treat empty input file as fatal error */
@@ -208,8 +208,7 @@ static void term_source (j_decompress_ptr cinfo G_GNUC_UNUSED)
  * for closing it after finishing decompression.
  */
 
-void _openslide_jpeg_stdio_src (j_decompress_ptr cinfo,
-                                struct _openslide_file * infile)
+void _openslide_jpeg_stdio_src (j_decompress_ptr cinfo, FILE * infile)
 {
   my_src_ptr src;
 
@@ -248,7 +247,7 @@ void _openslide_jpeg_stdio_src (j_decompress_ptr cinfo,
  */
 
 void _openslide_jpeg_mem_src (j_decompress_ptr cinfo,
-                              const void * inbuffer, size_t insize)
+                              unsigned char * inbuffer, unsigned long insize)
 {
   struct jpeg_source_mgr * src;
 
@@ -271,6 +270,6 @@ void _openslide_jpeg_mem_src (j_decompress_ptr cinfo,
   src->skip_input_data = skip_input_data;
   src->resync_to_restart = jpeg_resync_to_restart; /* use default method */
   src->term_source = term_source;
-  src->bytes_in_buffer = insize;
-  src->next_input_byte = inbuffer;
+  src->bytes_in_buffer = (size_t) insize;
+  src->next_input_byte = (JOCTET *) inbuffer;
 }

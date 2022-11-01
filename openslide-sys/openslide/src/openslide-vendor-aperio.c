@@ -59,23 +59,31 @@ struct level {
   uint16_t compression;
 };
 
-static void destroy_level(struct level *l) {
-  if (l->missing_tiles) {
-    g_hash_table_destroy(l->missing_tiles);
+static void destroy_data(struct aperio_ops_data *data,
+                         struct level **levels, int32_t level_count) {
+  if (data) {
+    _openslide_tiffcache_destroy(data->tc);
+    g_slice_free(struct aperio_ops_data, data);
   }
-  _openslide_grid_destroy(l->grid);
-  g_slice_free(struct level, l);
+
+  if (levels) {
+    for (int32_t i = 0; i < level_count; i++) {
+      if (levels[i]) {
+        if (levels[i]->missing_tiles) {
+          g_hash_table_destroy(levels[i]->missing_tiles);
+        }
+        _openslide_grid_destroy(levels[i]->grid);
+        g_slice_free(struct level, levels[i]);
+      }
+    }
+    g_free(levels);
+  }
 }
 
 static void destroy(openslide_t *osr) {
-  for (int32_t i = 0; i < osr->level_count; i++) {
-    destroy_level((struct level *) osr->levels[i]);
-  }
-  g_free(osr->levels);
-
   struct aperio_ops_data *data = osr->data;
-  _openslide_tiffcache_destroy(data->tc);
-  g_slice_free(struct aperio_ops_data, data);
+  struct level **levels = (struct level **) osr->levels;
+  destroy_data(data, levels, osr->level_count);
 }
 
 static bool render_missing_tile(struct level *l,
@@ -83,43 +91,46 @@ static bool render_missing_tile(struct level *l,
                                 uint32_t *dest,
                                 int64_t tile_col, int64_t tile_row,
                                 GError **err) {
+  bool success = true;
+
   int64_t tw = l->tiffl.tile_w;
   int64_t th = l->tiffl.tile_h;
 
   // always fill with transparent (needed for SATURATE)
   memset(dest, 0, tw * th * 4);
 
-  if (l->prev == NULL) {
-    // no previous levels; nothing to do
-    return true;
+  if (l->prev) {
+    // recurse into previous level
+    double relative_ds = l->prev->base.downsample / l->base.downsample;
+
+    cairo_surface_t *surface =
+      cairo_image_surface_create_for_data((unsigned char *) dest,
+                                          CAIRO_FORMAT_ARGB32,
+                                          tw, th, tw * 4);
+    cairo_t *cr = cairo_create(surface);
+    cairo_surface_destroy(surface);
+    cairo_set_operator(cr, CAIRO_OPERATOR_SATURATE);
+    cairo_translate(cr, -1, -1);
+    cairo_scale(cr, relative_ds, relative_ds);
+
+    // For the usual case that we are on a tile boundary in the previous
+    // level, extend the region by one pixel in each direction to ensure we
+    // paint the surrounding tiles.  This reduces the visible seam that
+    // would otherwise occur with non-integer downsamples.
+    success = _openslide_grid_paint_region(l->prev->grid, cr, tiff,
+                                           (tile_col * tw - 1) / relative_ds,
+                                           (tile_row * th - 1) / relative_ds,
+                                           (struct _openslide_level *) l->prev,
+                                           ceil((tw + 2) / relative_ds),
+                                           ceil((th + 2) / relative_ds),
+                                           err);
+    if (success) {
+      success = _openslide_check_cairo_status(cr, err);
+    }
+    cairo_destroy(cr);
   }
 
-  // recurse into previous level
-  double relative_ds = l->prev->base.downsample / l->base.downsample;
-
-  g_autoptr(cairo_surface_t) surface =
-    cairo_image_surface_create_for_data((unsigned char *) dest,
-                                        CAIRO_FORMAT_ARGB32,
-                                        tw, th, tw * 4);
-  g_autoptr(cairo_t) cr = cairo_create(surface);
-  cairo_set_operator(cr, CAIRO_OPERATOR_SATURATE);
-  cairo_translate(cr, -1, -1);
-  cairo_scale(cr, relative_ds, relative_ds);
-
-  // For the usual case that we are on a tile boundary in the previous
-  // level, extend the region by one pixel in each direction to ensure we
-  // paint the surrounding tiles.  This reduces the visible seam that
-  // would otherwise occur with non-integer downsamples.
-  if (!_openslide_grid_paint_region(l->prev->grid, cr, tiff,
-                                    (tile_col * tw - 1) / relative_ds,
-                                    (tile_row * th - 1) / relative_ds,
-                                    (struct _openslide_level *) l->prev,
-                                    ceil((tw + 2) / relative_ds),
-                                    ceil((th + 2) / relative_ds),
-                                    err)) {
-    return false;
-  }
-  return _openslide_check_cairo_status(cr, err);
+  return success;
 }
 
 static bool decode_tile(struct level *l,
@@ -154,21 +165,26 @@ static bool decode_tile(struct level *l,
   }
 
   // read raw tile
-  g_autofree void *buf = NULL;
+  void *buf;
   int32_t buflen;
   if (!_openslide_tiff_read_tile_data(tiffl, tiff,
                                       &buf, &buflen,
                                       tile_col, tile_row,
                                       err)) {
-    return false;
+    return false;  // ok, haven't allocated anything yet
   }
 
   // decompress
-  return _openslide_jp2k_decode_buffer(dest,
-                                       tiffl->tile_w, tiffl->tile_h,
-                                       buf, buflen,
-                                       space,
-                                       err);
+  bool success = _openslide_jp2k_decode_buffer(dest,
+                                               tiffl->tile_w, tiffl->tile_h,
+                                               buf, buflen,
+                                               space,
+                                               err);
+
+  // clean up
+  g_free(buf);
+
+  return success;
 }
 
 static bool read_tile(openslide_t *osr,
@@ -186,37 +202,42 @@ static bool read_tile(openslide_t *osr,
   int64_t th = tiffl->tile_h;
 
   // cache
-  g_autoptr(_openslide_cache_entry) cache_entry = NULL;
+  struct _openslide_cache_entry *cache_entry;
   uint32_t *tiledata = _openslide_cache_get(osr->cache,
                                             level, tile_col, tile_row,
                                             &cache_entry);
   if (!tiledata) {
-    g_auto(_openslide_slice) box = _openslide_slice_alloc(tw * th * 4);
-    if (!decode_tile(l, tiff, box.p, tile_col, tile_row, err)) {
+    tiledata = g_slice_alloc(tw * th * 4);
+    if (!decode_tile(l, tiff, tiledata, tile_col, tile_row, err)) {
+      g_slice_free1(tw * th * 4, tiledata);
       return false;
     }
 
     // clip, if necessary
-    if (!_openslide_tiff_clip_tile(tiffl, box.p,
+    if (!_openslide_tiff_clip_tile(tiffl, tiledata,
                                    tile_col, tile_row,
                                    err)) {
+      g_slice_free1(tw * th * 4, tiledata);
       return false;
     }
 
     // put it in the cache
-    tiledata = _openslide_slice_steal(&box);
     _openslide_cache_put(osr->cache, level, tile_col, tile_row,
 			 tiledata, tw * th * 4,
 			 &cache_entry);
   }
 
   // draw it
-  g_autoptr(cairo_surface_t) surface =
-    cairo_image_surface_create_for_data((unsigned char *) tiledata,
-                                        CAIRO_FORMAT_ARGB32,
-                                        tw, th, tw * 4);
+  cairo_surface_t *surface = cairo_image_surface_create_for_data((unsigned char *) tiledata,
+								 CAIRO_FORMAT_ARGB32,
+								 tw, th,
+								 tw * 4);
   cairo_set_source_surface(cr, surface, 0, 0);
+  cairo_surface_destroy(surface);
   cairo_paint(cr);
+
+  // done with the cache entry, release it
+  _openslide_cache_entry_unref(cache_entry);
 
   return true;
 }
@@ -229,16 +250,19 @@ static bool paint_region(openslide_t *osr, cairo_t *cr,
   struct aperio_ops_data *data = osr->data;
   struct level *l = (struct level *) level;
 
-  g_auto(_openslide_cached_tiff) ct = _openslide_tiffcache_get(data->tc, err);
-  if (ct.tiff == NULL) {
+  TIFF *tiff = _openslide_tiffcache_get(data->tc, err);
+  if (tiff == NULL) {
     return false;
   }
 
-  return _openslide_grid_paint_region(l->grid, cr, ct.tiff,
-                                      x / l->base.downsample,
-                                      y / l->base.downsample,
-                                      level, w, h,
-                                      err);
+  bool success = _openslide_grid_paint_region(l->grid, cr, tiff,
+                                              x / l->base.downsample,
+                                              y / l->base.downsample,
+                                              level, w, h,
+                                              err);
+  _openslide_tiffcache_put(data->tc, tiff);
+
+  return success;
 }
 
 static const struct _openslide_ops aperio_ops = {
@@ -285,7 +309,7 @@ static void add_properties(openslide_t *osr, char **props) {
 
   // ignore first property in Aperio
   for(char **p = props + 1; *p != NULL; p++) {
-    g_auto(GStrv) pair = g_strsplit(*p, "=", 2);
+    char **pair = g_strsplit(*p, "=", 2);
 
     if (pair) {
       char *name = g_strstrip(pair[0]);
@@ -297,6 +321,7 @@ static void add_properties(openslide_t *osr, char **props) {
 			    g_strdup(value));
       }
     }
+    g_strfreev(pair);
   }
 
   _openslide_duplicate_int_prop(osr, "aperio.AppMag",
@@ -315,18 +340,19 @@ static bool add_associated_image(openslide_t *osr,
                                  struct _openslide_tiffcache *tc,
                                  TIFF *tiff,
                                  GError **err) {
-  g_autofree char *name = NULL;
+  char *name = NULL;
   if (name_if_available) {
     name = g_strdup(name_if_available);
   } else {
-    // get name
     char *val;
+
+    // get name
     if (!TIFFGetField(tiff, TIFFTAG_IMAGEDESCRIPTION, &val)) {
       return true;
     }
 
     // parse ImageDescription, after newline up to first whitespace -> gives name
-    g_auto(GStrv) lines = g_strsplit_set(val, "\r\n", -1);
+    char **lines = g_strsplit_set(val, "\r\n", -1);
     if (!lines) {
       return true;
     }
@@ -334,20 +360,25 @@ static bool add_associated_image(openslide_t *osr,
     if (lines[0] && lines[1]) {
       char *line = lines[1];
 
-      g_auto(GStrv) names = g_strsplit(line, " ", -1);
+      char **names = g_strsplit(line, " ", -1);
       if (names && names[0]) {
 	name = g_strdup(names[0]);
       }
+      g_strfreev(names);
     }
+
+    g_strfreev(lines);
   }
 
   if (!name) {
     return true;
   }
 
-  return _openslide_tiff_add_associated_image(osr, name, tc,
-                                              TIFFCurrentDirectory(tiff),
-                                              err);
+  bool result = _openslide_tiff_add_associated_image(osr, name, tc,
+                                                     TIFFCurrentDirectory(tiff),
+                                                     err);
+  g_free(name);
+  return result;
 }
 
 static void propagate_missing_tile(void *key, void *value G_GNUC_UNUSED,
@@ -376,15 +407,40 @@ static void propagate_missing_tile(void *key, void *value G_GNUC_UNUSED,
   g_hash_table_insert(next_l->missing_tiles, next_tile_no, NULL);
 }
 
+// check for OpenJPEG CVE-2013-6045 breakage
+// (see openslide-decode-jp2k.c)
+static bool test_tile_decoding(struct level *l,
+                               TIFF *tiff,
+                               GError **err) {
+  // only for JP2K slides.
+  // shouldn't affect RGB, but check anyway out of caution
+  if (l->compression != APERIO_COMPRESSION_JP2K_YCBCR &&
+      l->compression != APERIO_COMPRESSION_JP2K_RGB) {
+    return true;
+  }
+
+  int64_t tw = l->tiffl.tile_w;
+  int64_t th = l->tiffl.tile_h;
+
+  uint32_t *dest = g_slice_alloc(tw * th * 4);
+  bool ok = decode_tile(l, tiff, dest, 0, 0, err);
+  g_slice_free1(tw * th * 4, dest);
+  return ok;
+}
+
 static bool aperio_open(openslide_t *osr,
                         const char *filename,
                         struct _openslide_tifflike *tl,
                         struct _openslide_hash *quickhash1, GError **err) {
+  struct aperio_ops_data *data = NULL;
+  struct level **levels = NULL;
+  int32_t level_count = 0;
+
   // open TIFF
-  g_autoptr(_openslide_tiffcache) tc = _openslide_tiffcache_create(filename);
-  g_auto(_openslide_cached_tiff) ct = _openslide_tiffcache_get(tc, err);
-  if (!ct.tiff) {
-    return false;
+  struct _openslide_tiffcache *tc = _openslide_tiffcache_create(filename);
+  TIFF *tiff = _openslide_tiffcache_get(tc, err);
+  if (!tiff) {
+    goto FAIL;
   }
 
   /*
@@ -408,51 +464,63 @@ static bool aperio_open(openslide_t *osr,
    * always stripped.
    */
 
-  g_autoptr(GPtrArray) level_array =
-    g_ptr_array_new_with_free_func((GDestroyNotify) destroy_level);
   do {
+    // for aperio, the tiled directories are the ones we want
+    if (TIFFIsTiled(tiff)) {
+      level_count++;
+    }
+
     // check depth
     uint32_t depth;
-    if (TIFFGetField(ct.tiff, TIFFTAG_IMAGEDEPTH, &depth) &&
+    if (TIFFGetField(tiff, TIFFTAG_IMAGEDEPTH, &depth) &&
         depth != 1) {
       // we can't handle depth != 1
       g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                   "Cannot handle ImageDepth=%d", depth);
-      return false;
+      goto FAIL;
     }
 
     // check compression
     uint16_t compression;
-    if (!TIFFGetField(ct.tiff, TIFFTAG_COMPRESSION, &compression)) {
+    if (!TIFFGetField(tiff, TIFFTAG_COMPRESSION, &compression)) {
       g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                   "Can't read compression scheme");
-      return false;
+      goto FAIL;
     }
     if ((compression != APERIO_COMPRESSION_JP2K_YCBCR) &&
         (compression != APERIO_COMPRESSION_JP2K_RGB) &&
         !TIFFIsCODECConfigured(compression)) {
       g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                   "Unsupported TIFF compression: %u", compression);
-      return false;
+      goto FAIL;
     }
+  } while (TIFFReadDirectory(tiff));
 
-    tdir_t dir = TIFFCurrentDirectory(ct.tiff);
-    // for aperio, the tiled directories are the ones we want
-    if (TIFFIsTiled(ct.tiff)) {
+  // allocate private data
+  data = g_slice_new0(struct aperio_ops_data);
+
+  levels = g_new0(struct level *, level_count);
+  int32_t i = 0;
+  if (!_openslide_tiff_set_dir(tiff, 0, err)) {
+    goto FAIL;
+  }
+  do {
+    tdir_t dir = TIFFCurrentDirectory(tiff);
+    if (TIFFIsTiled(tiff)) {
       //g_debug("tiled directory: %d", dir);
       struct level *l = g_slice_new0(struct level);
       struct _openslide_tiff_level *tiffl = &l->tiffl;
-      if (level_array->len) {
-        l->prev = level_array->pdata[level_array->len - 1];
+      if (i) {
+        l->prev = levels[i - 1];
       }
-      g_ptr_array_add(level_array, l);
+      levels[i++] = l;
 
-      if (!_openslide_tiff_level_init(ct.tiff,
+      if (!_openslide_tiff_level_init(tiff,
                                       dir,
                                       (struct _openslide_level *) l,
                                       tiffl,
                                       err)) {
-        return false;
+        goto FAIL;
       }
 
       l->grid = _openslide_grid_create_simple(osr,
@@ -463,19 +531,19 @@ static bool aperio_open(openslide_t *osr,
                                               read_tile);
 
       // get compression
-      if (!TIFFGetField(ct.tiff, TIFFTAG_COMPRESSION, &l->compression)) {
+      if (!TIFFGetField(tiff, TIFFTAG_COMPRESSION, &l->compression)) {
         g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                     "Can't read compression scheme");
-        return false;
+        goto FAIL;
       }
 
       // some Aperio slides have some zero-length tiles, apparently due to
       // an encoder bug
       toff_t *tile_sizes;
-      if (!TIFFGetField(ct.tiff, TIFFTAG_TILEBYTECOUNTS, &tile_sizes)) {
+      if (!TIFFGetField(tiff, TIFFTAG_TILEBYTECOUNTS, &tile_sizes)) {
         g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                     "Cannot get tile sizes");
-        return false;
+        goto FAIL;
       }
       l->missing_tiles = g_hash_table_new_full(g_int64_hash, g_int64_equal,
                                                g_free, NULL);
@@ -490,57 +558,66 @@ static bool aperio_open(openslide_t *osr,
     } else {
       // associated image
       const char *name = (dir == 1) ? "thumbnail" : NULL;
-      if (!add_associated_image(osr, name, tc, ct.tiff, err)) {
-	return false;
+      if (!add_associated_image(osr, name, tc, tiff, err)) {
+	goto FAIL;
       }
       //g_debug("associated image: %d", dir);
     }
-  } while (TIFFReadDirectory(ct.tiff));
+  } while (TIFFReadDirectory(tiff));
 
   // tiles concatenating a missing tile are sometimes corrupt, so we mark
   // them missing too
-  for (guint i = 0; i < level_array->len - 1; i++) {
-    struct level *l = level_array->pdata[i];
-    g_hash_table_foreach(l->missing_tiles, propagate_missing_tile,
-                         level_array->pdata[i + 1]);
+  for (i = 0; i < level_count - 1; i++) {
+    g_hash_table_foreach(levels[i]->missing_tiles, propagate_missing_tile,
+                         levels[i + 1]);
+  }
+
+  // check for OpenJPEG CVE-2013-6045 breakage
+  if (!test_tile_decoding(levels[0], tiff, err)) {
+    goto FAIL;
   }
 
   // read properties
-  if (!_openslide_tiff_set_dir(ct.tiff, 0, err)) {
-    return false;
+  if (!_openslide_tiff_set_dir(tiff, 0, err)) {
+    goto FAIL;
   }
   char *image_desc;
-  if (!TIFFGetField(ct.tiff, TIFFTAG_IMAGEDESCRIPTION, &image_desc)) {
+  if (!TIFFGetField(tiff, TIFFTAG_IMAGEDESCRIPTION, &image_desc)) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Couldn't read ImageDescription field");
-    return false;
+    goto FAIL;
   }
-  g_auto(GStrv) props = g_strsplit(image_desc, "|", -1);
+  char **props = g_strsplit(image_desc, "|", -1);
   add_properties(osr, props);
+  g_strfreev(props);
 
   // set hash and properties
-  struct level *top_level = level_array->pdata[level_array->len - 1];
   if (!_openslide_tifflike_init_properties_and_hash(osr, tl, quickhash1,
-                                                    top_level->tiffl.dir,
+                                                    levels[level_count - 1]->tiffl.dir,
                                                     0,
                                                     err)) {
-    return false;
+    goto FAIL;
   }
-
-  // allocate private data
-  struct aperio_ops_data *data = g_slice_new0(struct aperio_ops_data);
-  data->tc = g_steal_pointer(&tc);
 
   // store osr data
   g_assert(osr->data == NULL);
   g_assert(osr->levels == NULL);
-  osr->level_count = level_array->len;
-  osr->levels = (struct _openslide_level **)
-    g_ptr_array_free(g_steal_pointer(&level_array), false);
+  osr->levels = (struct _openslide_level **) levels;
+  osr->level_count = level_count;
   osr->data = data;
   osr->ops = &aperio_ops;
 
+  // put TIFF handle and store tiffcache reference
+  _openslide_tiffcache_put(tc, tiff);
+  data->tc = tc;
+
   return true;
+
+FAIL:
+  destroy_data(data, levels, level_count);
+  _openslide_tiffcache_put(tc, tiff);
+  _openslide_tiffcache_destroy(tc);
+  return false;
 }
 
 const struct _openslide_format _openslide_format_aperio = {

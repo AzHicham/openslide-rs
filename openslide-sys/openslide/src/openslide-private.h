@@ -34,10 +34,6 @@
 
 #include <cairo.h>
 
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(cairo_t, cairo_destroy)
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(cairo_surface_t, cairo_surface_destroy)
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(openslide_t, openslide_close)
-
 /* the associated image structure */
 struct _openslide_associated_image {
   const struct _openslide_associated_image_ops *ops;
@@ -71,7 +67,7 @@ struct _openslide {
   const char **property_names; // filled in automatically from hashtable
 
   // cache
-  struct _openslide_cache_binding *cache;
+  struct _openslide_cache *cache;
 
   // error handling, NULL if no error
   gpointer error; // must use g_atomic_pointer!
@@ -135,20 +131,21 @@ extern const struct _openslide_format _openslide_format_leica;
 extern const struct _openslide_format _openslide_format_mirax;
 extern const struct _openslide_format _openslide_format_philips;
 extern const struct _openslide_format _openslide_format_sakura;
-extern const struct _openslide_format _openslide_format_synthetic;
 extern const struct _openslide_format _openslide_format_trestle;
 extern const struct _openslide_format _openslide_format_ventana;
 
 /* GHashTable utils */
+guint _openslide_int64_hash(gconstpointer v);
+gboolean _openslide_int64_equal(gconstpointer v1, gconstpointer v2);
 void _openslide_int64_free(gpointer data);
 
-/* g_key_file_new() + g_key_file_load_from_file() wrapper */
-GKeyFile *_openslide_read_key_file(const char *filename, int32_t max_size,
-                                   GKeyFileFlags flags, GError **err);
+/* g_key_file_load_from_file wrapper */
+bool _openslide_read_key_file(GKeyFile *key_file, const char *filename,
+                              int32_t max_size, GKeyFileFlags flags,
+                              GError **err);
 
-void *_openslide_inflate_buffer(const void *src, int64_t src_len,
-                                int64_t dst_len,
-                                GError **err);
+/* fopen() wrapper which properly sets FD_CLOEXEC */
+FILE *_openslide_fopen(const char *path, const char *mode, GError **err);
 
 /* Parse string to double, returning NAN on failure.  Accept both comma
    and period as decimal separator. */
@@ -172,38 +169,6 @@ bool _openslide_clip_tile(uint32_t *tiledata,
                           int64_t tile_w, int64_t tile_h,
                           int64_t clip_w, int64_t clip_h,
                           GError **err);
-
-
-// Slice allocator wrapper for g_auto
-struct _openslide_slice {
-  void *p;
-  gsize len;
-};
-
-struct _openslide_slice _openslide_slice_alloc(gsize len);
-
-void *_openslide_slice_steal(struct _openslide_slice *box);
-
-void _openslide_slice_free(struct _openslide_slice *box);
-
-typedef struct _openslide_slice _openslide_slice;
-G_DEFINE_AUTO_CLEANUP_CLEAR_FUNC(_openslide_slice, _openslide_slice_free)
-
-
-// File handling
-struct _openslide_file;
-
-struct _openslide_file *_openslide_fopen(const char *path, GError **err);
-size_t _openslide_fread(struct _openslide_file *file, void *buf, size_t size);
-bool _openslide_fseek(struct _openslide_file *file, off_t offset, int whence,
-                      GError **err);
-off_t _openslide_ftell(struct _openslide_file *file, GError **err);
-off_t _openslide_fsize(struct _openslide_file *file, GError **err);
-void _openslide_fclose(struct _openslide_file *file);
-bool _openslide_fexists(const char *path, GError **err);
-
-typedef struct _openslide_file _openslide_file;
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(_openslide_file, _openslide_fclose)
 
 
 // Grid helpers
@@ -287,32 +252,31 @@ void _openslide_set_bounds_props_from_grid(openslide_t *osr,
 
 
 /* Cache */
-struct _openslide_cache_binding;
+#define _OPENSLIDE_USEFUL_CACHE_SIZE 1024*1024*32
+
 struct _openslide_cache_entry;
 
-// create/release
-openslide_cache_t *_openslide_cache_create(uint64_t capacity_in_bytes);
+// constructor/destructor
+struct _openslide_cache *_openslide_cache_create(int capacity_in_bytes);
 
-void _openslide_cache_release(openslide_cache_t *cache);
+void _openslide_cache_destroy(struct _openslide_cache *cache);
 
-// binding a cache to an openslide_t
-struct _openslide_cache_binding *_openslide_cache_binding_create(void);
+// cache size
+int _openslide_cache_get_capacity(struct _openslide_cache *cache);
 
-void _openslide_cache_binding_set(struct _openslide_cache_binding *cb,
-                                  openslide_cache_t *cache);
-
-void _openslide_cache_binding_destroy(struct _openslide_cache_binding *cb);
+void _openslide_cache_set_capacity(struct _openslide_cache *cache,
+				   int capacity_in_bytes);
 
 // put and get
-void _openslide_cache_put(struct _openslide_cache_binding *cb,
+void _openslide_cache_put(struct _openslide_cache *cache,
 			  void *plane,  // coordinate plane (level or grid)
 			  int64_t x,
 			  int64_t y,
 			  void *data,
-			  uint64_t size_in_bytes,
+			  int size_in_bytes,
 			  struct _openslide_cache_entry **entry);
 
-void *_openslide_cache_get(struct _openslide_cache_binding *cb,
+void *_openslide_cache_get(struct _openslide_cache *cache,
 			   void *plane,
 			   int64_t x,
 			   int64_t y,
@@ -320,10 +284,6 @@ void *_openslide_cache_get(struct _openslide_cache_binding *cb,
 
 // value unref
 void _openslide_cache_entry_unref(struct _openslide_cache_entry *entry);
-
-typedef struct _openslide_cache_entry _openslide_cache_entry;
-G_DEFINE_AUTOPTR_CLEANUP_FUNC(_openslide_cache_entry,
-                              _openslide_cache_entry_unref)
 
 
 /* Internal error propagation */
@@ -338,6 +298,8 @@ enum OpenSlideError {
 #define OPENSLIDE_ERROR _openslide_error_quark()
 GQuark _openslide_error_quark(void);
 
+void _openslide_io_error(GError **err, const char *fmt, ...) G_GNUC_PRINTF(2, 3);
+
 bool _openslide_check_cairo_status(cairo_t *cr, GError **err);
 
 /* Debug flags */
@@ -345,8 +307,6 @@ enum _openslide_debug_flag {
   OPENSLIDE_DEBUG_DETECTION,
   OPENSLIDE_DEBUG_JPEG_MARKERS,
   OPENSLIDE_DEBUG_PERFORMANCE,
-  OPENSLIDE_DEBUG_SQL,
-  OPENSLIDE_DEBUG_SYNTHETIC,
   OPENSLIDE_DEBUG_TILES,
 };
 
@@ -397,11 +357,8 @@ void openslide_cancel_prefetch_hint(openslide_t *osr, int prefetch_id);
    Every @p replacement must be unique to avoid conflicting-type errors. */
 #define _OPENSLIDE_POISON(replacement) error__use_ ## replacement ## _instead
 #define fopen _OPENSLIDE_POISON(_openslide_fopen)
-#define fread _OPENSLIDE_POISON(_openslide_fread)
-#define fseek _OPENSLIDE_POISON(_openslide_fseek)
-#define ftell _OPENSLIDE_POISON(_openslide_ftell)
-#define fclose _OPENSLIDE_POISON(_openslide_fclose)
-#define g_file_test _OPENSLIDE_POISON(_openslide_fexists)
+#define fseek _OPENSLIDE_POISON(fseeko)
+#define ftell _OPENSLIDE_POISON(ftello)
 #define strtod _OPENSLIDE_POISON(_openslide_parse_double)
 #define g_ascii_strtod _OPENSLIDE_POISON(_openslide_parse_double_)
 #define sqlite3_open _OPENSLIDE_POISON(_openslide_sqlite_open)
@@ -412,12 +369,5 @@ void openslide_cancel_prefetch_hint(openslide_t *osr, int prefetch_id);
 #define TIFFOpen _OPENSLIDE_POISON(_openslide_tiffcache_get__)
 #define TIFFSetDirectory _OPENSLIDE_POISON(_openslide_tiff_set_dir)
 
-#ifndef NO_POISON_FSEEKO
-// openslide-file.c needs the original macros
-#undef fseeko
-#undef ftello
-#define fseeko _OPENSLIDE_POISON(_openslide_fseek_)
-#define ftello _OPENSLIDE_POISON(_openslide_ftell_)
-#endif
 
 #endif

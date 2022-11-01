@@ -89,8 +89,6 @@ pub const OPENSLIDE_PROPERTY_NAME_BOUNDS_X: &[u8; 19usize] = b"openslide.bounds-
 pub const OPENSLIDE_PROPERTY_NAME_BOUNDS_Y: &[u8; 19usize] = b"openslide.bounds-y\0";
 pub const OPENSLIDE_PROPERTY_NAME_BOUNDS_WIDTH: &[u8; 23usize] = b"openslide.bounds-width\0";
 pub const OPENSLIDE_PROPERTY_NAME_BOUNDS_HEIGHT: &[u8; 24usize] = b"openslide.bounds-height\0";
-pub type wchar_t = ::std::os::raw::c_int;
-pub type max_align_t = u128;
 pub type int_least8_t = i8;
 pub type int_least16_t = i16;
 pub type int_least32_t = i32;
@@ -662,22 +660,7 @@ pub struct _openslide {
     _unused: [u8; 0],
 }
 #[doc = " The main OpenSlide type."]
-#[doc = ""]
-#[doc = " An @ref openslide_t object can be used concurrently from multiple threads"]
-#[doc = " without locking.  (But you must lock or otherwise use memory barriers"]
-#[doc = " when passing the object between threads.)"]
 pub type openslide_t = _openslide;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct _openslide_cache {
-    _unused: [u8; 0],
-}
-#[doc = " An OpenSlide tile cache."]
-#[doc = ""]
-#[doc = " An @ref openslide_cache_t object can be used concurrently from multiple"]
-#[doc = " threads without locking.  (But you must lock or otherwise use memory"]
-#[doc = " barriers when passing the object between threads.)"]
-pub type openslide_cache_t = _openslide_cache;
 extern "C" {
     #[doc = " Quickly determine whether a whole slide image is recognized."]
     #[doc = ""]
@@ -690,7 +673,7 @@ extern "C" {
     #[doc = " Otherwise, return NULL.  Calling openslide_open() on this file will also"]
     #[doc = " return NULL."]
     #[doc = ""]
-    #[doc = " @param filename The filename to check.  On Windows, this must be in UTF-8."]
+    #[doc = " @param filename The filename to check."]
     #[doc = " @return An identification of the format vendor for this file, or NULL."]
     #[doc = " @since 3.4.0"]
     pub fn openslide_detect_vendor(
@@ -705,7 +688,7 @@ extern "C" {
     #[doc = " request.  Instead, it should maintain a cache of OpenSlide objects and"]
     #[doc = " reuse them when possible."]
     #[doc = ""]
-    #[doc = " @param filename The filename to open.  On Windows, this must be in UTF-8."]
+    #[doc = " @param filename The filename to open."]
     #[doc = " @return"]
     #[doc = "         On success, a new OpenSlide object."]
     #[doc = "         If the file is not recognized by OpenSlide, NULL."]
@@ -776,9 +759,6 @@ extern "C" {
     #[doc = " bytes in length. If an error occurs or has occurred, then the memory"]
     #[doc = " pointed to by @p dest will be cleared."]
     #[doc = ""]
-    #[doc = " For more information about processing pre-multiplied pixel data, see"]
-    #[doc = " the [OpenSlide website](https://openslide.org/docs/premultiplied-argb/)."]
-    #[doc = ""]
     #[doc = " @param osr The OpenSlide object."]
     #[doc = " @param dest The destination buffer for the ARGB data."]
     #[doc = " @param x The top left x-coordinate, in the level 0 reference frame."]
@@ -799,7 +779,7 @@ extern "C" {
 extern "C" {
     #[doc = " Close an OpenSlide object."]
     #[doc = " No other threads may be using the object."]
-    #[doc = " After this function returns, the object cannot be used anymore."]
+    #[doc = " After this call returns, the object cannot be used anymore."]
     #[doc = ""]
     #[doc = " @param osr The OpenSlide object."]
     pub fn openslide_close(osr: *mut openslide_t);
@@ -821,8 +801,10 @@ extern "C" {
 extern "C" {
     #[doc = " Get the NULL-terminated array of property names."]
     #[doc = ""]
-    #[doc = " This function returns an array of strings naming properties available"]
-    #[doc = " in the whole slide image."]
+    #[doc = " Certain vendor-specific metadata properties may exist"]
+    #[doc = " within a whole slide image. They are encoded as key-value"]
+    #[doc = " pairs. This call provides a list of names as strings"]
+    #[doc = " that can be used to read properties with openslide_get_property_value()."]
     #[doc = ""]
     #[doc = " @param osr The OpenSlide object."]
     #[doc = " @return A NULL-terminated string array of property names, or"]
@@ -834,7 +816,10 @@ extern "C" {
 extern "C" {
     #[doc = " Get the value of a single property."]
     #[doc = ""]
-    #[doc = " This function returns the value of the property given by @p name."]
+    #[doc = " Certain vendor-specific metadata properties may exist"]
+    #[doc = " within a whole slide image. They are encoded as key-value"]
+    #[doc = " pairs. This call provides the value of the property given"]
+    #[doc = " by @p name."]
     #[doc = ""]
     #[doc = " @param osr The OpenSlide object."]
     #[doc = " @param name The name of the desired property. Must be"]
@@ -849,8 +834,12 @@ extern "C" {
 extern "C" {
     #[doc = " Get the NULL-terminated array of associated image names."]
     #[doc = ""]
-    #[doc = " This function returns an array of strings naming associated images"]
-    #[doc = " available in the whole slide image."]
+    #[doc = " Certain vendor-specific associated images may exist"]
+    #[doc = " within a whole slide image. They are encoded as key-value"]
+    #[doc = " pairs. This call provides a list of names as strings"]
+    #[doc = " that can be used to read associated images with"]
+    #[doc = " openslide_get_associated_image_dimensions() and"]
+    #[doc = " openslide_read_associated_image()."]
     #[doc = ""]
     #[doc = " @param osr The OpenSlide object."]
     #[doc = " @return A NULL-terminated string array of associated image names, or"]
@@ -885,11 +874,8 @@ extern "C" {
     #[doc = " with a whole slide image. @p dest must be a valid pointer to enough"]
     #[doc = " memory to hold the image, at least (width * height * 4) bytes in"]
     #[doc = " length.  Get the width and height with"]
-    #[doc = " openslide_get_associated_image_dimensions(). This function does nothing"]
+    #[doc = " openslide_get_associated_image_dimensions(). This call does nothing"]
     #[doc = " if an error occurred."]
-    #[doc = ""]
-    #[doc = " For more information about processing pre-multiplied pixel data, see"]
-    #[doc = " the [OpenSlide website](https://openslide.org/docs/premultiplied-argb/)."]
     #[doc = ""]
     #[doc = " @param osr The OpenSlide object."]
     #[doc = " @param dest The destination buffer for the ARGB data."]
@@ -900,34 +886,6 @@ extern "C" {
         name: *const ::std::os::raw::c_char,
         dest: *mut u32,
     );
-}
-extern "C" {
-    #[doc = " Create a new tile cache, unconnected to any OpenSlide object.  The cache"]
-    #[doc = " can be attached to one or more OpenSlide objects with openslide_set_cache()."]
-    #[doc = " The cache must be released with openslide_cache_release() when done."]
-    #[doc = ""]
-    #[doc = " @param capacity The capacity of the cache, in bytes."]
-    #[doc = " @return A new cache."]
-    #[doc = " @since 3.5.0"]
-    pub fn openslide_cache_create(capacity: usize) -> *mut openslide_cache_t;
-}
-extern "C" {
-    #[doc = " Attach a cache to the specified OpenSlide object, replacing the"]
-    #[doc = " current cache."]
-    #[doc = ""]
-    #[doc = " @param osr The OpenSlide object."]
-    #[doc = " @param cache The cache to attach."]
-    #[doc = " @since 3.5.0"]
-    pub fn openslide_set_cache(osr: *mut openslide_t, cache: *mut openslide_cache_t);
-}
-extern "C" {
-    #[doc = " Release the cache.  The cache may be released while it is still attached"]
-    #[doc = " to OpenSlide objects.  It will be freed once the last attached OpenSlide"]
-    #[doc = " object is closed."]
-    #[doc = ""]
-    #[doc = " @param cache The cache to release."]
-    #[doc = " @since 3.5.0"]
-    pub fn openslide_cache_release(cache: *mut openslide_cache_t);
 }
 extern "C" {
     #[doc = " Get the version of the OpenSlide library."]
@@ -949,7 +907,7 @@ extern "C" {
     #[doc = " openslide_open(), but it could also erroneously return @p true in some"]
     #[doc = " cases where openslide_open() would fail."]
     #[doc = ""]
-    #[doc = " @param filename The filename to check.  On Windows, this must be in UTF-8."]
+    #[doc = " @param filename The filename to check."]
     #[doc = " @return If openslide_open() will succeed."]
     #[doc = " @deprecated Use openslide_detect_vendor() to efficiently check whether"]
     #[doc = "             a slide file is recognized by OpenSlide, or just call"]

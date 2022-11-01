@@ -58,7 +58,7 @@ bool _openslide_xml_has_default_namespace(xmlDoc *doc, const char *ns) {
 
 int64_t _openslide_xml_parse_int_attr(xmlNode *node, const char *name,
                                       GError **err) {
-  g_autoptr(xmlChar) value = xmlGetProp(node, BAD_CAST name);
+  xmlChar *value = xmlGetProp(node, BAD_CAST name);
   if (value == NULL) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "No integer attribute \"%s\"", name);
@@ -70,15 +70,17 @@ int64_t _openslide_xml_parse_int_attr(xmlNode *node, const char *name,
   if (value[0] == 0 || endptr[0] != 0) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Invalid integer attribute \"%s\"", name);
+    xmlFree(value);
     return -1;
   }
 
+  xmlFree(value);
   return result;
 }
 
 double _openslide_xml_parse_double_attr(xmlNode *node, const char *name,
                                         GError **err) {
-  g_autoptr(xmlChar) value = xmlGetProp(node, BAD_CAST name);
+  xmlChar *value = xmlGetProp(node, BAD_CAST name);
   if (value == NULL) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "No floating-point attribute \"%s\"", name);
@@ -89,8 +91,10 @@ double _openslide_xml_parse_double_attr(xmlNode *node, const char *name,
   if (isnan(result)) {
     g_set_error(err, OPENSLIDE_ERROR, OPENSLIDE_ERROR_FAILED,
                 "Invalid floating-point attribute \"%s\"", name);
-    return NAN;
+    // fall through
   }
+
+  xmlFree(value);
   return result;
 }
 
@@ -114,34 +118,38 @@ xmlXPathContext *_openslide_xml_xpath_create(xmlDoc *doc) {
 // return NULL if no matches
 xmlXPathObject *_openslide_xml_xpath_eval(xmlXPathContext *ctx,
                                           const char *xpath) {
-  g_autoptr(xmlXPathObject) result =
-    xmlXPathEvalExpression(BAD_CAST xpath, ctx);
+  xmlXPathObject *result = xmlXPathEvalExpression(BAD_CAST xpath, ctx);
   if (result && (result->nodesetval == NULL ||
                  result->nodesetval->nodeNr == 0)) {
+    xmlXPathFreeObject(result);
     return NULL;
   }
-  return g_steal_pointer(&result);
+  return result;
 }
 
 // return NULL unless exactly one match
 xmlNode *_openslide_xml_xpath_get_node(xmlXPathContext *ctx,
                                        const char *xpath) {
-  g_autoptr(xmlXPathObject) result = _openslide_xml_xpath_eval(ctx, xpath);
+  xmlXPathObject *result = _openslide_xml_xpath_eval(ctx, xpath);
+  xmlNode *obj = NULL;
   if (result && result->nodesetval->nodeNr == 1) {
-    return result->nodesetval->nodeTab[0];
+    obj = result->nodesetval->nodeTab[0];
   }
-  return NULL;
+  xmlXPathFreeObject(result);
+  return obj;
 }
 
 char *_openslide_xml_xpath_get_string(xmlXPathContext *ctx,
                                       const char *xpath) {
-  g_autoptr(xmlXPathObject) result =
-    xmlXPathEvalExpression(BAD_CAST xpath, ctx);
+  xmlXPathObject *result = xmlXPathEvalExpression(BAD_CAST xpath, ctx);
+  char *str = NULL;
   if (result && result->nodesetval && result->nodesetval->nodeNr) {
-    g_autoptr(xmlChar) xmlstr = xmlXPathCastToString(result);
-    return g_strdup((char *) xmlstr);
+    xmlChar *xmlstr = xmlXPathCastToString(result);
+    str = g_strdup((char *) xmlstr);
+    xmlFree(xmlstr);
   }
-  return NULL;
+  xmlXPathFreeObject(result);
+  return str;
 }
 
 void _openslide_xml_set_prop_from_xpath(openslide_t *osr,
@@ -154,11 +162,4 @@ void _openslide_xml_set_prop_from_xpath(openslide_t *osr,
                         g_strdup(property_name),
                         str);
   }
-}
-
-// xmlFree() is a macro that makes an indirect function call to code in
-// another library, which makes CFI unhappy.  Wrap it so we can filter the
-// wrapper out of CFI checks.
-void _openslide_xml_char_free(xmlChar *c) {
-  xmlFree(c);
 }
