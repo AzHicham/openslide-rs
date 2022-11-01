@@ -1,7 +1,7 @@
 [package]
 name = "openslide-rs"
 edition = "2021"
-version = "1.0.0-rc1"
+version = "1.0.0-rc2"
 authors = ["AzHicham <hicham.azimani1@gmail.com>"]
 description = "Rust bindings of OpenSlide C library"
 repository = "https://github.com/AzHicham/openslide-rs"
