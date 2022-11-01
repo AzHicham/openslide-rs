@@ -29,10 +29,10 @@ jobs:
       with:
         key: ${{ matrix.os }}-${{ matrix.feature }}
     - name: Install dependencies ubuntu
-      if: ${{ matrix.os == ubuntu-20.04 }}
+      if: ${{ matrix.os == 'ubuntu-20.04' }}
       run: make install-deps-apt
     - name: Install dependencies macos
-      if: ${{ matrix.os == macos-12 }}
+      if: ${{ matrix.os == 'macos-12' }}
       run: make install-deps-brew
     - name: Build & Test
       run: cargo test --workspace --features ${{ matrix.feature }}
