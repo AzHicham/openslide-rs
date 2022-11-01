@@ -42,8 +42,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt update
-        sudo apt install -y openslide-tools
-        sudo ln -s /usr/lib/x86_64-linux-gnu/libopenslide.so.0 /usr/lib/x86_64-linux-gnu/libopenslide.so
+        make deps-apt
     - name: Build & Test
       run: cargo test --workspace ${{ matrix.build_type.flag }} --features "${{ matrix.features }}"
 
