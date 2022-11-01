@@ -34,8 +34,9 @@ jobs:
         benchmark-data-dir-path: '.'
         max-items-in-chart: 30
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        auto-push: true
+        auto-push: ${{ github.event_name != 'pull_request' }}
         alert-threshold: '200%'
         comment-on-alert: true
+        comment-always: true
         fail-on-alert: false
         alert-comment-cc-users: '@AzHicham'
