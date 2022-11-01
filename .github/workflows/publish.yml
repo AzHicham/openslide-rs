@@ -9,11 +9,11 @@ on:
 
 jobs:
   validate:
-    if: ${{ github.event_name == 'release' }}
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
       - uses: MeilCli/regex-match@v1.5.15
+        if: ${{ github.event_name == 'release' }}
         name: SemVer Validation
         id: regex-match
         with:
@@ -21,7 +21,7 @@ jobs:
           regex_pattern: '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
           # SemVer Regex https://ihateregex.io/expr/semver/
       - name: SemVer check failed
-        if: ${{ steps.regex-match.outputs.matched == 'false' }}
+        if: ${{ github.event_name == 'release' && steps.regex-match.outputs.matched == 'false' }}
         run: exit 1
 
   publish:
