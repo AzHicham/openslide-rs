@@ -15,10 +15,10 @@ pub struct OpenSlideT {}
 
 /// wrapper around OpenSlideT, this is usefull for implementing Send and Sync
 #[derive(Debug)]
-pub(crate) struct OpenSlideWrapper(pub *const OpenSlideT);
+pub(crate) struct OpenSlideWrapper(pub *mut OpenSlideT);
 
 impl Deref for OpenSlideWrapper {
-    type Target = *const OpenSlideT;
+    type Target = *mut OpenSlideT;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -33,41 +33,41 @@ extern "C" {
     pub fn openslide_detect_vendor(filename: *const libc::c_char) -> *const libc::c_char;
 
     #[allow(improper_ctypes)]
-    pub fn openslide_open(filename: *const libc::c_char) -> *const OpenSlideT;
+    pub fn openslide_open(filename: *const libc::c_char) -> *mut OpenSlideT;
 
     #[allow(improper_ctypes)]
-    pub fn openslide_close(osr: *const OpenSlideT) -> libc::c_void;
+    pub fn openslide_close(osr: *mut OpenSlideT) -> libc::c_void;
 
     #[allow(improper_ctypes)]
-    fn openslide_get_level_count(osr: *const OpenSlideT) -> i32;
+    fn openslide_get_level_count(osr: *mut OpenSlideT) -> i32;
 
     #[allow(improper_ctypes)]
     fn openslide_get_level0_dimensions(
-        osr: *const OpenSlideT,
+        osr: *mut OpenSlideT,
         w: *mut i64,
         h: *mut i64,
     ) -> libc::c_void;
 
     #[allow(improper_ctypes)]
     fn openslide_get_level_dimensions(
-        osr: *const OpenSlideT,
+        osr: *mut OpenSlideT,
         level: i32,
         w: *mut i64,
         h: *mut i64,
     ) -> libc::c_void;
 
     #[allow(improper_ctypes)]
-    fn openslide_get_level_downsample(osr: *const OpenSlideT, level: i32) -> libc::c_double;
+    fn openslide_get_level_downsample(osr: *mut OpenSlideT, level: i32) -> libc::c_double;
 
     #[allow(improper_ctypes)]
     fn openslide_get_best_level_for_downsample(
-        slide: *const OpenSlideT,
+        slide: *mut OpenSlideT,
         downsample_factor: libc::c_double,
     ) -> i32;
 
     #[allow(improper_ctypes)]
     fn openslide_read_region(
-        osr: *const OpenSlideT,
+        osr: *mut OpenSlideT,
         dest: *mut u32,
         x: i64,
         y: i64,
@@ -77,23 +77,23 @@ extern "C" {
     ) -> libc::c_void;
 
     #[allow(improper_ctypes)]
-    fn openslide_get_error(osr: *const OpenSlideT) -> *const libc::c_char;
+    fn openslide_get_error(osr: *mut OpenSlideT) -> *const libc::c_char;
 
     #[allow(improper_ctypes)]
-    fn openslide_get_property_names(osr: *const OpenSlideT) -> *const *const libc::c_char;
+    fn openslide_get_property_names(osr: *mut OpenSlideT) -> *const *const libc::c_char;
 
     #[allow(improper_ctypes)]
     fn openslide_get_property_value(
-        osr: *const OpenSlideT,
+        osr: *mut OpenSlideT,
         name: *const libc::c_char,
     ) -> *const libc::c_char;
 
     #[allow(improper_ctypes)]
-    fn openslide_get_associated_image_names(osr: *const OpenSlideT) -> *const *const libc::c_char;
+    fn openslide_get_associated_image_names(osr: *mut OpenSlideT) -> *const *const libc::c_char;
 
     #[allow(improper_ctypes)]
     fn openslide_get_associated_image_dimensions(
-        osr: *const OpenSlideT,
+        osr: *mut OpenSlideT,
         name: *const libc::c_char,
         w: *mut i64,
         h: *mut i64,
@@ -101,7 +101,7 @@ extern "C" {
 
     #[allow(improper_ctypes)]
     fn openslide_read_associated_image(
-        osr: *const OpenSlideT,
+        osr: *mut OpenSlideT,
         name: *const libc::c_char,
         dest: *mut u32,
     ) -> libc::c_void;
@@ -120,7 +120,7 @@ pub fn detect_vendor(filename: &str) -> Result<String> {
     }
 }
 
-pub fn open(filename: &str) -> Result<*const OpenSlideT> {
+pub fn open(filename: &str) -> Result<*mut OpenSlideT> {
     let c_filename = ffi::CString::new(filename).map_err(map_string_error)?;
     let slide = unsafe { openslide_open(c_filename.as_ptr()) };
     if !slide.is_null() {
@@ -131,13 +131,13 @@ pub fn open(filename: &str) -> Result<*const OpenSlideT> {
     }
 }
 
-pub fn close(osr: *const OpenSlideT) {
+pub fn close(osr: *mut OpenSlideT) {
     unsafe {
         openslide_close(osr);
     }
 }
 
-pub fn get_level_count(osr: *const OpenSlideT) -> Result<i32> {
+pub fn get_level_count(osr: *mut OpenSlideT) -> Result<i32> {
     let num_levels = unsafe { openslide_get_level_count(osr) };
     if num_levels == -1 {
         get_error(osr)?;
@@ -148,7 +148,7 @@ pub fn get_level_count(osr: *const OpenSlideT) -> Result<i32> {
     Ok(num_levels)
 }
 
-pub fn get_level0_dimensions(osr: *const OpenSlideT) -> Result<(i64, i64)> {
+pub fn get_level0_dimensions(osr: *mut OpenSlideT) -> Result<(i64, i64)> {
     let mut width: i64 = 0;
     let mut height: i64 = 0;
     unsafe {
@@ -163,7 +163,7 @@ pub fn get_level0_dimensions(osr: *const OpenSlideT) -> Result<(i64, i64)> {
     Ok((width, height))
 }
 
-pub fn get_level_dimensions(osr: *const OpenSlideT, level: i32) -> Result<(i64, i64)> {
+pub fn get_level_dimensions(osr: *mut OpenSlideT, level: i32) -> Result<(i64, i64)> {
     let mut width: i64 = 0;
     let mut height: i64 = 0;
     unsafe {
@@ -176,7 +176,7 @@ pub fn get_level_dimensions(osr: *const OpenSlideT, level: i32) -> Result<(i64, 
     Ok((width, height))
 }
 
-pub fn get_level_downsample(osr: *const OpenSlideT, level: i32) -> Result<f64> {
+pub fn get_level_downsample(osr: *mut OpenSlideT, level: i32) -> Result<f64> {
     let downsampling_factor = unsafe { openslide_get_level_downsample(osr, level) };
     if downsampling_factor == -1.0 {
         get_error(osr)?;
@@ -187,7 +187,7 @@ pub fn get_level_downsample(osr: *const OpenSlideT, level: i32) -> Result<f64> {
     Ok(downsampling_factor)
 }
 
-pub fn get_best_level_for_downsample(osr: *const OpenSlideT, downsample: f64) -> Result<i32> {
+pub fn get_best_level_for_downsample(osr: *mut OpenSlideT, downsample: f64) -> Result<i32> {
     let level = unsafe { openslide_get_best_level_for_downsample(osr, downsample) };
     if level == -1 {
         get_error(osr)?;
@@ -199,7 +199,7 @@ pub fn get_best_level_for_downsample(osr: *const OpenSlideT, downsample: f64) ->
 }
 
 pub fn read_region(
-    osr: *const OpenSlideT,
+    osr: *mut OpenSlideT,
     x: i64,
     y: i64,
     level: i32,
@@ -218,7 +218,7 @@ pub fn read_region(
     Ok(buffer)
 }
 
-pub fn get_property_names(osr: *const OpenSlideT) -> Result<Vec<String>> {
+pub fn get_property_names(osr: *mut OpenSlideT) -> Result<Vec<String>> {
     let string_values = unsafe {
         let null_terminated_array_ptr = openslide_get_property_names(osr);
         if null_terminated_array_ptr.is_null() {
@@ -246,7 +246,7 @@ pub fn get_property_names(osr: *const OpenSlideT) -> Result<Vec<String>> {
     Ok(string_values)
 }
 
-pub fn get_property_value(osr: *const OpenSlideT, name: &str) -> Result<String> {
+pub fn get_property_value(osr: *mut OpenSlideT, name: &str) -> Result<String> {
     let c_name = ffi::CString::new(name).map_err(map_string_error)?;
     let value = unsafe {
         let c_value = openslide_get_property_value(osr, c_name.as_ptr());
@@ -262,7 +262,7 @@ pub fn get_property_value(osr: *const OpenSlideT, name: &str) -> Result<String> 
     Ok(value)
 }
 
-pub fn get_associated_image_names(osr: *const OpenSlideT) -> Result<Vec<String>> {
+pub fn get_associated_image_names(osr: *mut OpenSlideT) -> Result<Vec<String>> {
     let string_values = unsafe {
         let null_terminated_array_ptr = openslide_get_associated_image_names(osr);
         if null_terminated_array_ptr.is_null() {
@@ -290,7 +290,7 @@ pub fn get_associated_image_names(osr: *const OpenSlideT) -> Result<Vec<String>>
     Ok(string_values)
 }
 
-pub fn get_associated_image_dimensions(osr: *const OpenSlideT, name: &str) -> Result<(i64, i64)> {
+pub fn get_associated_image_dimensions(osr: *mut OpenSlideT, name: &str) -> Result<(i64, i64)> {
     let c_name = ffi::CString::new(name).map_err(map_string_error)?;
     let mut width: i64 = 0;
     let mut height: i64 = 0;
@@ -306,7 +306,7 @@ pub fn get_associated_image_dimensions(osr: *const OpenSlideT, name: &str) -> Re
     Ok((width, height))
 }
 
-pub fn read_associated_image(osr: *const OpenSlideT, name: &str) -> Result<((i64, i64), Vec<u8>)> {
+pub fn read_associated_image(osr: *mut OpenSlideT, name: &str) -> Result<((i64, i64), Vec<u8>)> {
     let c_name = ffi::CString::new(name).map_err(map_string_error)?;
     let (width, height) = get_associated_image_dimensions(osr, name)?;
     let size = (width * height * 4) as usize;
@@ -321,7 +321,7 @@ pub fn read_associated_image(osr: *const OpenSlideT, name: &str) -> Result<((i64
     Ok(((width, height), buffer))
 }
 
-pub fn get_error(osr: *const OpenSlideT) -> Result<()> {
+pub fn get_error(osr: *mut OpenSlideT) -> Result<()> {
     let value = unsafe {
         let c_value = openslide_get_error(osr);
         if c_value.is_null() {
