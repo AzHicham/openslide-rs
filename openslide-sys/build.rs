@@ -11,7 +11,6 @@ fn link_library(s: &str) {
     pkg_config::Config::new().statik(true).probe(s).unwrap();
 }
 
-
 fn main() {
     let bindings = bindgen::Builder::default()
         .header("openslide/src/openslide.h")
