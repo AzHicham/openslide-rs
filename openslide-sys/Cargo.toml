@@ -1,0 +1,17 @@
+[package]
+name = "openslide-sys"
+edition = "2021"
+version = "1.0.0"
+authors = ["AzHicham <hicham.azimani1@gmail.com>"]
+description = "Rust bindings of OpenSlide C library"
+readme = "README.md"
+keywords = ["openslide", "histopathology", "microscopy"]
+categories = ["science"]
+license = "MIT/Apache-2.0"
+
+[dependencies]
+
+[build-dependencies]
+bindgen = "0.61.0"
+cc = "1.0.74"
+pkg-config = "0.3.26"
