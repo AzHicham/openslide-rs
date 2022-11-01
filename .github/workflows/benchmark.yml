@@ -11,14 +11,11 @@ env:
 
 jobs:
   benchmarks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y openslide-tools
-        sudo ln -s /usr/lib/x86_64-linux-gnu/libopenslide.so.0 /usr/lib/x86_64-linux-gnu/libopenslide.so
+      run: make install-deps-apt
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
