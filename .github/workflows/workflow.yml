@@ -38,7 +38,7 @@ jobs:
       run: cargo test --workspace --features "${{ matrix.feature }}"
 
   pre-commit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
     - uses: actions-rs/toolchain@v1
