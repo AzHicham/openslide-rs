@@ -13,6 +13,11 @@ pub enum OpenSlideError {
     #[error("Internal error: {0}")]
     InternalError(String),
 
+    /// Image feature related error
+    /// Example: Error while resizing, bad dimension ..
+    #[error("Internal error: {0}")]
+    ImageError(String),
+
     #[error("File {0} does not exist")]
     MissingFile(String),
 
@@ -24,10 +29,14 @@ pub enum OpenSlideError {
     CoreError(String),
 }
 
-pub(crate) fn map_try_error(err: TryFromIntError) -> OpenSlideError {
-    OpenSlideError::InternalError(err.to_string())
+impl From<TryFromIntError> for OpenSlideError {
+    fn from(err: TryFromIntError) -> Self {
+        OpenSlideError::InternalError(err.to_string())
+    }
 }
 
-pub(crate) fn map_string_error(err: NulError) -> OpenSlideError {
-    OpenSlideError::InternalError(err.to_string())
+impl From<NulError> for OpenSlideError {
+    fn from(err: NulError) -> Self {
+        OpenSlideError::InternalError(err.to_string())
+    }
 }

@@ -5,7 +5,6 @@
 
 use crate::{errors::OpenSlideError, Result};
 
-use crate::errors::map_string_error;
 use std::{ffi, ops::Deref};
 
 /// wrapper around openslide_t "C" type in OpenSlide
@@ -40,13 +39,6 @@ extern "C" {
 
     #[allow(improper_ctypes)]
     fn openslide_get_level_count(osr: *mut OpenSlideT) -> i32;
-
-    #[allow(improper_ctypes)]
-    fn openslide_get_level0_dimensions(
-        osr: *mut OpenSlideT,
-        w: *mut i64,
-        h: *mut i64,
-    ) -> libc::c_void;
 
     #[allow(improper_ctypes)]
     fn openslide_get_level_dimensions(
@@ -108,7 +100,7 @@ extern "C" {
 }
 
 pub fn detect_vendor(filename: &str) -> Result<String> {
-    let c_filename = ffi::CString::new(filename).map_err(map_string_error)?;
+    let c_filename = ffi::CString::new(filename)?;
     unsafe {
         let c_vendor = openslide_detect_vendor(c_filename.as_ptr());
         if !c_vendor.is_null() {
@@ -121,7 +113,7 @@ pub fn detect_vendor(filename: &str) -> Result<String> {
 }
 
 pub fn open(filename: &str) -> Result<*mut OpenSlideT> {
-    let c_filename = ffi::CString::new(filename).map_err(map_string_error)?;
+    let c_filename = ffi::CString::new(filename)?;
     let slide = unsafe { openslide_open(c_filename.as_ptr()) };
     if !slide.is_null() {
         get_error(slide)?;
@@ -146,21 +138,6 @@ pub fn get_level_count(osr: *mut OpenSlideT) -> Result<i32> {
         ));
     }
     Ok(num_levels)
-}
-
-pub fn get_level0_dimensions(osr: *mut OpenSlideT) -> Result<(i64, i64)> {
-    let mut width: i64 = 0;
-    let mut height: i64 = 0;
-    unsafe {
-        openslide_get_level0_dimensions(osr, &mut width, &mut height);
-    }
-    if width == -1 || height == -1 {
-        get_error(osr)?;
-        return Err(OpenSlideError::CoreError(
-            "Cannot get dimensions of level 0".to_string(),
-        ));
-    }
-    Ok((width, height))
 }
 
 pub fn get_level_dimensions(osr: *mut OpenSlideT, level: i32) -> Result<(i64, i64)> {
@@ -247,7 +224,7 @@ pub fn get_property_names(osr: *mut OpenSlideT) -> Result<Vec<String>> {
 }
 
 pub fn get_property_value(osr: *mut OpenSlideT, name: &str) -> Result<String> {
-    let c_name = ffi::CString::new(name).map_err(map_string_error)?;
+    let c_name = ffi::CString::new(name)?;
     let value = unsafe {
         let c_value = openslide_get_property_value(osr, c_name.as_ptr());
         if c_value.is_null() {
@@ -291,7 +268,7 @@ pub fn get_associated_image_names(osr: *mut OpenSlideT) -> Result<Vec<String>> {
 }
 
 pub fn get_associated_image_dimensions(osr: *mut OpenSlideT, name: &str) -> Result<(i64, i64)> {
-    let c_name = ffi::CString::new(name).map_err(map_string_error)?;
+    let c_name = ffi::CString::new(name)?;
     let mut width: i64 = 0;
     let mut height: i64 = 0;
     unsafe {
@@ -307,7 +284,7 @@ pub fn get_associated_image_dimensions(osr: *mut OpenSlideT, name: &str) -> Resu
 }
 
 pub fn read_associated_image(osr: *mut OpenSlideT, name: &str) -> Result<((i64, i64), Vec<u8>)> {
-    let c_name = ffi::CString::new(name).map_err(map_string_error)?;
+    let c_name = ffi::CString::new(name)?;
     let (width, height) = get_associated_image_dimensions(osr, name)?;
     let size = (width * height * 4) as usize;
     let mut buffer: Vec<u8> = Vec::with_capacity(size);

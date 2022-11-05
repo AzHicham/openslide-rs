@@ -7,20 +7,41 @@ pub mod tiff;
 
 use crate::properties::{aperio::Aperio, openslide::OpenSlide, tiff::Tiff};
 
+#[derive(Clone, Debug)]
+pub enum VendorProperties {
+    GenericTiff(Tiff),
+    Aperio(Aperio),
+    Hamamatsu,
+    Leica,
+    Philips,
+    Sakura,
+    MIRAX,
+    Trestle,
+    Ventana,
+    None,
+}
+
 /// This struct defines an inferface to the various properties of the various formats.
 #[derive(Clone, Debug)]
 pub struct Properties {
     pub openslide_properties: OpenSlide,
-    pub tiff_properties: Tiff,
-    pub aperio_properties: Aperio,
+    pub vendor_properties: VendorProperties,
 }
 
 impl Properties {
     pub fn new(property_iter: impl Iterator<Item = (String, String)> + Clone) -> Self {
+        let openslide_properties = OpenSlide::new(property_iter.clone());
+
+        let vendor = &openslide_properties.vendor.clone().unwrap_or_default();
+
+        let vendor_properties = match vendor.to_lowercase().as_str() {
+            "generic-tiff" => VendorProperties::GenericTiff(Tiff::new(property_iter)),
+            "aperio" => VendorProperties::Aperio(Aperio::new(property_iter)),
+            _ => VendorProperties::None,
+        };
         Properties {
-            tiff_properties: Tiff::new(property_iter.clone()),
-            openslide_properties: OpenSlide::new(property_iter.clone()),
-            aperio_properties: Aperio::new(property_iter),
+            openslide_properties,
+            vendor_properties,
         }
     }
 }

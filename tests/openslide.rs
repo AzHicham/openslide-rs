@@ -5,6 +5,7 @@ use std::path::Path;
 
 mod fixture;
 use fixture::{boxes_tiff, missing_file, small_svs, unopenable_tiff, unsupported_file};
+use openslide_rs::traits::Slide;
 
 #[rstest]
 #[should_panic(expected = "MissingFile(\"missing_file\")")]
@@ -64,10 +65,6 @@ fn test_slide_info(#[case] filename: &Path) {
     assert_eq!(slide.get_level_count().unwrap(), 4);
 
     // Level dimensions
-    assert_eq!(
-        slide.get_level0_dimensions().unwrap(),
-        Size { w: 300, h: 250 }
-    );
     assert_eq!(
         slide.get_level_dimensions(0).unwrap(),
         Size { w: 300, h: 250 }
@@ -137,7 +134,7 @@ fn test_associated_images(#[case] filename: &Path) {
         Size { w: 16, h: 16 }
     );
 
-    let image = slide.read_associated_image("thumbnail").unwrap();
+    let image = slide.read_associated_image_rgba("thumbnail").unwrap();
     assert_eq!(image.dimensions(), (16, 16));
 }
 
@@ -156,7 +153,7 @@ fn test_error_associated_images_dimension(#[case] filename: &Path) {
 fn test_error_read_associated_images(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
-    slide.read_associated_image("missing").unwrap();
+    slide.read_associated_image_rgb("missing").unwrap();
 }
 
 #[rstest]
@@ -164,7 +161,7 @@ fn test_error_read_associated_images(#[case] filename: &Path) {
 fn test_slide_read_region(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
-    let size = slide.get_level0_dimensions().unwrap();
+    let size = slide.get_level_dimensions(0).unwrap();
     let address = Address { x: 0, y: 0 };
     let level = 0;
 
