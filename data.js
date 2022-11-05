@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1667672400975,
+  "lastUpdate": 1667673306461,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
@@ -1555,6 +1555,62 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 9861425,
             "range": "± 327000",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "id": "f6bef910d704957325945b050aa3f4ae38b7b62b",
+          "message": "refactor: Stabilize API",
+          "timestamp": "2022-11-05T12:23:07Z",
+          "url": "https://github.com/AzHicham/openslide-rs/pull/17/commits/f6bef910d704957325945b050aa3f4ae38b7b62b"
+        },
+        "date": 1667673305672,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2618740,
+            "range": "± 287291",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 10740072,
+            "range": "± 1396698",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2596754,
+            "range": "± 452412",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 10963161,
+            "range": "± 1784217",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2467588,
+            "range": "± 498253",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 10657480,
+            "range": "± 1406969",
             "unit": "ns/iter"
           }
         ]
