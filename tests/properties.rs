@@ -87,6 +87,18 @@ fn test_tiff_properties(#[case] filename: &Path) {
         properties.openslide_properties.levels[0].downsample,
         Some(1.0)
     );
+    assert_eq!(
+        properties.openslide_properties.levels[1].downsample,
+        Some(2.0)
+    );
+    assert_eq!(
+        properties.openslide_properties.levels[2].downsample,
+        Some(4.016129)
+    );
+    assert_eq!(
+        properties.openslide_properties.levels[3].downsample,
+        Some(8.086312)
+    );
     assert_eq!(properties.openslide_properties.levels[0].height, Some(250));
     assert_eq!(properties.openslide_properties.levels[0].width, Some(300));
 

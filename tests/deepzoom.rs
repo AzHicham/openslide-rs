@@ -59,6 +59,12 @@ mod deepzoom {
         assert_eq!(image.height(), 250);
         assert_eq!(image.len(), 47 * 250 * 3);
 
+        // In this case deepzoom will resize the image outputed by openslide
+        let image = dz.get_tile_rgba(5, Address { x: 0, y: 0 }).unwrap();
+        assert_eq!(image.width(), 19);
+        assert_eq!(image.height(), 16);
+        assert_eq!(image.len(), 19 * 16 * 4);
+
         let image = dz.get_tile_rgba(0, Address { x: 1, y: 0 });
         assert!(image.is_err());
 
