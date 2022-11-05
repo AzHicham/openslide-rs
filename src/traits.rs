@@ -1,5 +1,4 @@
-use crate::properties::Properties;
-use crate::{Region, Result, Size};
+use crate::{properties::Properties, Region, Result, Size};
 use image::{RgbImage, RgbaImage};
 
 pub trait Slide {

@@ -2,9 +2,9 @@
 //! This module provides functionality for generating Deep Zoom images from OpenSlide objects.
 //! This is a simple translation of python DeepZoomGenerator implementation
 
-use crate::traits::Slide;
 use crate::{
     errors::OpenSlideError,
+    traits::Slide,
     utils::{resize_rgb_image, resize_rgba_image},
     Address, DeepZoomGenerator, Region, Result, Size,
 };

@@ -3,8 +3,10 @@ use crate::{
 };
 use std::path::Path;
 
-use crate::traits::Slide;
-use crate::utils::{_bgra_to_rgb, _bgra_to_rgba_inplace, resize_rgb_image, resize_rgba_image};
+use crate::{
+    traits::Slide,
+    utils::{_bgra_to_rgb, _bgra_to_rgba_inplace, resize_rgb_image, resize_rgba_image},
+};
 use image::RgbImage;
 #[cfg(feature = "image")]
 use image::RgbaImage;

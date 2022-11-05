@@ -1,8 +1,7 @@
 #[macro_use]
 extern crate lazy_static;
 
-use crate::properties::Properties;
-use crate::traits::Slide;
+use crate::{properties::Properties, traits::Slide};
 
 mod bindings;
 #[cfg(feature = "deepzoom")]
