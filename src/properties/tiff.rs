@@ -26,7 +26,7 @@ impl Tiff {
     pub(crate) fn new(property_iter: impl Iterator<Item = (String, String)>) -> Self {
         let mut tiff_property = Tiff::default();
         property_iter
-            .filter(|(name, _)| name.starts_with("openslide."))
+            .filter(|(name, _)| name.starts_with("tiff."))
             .for_each(|(name, value)| tiff_property.parse_property_name(&name, &value));
         tiff_property
     }
