@@ -51,20 +51,25 @@ OpenSlide can read virtual slides in several formats:
 ## Requirements
 
 * Rust &ge; 1.56
-* OpenSlide &ge; 3.4.1
-
+* OpenSlide build dependencies (required because of openslide-sys dependency)
 
 ## Installation
 
-openslide-rs requires [OpenSlide]. For instructions on installing both
-components so OpenSlide Rust can find OpenSlide, see the package
-[documentation][installing].
+OpenSlide-rs requires [OpenSlide] build dependencies. 
 
-[installing]: https://openslide.org/
+You will find a Makefile to help you install all required dependencies for Ubuntu and MacOs. 
+Bellow you will find command to run to be able to build this crate
 
-In some systems it's necessary to run this command to allow Rust compiler to found OpenSlide :
+### MacOs
 
-`sudo ln -s /usr/lib/x86_64-linux-gnu/libopenslide.so.0 /usr/lib/x86_64-linux-gnu/libopenslide.so`
+`brew install openslide --only-dependencies`
+
+### Ubuntu
+
+```
+apt-get install -y --no-install-recommends libwebp-dev libzstd-dev pkg-config clang
+apt-get build-dep -y --no-install-recommends libopenslide0
+```
 
 ## More Information
 
