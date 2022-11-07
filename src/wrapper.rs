@@ -1,15 +1,16 @@
-use crate::{
-    bindings, errors::OpenSlideError, Address, OpenSlide, Properties, Region, Result, Size,
-};
+use crate::{bindings, errors::OpenSlideError, OpenSlide, Properties, Region, Result, Size};
 use std::path::Path;
 
-use crate::{
-    traits::Slide,
-    utils::{_bgra_to_rgb, _bgra_to_rgba_inplace, resize_rgb_image, resize_rgba_image},
-};
-use image::RgbImage;
+use crate::traits::Slide;
+
 #[cfg(feature = "image")]
-use image::RgbaImage;
+use {
+    crate::{
+        utils::{_bgra_to_rgb, _bgra_to_rgba_inplace, resize_rgb_image, resize_rgba_image},
+        Address,
+    },
+    image::{RgbImage, RgbaImage},
+};
 
 impl Drop for OpenSlide {
     fn drop(&mut self) {

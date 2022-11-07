@@ -17,7 +17,7 @@ jobs:
         fail-fast: false
         matrix:
           os: [ "ubuntu-20.04", "macos-12" ]
-          feature: [ "", "deepzoom" ]
+          feature: [ "--no-default-features", "--features deepzoom", "--features image" ]
 
     steps:
     - uses: actions/checkout@v3
@@ -35,7 +35,7 @@ jobs:
       if: ${{ matrix.os == 'macos-12' }}
       run: make install-deps-brew
     - name: Build & Test
-      run: cargo test --workspace --features "${{ matrix.feature }}"
+      run: cargo test --workspace ${{ matrix.feature }}
 
   pre-commit:
     runs-on: ubuntu-20.04

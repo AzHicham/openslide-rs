@@ -1,8 +1,12 @@
-use crate::{errors::OpenSlideError, Result, Size};
-use fast_image_resize as fr;
-use image::{RgbImage, RgbaImage};
-use std::{iter::zip, num::NonZeroU32};
+#[cfg(feature = "image")]
+use {
+    crate::{errors::OpenSlideError, Result, Size},
+    fast_image_resize as fr,
+    image::{RgbImage, RgbaImage},
+    std::{iter::zip, num::NonZeroU32},
+};
 
+#[cfg(feature = "image")]
 pub(crate) fn resize_rgb_image(image: RgbImage, new_size: &Size) -> Result<RgbImage> {
     let src_image = fr::Image::from_vec_u8(
         NonZeroU32::new(image.width())
@@ -32,6 +36,7 @@ pub(crate) fn resize_rgb_image(image: RgbImage, new_size: &Size) -> Result<RgbIm
     Ok(image)
 }
 
+#[cfg(feature = "image")]
 pub(crate) fn resize_rgba_image(image: RgbaImage, new_size: &Size) -> Result<RgbaImage> {
     let src_image = fr::Image::from_vec_u8(
         NonZeroU32::new(image.width())

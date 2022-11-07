@@ -1,4 +1,5 @@
 use crate::{properties::Properties, Region, Result, Size};
+#[cfg(feature = "image")]
 use image::{RgbImage, RgbaImage};
 
 pub trait Slide {

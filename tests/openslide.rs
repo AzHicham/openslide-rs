@@ -121,6 +121,7 @@ fn test_error_slide_level(#[case] filename: &Path) {
 
 #[rstest]
 #[case(small_svs())]
+#[cfg(feature = "image")]
 fn test_associated_images_rgba(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
@@ -140,6 +141,7 @@ fn test_associated_images_rgba(#[case] filename: &Path) {
 
 #[rstest]
 #[case(small_svs())]
+#[cfg(feature = "image")]
 fn test_associated_images_rgb(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
@@ -168,6 +170,7 @@ fn test_error_associated_images_dimension(#[case] filename: &Path) {
 #[rstest]
 #[should_panic(expected = "CoreError(\"Unknown associated image\")")]
 #[case(small_svs())]
+#[cfg(feature = "image")]
 fn test_error_read_associated_images(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
@@ -191,6 +194,7 @@ fn test_slide_read_region(#[case] filename: &Path) {
 
 #[rstest]
 #[case(boxes_tiff())]
+#[cfg(feature = "image")]
 fn test_slide_read_image_rgb(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
@@ -207,6 +211,7 @@ fn test_slide_read_image_rgb(#[case] filename: &Path) {
 
 #[rstest]
 #[case(boxes_tiff())]
+#[cfg(feature = "image")]
 fn test_slide_read_image_rgba(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
@@ -223,6 +228,7 @@ fn test_slide_read_image_rgba(#[case] filename: &Path) {
 
 #[rstest]
 #[case(boxes_tiff())]
+#[cfg(feature = "image")]
 fn test_thumbnail_rgba(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
@@ -234,6 +240,7 @@ fn test_thumbnail_rgba(#[case] filename: &Path) {
 
 #[rstest]
 #[case(boxes_tiff())]
+#[cfg(feature = "image")]
 fn test_thumbnail_rgb(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
@@ -246,6 +253,7 @@ fn test_thumbnail_rgb(#[case] filename: &Path) {
 #[rstest]
 #[should_panic(expected = "ImageError(\"Invalid height size 0\")")]
 #[case(boxes_tiff())]
+#[cfg(feature = "image")]
 fn test_error_thumbnail(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
