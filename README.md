@@ -55,9 +55,9 @@ OpenSlide can read virtual slides in several formats:
 
 ## Installation
 
-OpenSlide-rs requires [OpenSlide] build dependencies. 
+OpenSlide-rs requires [OpenSlide] build dependencies.
 
-You will find a Makefile to help you install all required dependencies for Ubuntu and MacOs. 
+You will find a Makefile to help you install all required dependencies for Ubuntu and MacOs.
 Bellow you will find command to run to be able to build this crate
 
 ### MacOs
