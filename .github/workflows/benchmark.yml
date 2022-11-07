@@ -20,10 +20,11 @@ jobs:
       with:
         toolchain: stable
         override: true
-
+    - uses: Swatinem/rust-cache@v2
+      with:
+        key: ubuntu-benchmark
     - name: Run cargo bench
       run: cargo bench --workspace | tee bench-output.txt
-
     - name: Store benchmark result
       uses: rhysd/github-action-benchmark@v1
       with:
