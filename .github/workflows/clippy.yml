@@ -50,9 +50,8 @@ jobs:
           🤖 This is an automatic PR 🤖
           Clippy suggests the following changes
         labels: not_in_changelog
-        team-reviewers: hove-io/coreteam
         branch: auto/clippy
-        base: master
+        base: main
     - name: Check outputs
       if: ${{ success() }}
       run: |

@@ -30,13 +30,10 @@ jobs:
         key: ${{ matrix.os }}-${{ matrix.feature }}
     - name: Install dependencies ubuntu
       if: ${{ matrix.os == 'ubuntu-20.04' }}
-      run: |
-        sudo apt update
-        sudo apt install -y libopenslide0
-        sudo ln -s /usr/lib/x86_64-linux-gnu/libopenslide.so.0 /usr/lib/x86_64-linux-gnu/libopenslide.so
+      run: make install-deps-apt
     - name: Install dependencies macos
       if: ${{ matrix.os == 'macos-12' }}
-      run: brew install openslide
+      run: make install-deps-brew
     - name: Build & Test
       run: cargo test --workspace --features "${{ matrix.feature }}"
 
