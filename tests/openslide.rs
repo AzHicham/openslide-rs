@@ -5,6 +5,7 @@ use std::path::Path;
 
 mod fixture;
 use fixture::{boxes_tiff, missing_file, small_svs, unopenable_tiff, unsupported_file};
+use openslide_rs::traits::Slide;
 
 #[rstest]
 #[should_panic(expected = "MissingFile(\"missing_file\")")]
@@ -65,10 +66,6 @@ fn test_slide_info(#[case] filename: &Path) {
 
     // Level dimensions
     assert_eq!(
-        slide.get_level0_dimensions().unwrap(),
-        Size { w: 300, h: 250 }
-    );
-    assert_eq!(
         slide.get_level_dimensions(0).unwrap(),
         Size { w: 300, h: 250 }
     );
@@ -124,7 +121,8 @@ fn test_error_slide_level(#[case] filename: &Path) {
 
 #[rstest]
 #[case(small_svs())]
-fn test_associated_images(#[case] filename: &Path) {
+#[cfg(feature = "image")]
+fn test_associated_images_rgba(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
     assert_eq!(
@@ -132,13 +130,32 @@ fn test_associated_images(#[case] filename: &Path) {
         vec!["thumbnail".to_string()]
     );
 
+    let (size, buffer) = slide.read_associated_buffer("thumbnail").unwrap();
+    assert_eq!(size, Size { w: 16, h: 16 });
+
+    let image = slide.read_associated_image_rgba("thumbnail").unwrap();
+    assert_eq!(image.dimensions(), (size.w, size.w));
+    assert_eq!(image.len(), (size.w * size.w * 4) as usize);
+    assert_eq!(buffer.len(), image.len());
+}
+
+#[rstest]
+#[case(small_svs())]
+#[cfg(feature = "image")]
+fn test_associated_images_rgb(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+
     assert_eq!(
-        slide.get_associated_image_dimensions("thumbnail").unwrap(),
-        Size { w: 16, h: 16 }
+        slide.get_associated_image_names().unwrap(),
+        vec!["thumbnail".to_string()]
     );
 
-    let image = slide.read_associated_image("thumbnail").unwrap();
-    assert_eq!(image.dimensions(), (16, 16));
+    let (size, _) = slide.read_associated_buffer("thumbnail").unwrap();
+    assert_eq!(size, Size { w: 16, h: 16 });
+
+    let image = slide.read_associated_image_rgb("thumbnail").unwrap();
+    assert_eq!(image.dimensions(), (size.w, size.w));
+    assert_eq!(image.len(), (size.w * size.w * 3) as usize);
 }
 
 #[rstest]
@@ -153,10 +170,11 @@ fn test_error_associated_images_dimension(#[case] filename: &Path) {
 #[rstest]
 #[should_panic(expected = "CoreError(\"Unknown associated image\")")]
 #[case(small_svs())]
+#[cfg(feature = "image")]
 fn test_error_read_associated_images(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
-    slide.read_associated_image("missing").unwrap();
+    slide.read_associated_image_rgb("missing").unwrap();
 }
 
 #[rstest]
@@ -164,25 +182,81 @@ fn test_error_read_associated_images(#[case] filename: &Path) {
 fn test_slide_read_region(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
-    let size = slide.get_level0_dimensions().unwrap();
-    let address = Address { x: 0, y: 0 };
-    let level = 0;
+    let region = Region {
+        size: slide.get_level_dimensions(0).unwrap(),
+        level: 0,
+        address: Address { x: 0, y: 0 },
+    };
 
-    let buffer = slide
-        .read_region(&Region {
-            size,
-            level,
-            address,
-        })
-        .unwrap();
-    assert_eq!(buffer.len(), (size.h * size.w * 4) as usize);
+    let buffer = slide.read_region(&region).unwrap();
+    assert_eq!(buffer.len(), (region.size.h * region.size.w * 4) as usize);
 }
 
 #[rstest]
 #[case(boxes_tiff())]
-fn test_thumbnail(#[case] filename: &Path) {
+#[cfg(feature = "image")]
+fn test_slide_read_image_rgb(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
-    let thumbnail = slide.thumbnail_rgba(&Size { w: 100, h: 80 }).unwrap();
-    assert_eq!(thumbnail.dimensions(), (100, 80));
+    let region = Region {
+        size: slide.get_level_dimensions(0).unwrap(),
+        level: 0,
+        address: Address { x: 0, y: 0 },
+    };
+
+    let image = slide.read_image_rgb(&region).unwrap();
+    assert_eq!(image.dimensions(), (region.size.w, region.size.h));
+    assert_eq!(image.len(), (region.size.h * region.size.w * 3) as usize);
+}
+
+#[rstest]
+#[case(boxes_tiff())]
+#[cfg(feature = "image")]
+fn test_slide_read_image_rgba(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+
+    let region = Region {
+        size: slide.get_level_dimensions(0).unwrap(),
+        level: 0,
+        address: Address { x: 0, y: 0 },
+    };
+
+    let image = slide.read_image_rgba(&region).unwrap();
+    assert_eq!(image.dimensions(), (region.size.w, region.size.h));
+    assert_eq!(image.len(), (region.size.h * region.size.w * 4) as usize);
+}
+
+#[rstest]
+#[case(boxes_tiff())]
+#[cfg(feature = "image")]
+fn test_thumbnail_rgba(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+
+    let size = Size { w: 100, h: 80 };
+    let thumbnail = slide.thumbnail_rgba(&size).unwrap();
+    assert_eq!(thumbnail.dimensions(), (size.w, size.h));
+    assert_eq!(thumbnail.len(), (size.h * size.w * 4) as usize);
+}
+
+#[rstest]
+#[case(boxes_tiff())]
+#[cfg(feature = "image")]
+fn test_thumbnail_rgb(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+
+    let size = Size { w: 100, h: 80 };
+    let thumbnail = slide.thumbnail_rgb(&size).unwrap();
+    assert_eq!(thumbnail.dimensions(), (size.w, size.h));
+    assert_eq!(thumbnail.len(), (size.h * size.w * 3) as usize);
+}
+
+#[rstest]
+#[should_panic(expected = "ImageError(\"Invalid height size 0\")")]
+#[case(boxes_tiff())]
+#[cfg(feature = "image")]
+fn test_error_thumbnail(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+
+    let size = Size { w: 100, h: 0 };
+    slide.thumbnail_rgb(&size).unwrap();
 }

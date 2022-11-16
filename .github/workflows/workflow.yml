@@ -11,24 +11,13 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
         fail-fast: false
         matrix:
-          build_type:
-            - name: "Release with DeepZoom"
-              flag: "--release"
-              features: "deepzoom"
-            - name: "Debug with DeepZoom"
-              flag: ""
-              features: "deepzoom"
-            - name: "Release"
-              flag: "--release"
-              features: ""
-            - name: "Debug"
-              flag: ""
-              features: ""
+          os: [ "ubuntu-20.04", "macos-12" ]
+          feature: [ "--no-default-features", "--features deepzoom", "--features image" ]
 
     steps:
     - uses: actions/checkout@v3
@@ -38,17 +27,18 @@ jobs:
         override: true
     - uses: Swatinem/rust-cache@v2
       with:
-        key: ${{ matrix.build_type.name }}-${{ matrix.features }}
-    - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y openslide-tools
-        sudo ln -s /usr/lib/x86_64-linux-gnu/libopenslide.so.0 /usr/lib/x86_64-linux-gnu/libopenslide.so
+        key: ${{ matrix.os }}-${{ matrix.feature }}
+    - name: Install dependencies ubuntu
+      if: ${{ matrix.os == 'ubuntu-20.04' }}
+      run: make install-deps-apt
+    - name: Install dependencies macos
+      if: ${{ matrix.os == 'macos-12' }}
+      run: make install-deps-brew
     - name: Build & Test
-      run: cargo test --workspace ${{ matrix.build_type.flag }} --features "${{ matrix.features }}"
+      run: cargo test --workspace ${{ matrix.feature }}
 
   pre-commit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
     - uses: actions-rs/toolchain@v1

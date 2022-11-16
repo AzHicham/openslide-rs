@@ -15,24 +15,22 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y openslide-tools
-        sudo ln -s /usr/lib/x86_64-linux-gnu/libopenslide.so.0 /usr/lib/x86_64-linux-gnu/libopenslide.so
+      run: make install-deps-apt
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
         override: true
-
+    - uses: Swatinem/rust-cache@v2
+      with:
+        key: ubuntu-benchmark
     - name: Run cargo bench
       run: cargo bench --workspace | tee bench-output.txt
-
     - name: Store benchmark result
-      uses: rhysd/github-action-benchmark@v1
+      uses: rhysd/github-action-benchmark@v1.8.1
       with:
         name: openslide-rs Benchmark
         tool: 'cargo'
-        save-data-file: ${{ github.event_name != 'pull_request' }}
+        save-data-file: ${{ github.event_name == 'push' }}
         output-file-path: bench-output.txt
         benchmark-data-dir-path: '.'
         max-items-in-chart: 30
@@ -40,5 +38,6 @@ jobs:
         auto-push: true
         alert-threshold: '200%'
         comment-on-alert: true
-        fail-on-alert: false
+        fail-on-alert: true
+        comment-always: true
         alert-comment-cc-users: '@AzHicham'
