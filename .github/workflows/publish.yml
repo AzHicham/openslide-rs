@@ -28,6 +28,8 @@ jobs:
         with:
           toolchain: stable
           override: true
+      - name: Install dependencies ubuntu
+        run: make install-deps-apt
       - uses: katyo/publish-crates@v1
         with:
           dry-run: ${{ github.event_name != 'release' }}
