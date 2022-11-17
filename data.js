@@ -1,68 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1668670719789,
+  "lastUpdate": 1668671059276,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hicham.azimani@owkin.com",
-            "name": "Hicham AZIMANI",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "email": "hicham.azimani@owkin.com",
-            "name": "Hicham AZIMANI",
-            "username": "AzHicham"
-          },
-          "distinct": true,
-          "id": "68c544369421c056bc5c2e0cafa98d8eb76fa7dc",
-          "message": "bump: 0.3.0",
-          "timestamp": "2022-10-24T14:50:02+02:00",
-          "tree_id": "0beab3afbb9a9aff150382ee0b51388b07301eca",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/68c544369421c056bc5c2e0cafa98d8eb76fa7dc"
-        },
-        "date": 1666616029219,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2125238,
-            "range": "± 29275",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 8670185,
-            "range": "± 120719",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2049587,
-            "range": "± 27428",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 8670298,
-            "range": "± 98453",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1966534,
-            "range": "± 18234",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 8371392,
-            "range": "± 140623",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1715,6 +1655,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 8454213,
             "range": "± 202974",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hicham.azimani@owkin.com",
+            "name": "HichamAz",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "418eab3268621bddb44b63c9d10573ebcc60e1a8",
+          "message": "fix: build doc on docs.rs (#23)",
+          "timestamp": "2022-11-17T08:41:45+01:00",
+          "tree_id": "2e6724a4ed0b11551a7f1bba08a5db41ea28e304",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/418eab3268621bddb44b63c9d10573ebcc60e1a8"
+        },
+        "date": 1668671058210,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2340495,
+            "range": "± 356874",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 9893434,
+            "range": "± 1033719",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2441128,
+            "range": "± 184001",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 10320068,
+            "range": "± 1093601",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2348616,
+            "range": "± 83665",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 9948106,
+            "range": "± 748668",
             "unit": "ns/iter"
           }
         ]
