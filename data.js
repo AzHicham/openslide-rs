@@ -1,64 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1668614188040,
+  "lastUpdate": 1668670651865,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "id": "37152f91988925afbdb5d3815b8c0c3277969728",
-          "message": "fix: DeepZoom resize fix",
-          "timestamp": "2022-10-18T20:17:18Z",
-          "url": "https://github.com/AzHicham/openslide-rs/pull/8/commits/37152f91988925afbdb5d3815b8c0c3277969728"
-        },
-        "date": 1666615287892,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2157651,
-            "range": "± 10104",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 8915708,
-            "range": "± 47994",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2061330,
-            "range": "± 9266",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 8931158,
-            "range": "± 43438",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1983794,
-            "range": "± 10868",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 8618725,
-            "range": "± 45240",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1719,6 +1663,62 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 10434993,
             "range": "± 1607822",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "id": "17b3351858f51036f0919aa64cf8f0b5f77661e6",
+          "message": "fix: build doc on docs.rs",
+          "timestamp": "2022-11-09T13:23:58Z",
+          "url": "https://github.com/AzHicham/openslide-rs/pull/23/commits/17b3351858f51036f0919aa64cf8f0b5f77661e6"
+        },
+        "date": 1668670650689,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2611571,
+            "range": "± 317079",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 10713386,
+            "range": "± 1233175",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2504516,
+            "range": "± 722314",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 10667576,
+            "range": "± 2521840",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2359020,
+            "range": "± 307710",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 10279755,
+            "range": "± 776122",
             "unit": "ns/iter"
           }
         ]
