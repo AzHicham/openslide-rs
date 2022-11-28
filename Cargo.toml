@@ -26,7 +26,7 @@ image = { version = "0.24", optional = true, default-features = false}
 fast_image_resize = { version = "2.3.0", optional = true}
 
 [dev-dependencies]
-rstest = "0.15.0"
+rstest = "0.16.0"
 assert_approx_eq = "1.1.0"
 bencher = "0.1.5"
 
