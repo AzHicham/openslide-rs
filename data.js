@@ -1,64 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1669629211104,
+  "lastUpdate": 1670127128977,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "id": "38a14429301723fe944727d72beef799f9352454",
-          "message": "fix: Compute offset in Deepzoom",
-          "timestamp": "2022-10-24T14:16:15Z",
-          "url": "https://github.com/AzHicham/openslide-rs/pull/11/commits/38a14429301723fe944727d72beef799f9352454"
-        },
-        "date": 1666689071859,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2130835,
-            "range": "± 24616",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 8720844,
-            "range": "± 176691",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2049767,
-            "range": "± 17661",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 8747574,
-            "range": "± 111645",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1970916,
-            "range": "± 19282",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 8410658,
-            "range": "± 97470",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1723,6 +1667,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 7785215,
             "range": "± 80859",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "49e8f5ed8cb6bd689fc6b99ec2b963a0ed90063c",
+          "message": "build(deps): bump MeilCli/regex-match from 1.5.17 to 1.5.18 (#28)\n\nBumps [MeilCli/regex-match](https://github.com/MeilCli/regex-match) from 1.5.17 to 1.5.18.\r\n- [Release notes](https://github.com/MeilCli/regex-match/releases)\r\n- [Commits](https://github.com/MeilCli/regex-match/compare/v1.5.17...v1.5.18)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: MeilCli/regex-match\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2022-12-04T05:10:29+01:00",
+          "tree_id": "38811b5dc5679965102b939883dac617d0bfb71c",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/49e8f5ed8cb6bd689fc6b99ec2b963a0ed90063c"
+        },
+        "date": 1670127128174,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1955855,
+            "range": "± 6314",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 7984902,
+            "range": "± 50488",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1879716,
+            "range": "± 4484",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 8029912,
+            "range": "± 78630",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1808736,
+            "range": "± 7170",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 7724654,
+            "range": "± 29016",
             "unit": "ns/iter"
           }
         ]
