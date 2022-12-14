@@ -18,17 +18,18 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
         limit_bounds: bool,
     ) -> Result<DeepZoomGenerator<T>> {
         let nb_level = slide.get_level_count()?;
-        let mut slide_level_dimensions: Vec<Size> = Vec::with_capacity(nb_level as usize);
-        let mut l0_offset = Address { x: 0, y: 0 };
 
-        if limit_bounds {
+        let (slide_level_dimensions, l0_offset) = if limit_bounds {
             let os_property = &slide.properties().openslide_properties;
             let bounds_x = os_property.bounds_x.unwrap_or(0);
             let bounds_y = os_property.bounds_y.unwrap_or(0);
 
             // Level 0 coordinate offset
-            l0_offset.x = bounds_x;
-            l0_offset.y = bounds_y;
+
+            let l0_offset = Address {
+                x: bounds_x,
+                y: bounds_y,
+            };
 
             // Slide level dimensions scale factor in each axis
             let slide_dimensions = slide.get_level_dimensions(0)?;
@@ -42,35 +43,44 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
                 bounds_height as f32 / slide_dimensions.h as f32,
             );
 
-            for level in 0..nb_level {
-                let dimensions = slide.get_level_dimensions(level)?;
-                let dimensions = Size {
-                    w: (dimensions.w as f32 * size_scale.0).ceil() as _,
-                    h: (dimensions.h as f32 * size_scale.1).ceil() as _,
-                };
-                slide_level_dimensions.push(dimensions);
-            }
+            let slide_level_dimensions: Result<Vec<Size>> = (0..nb_level)
+                .into_iter()
+                .map(|level| match slide.get_level_dimensions(level) {
+                    Ok(size) => Ok(Size {
+                        w: (size.w as f32 * size_scale.0).ceil() as _,
+                        h: (size.h as f32 * size_scale.1).ceil() as _,
+                    }),
+                    Err(err) => Err(err),
+                })
+                .collect();
+            (slide_level_dimensions?, l0_offset)
         } else {
-            for level in 0..nb_level {
-                slide_level_dimensions.push(slide.get_level_dimensions(level)?);
-            }
-        }
+            let l0_offset = Address { x: 0, y: 0 };
+            let slide_level_dimensions: Result<Vec<Size>> = (0..nb_level)
+                .into_iter()
+                .map(|level| slide.get_level_dimensions(level))
+                .collect();
+            (slide_level_dimensions?, l0_offset)
+        };
         let slide_level0_dimensions = slide_level_dimensions[0];
 
         // Deep Zooom levels
-        let mut z_size = Size {
-            w: slide_level0_dimensions.w,
-            h: slide_level0_dimensions.h,
+
+        let level_dimensions = {
+            let mut z_size = Size {
+                w: slide_level0_dimensions.w,
+                h: slide_level0_dimensions.h,
+            };
+            let mut level_dimensions = vec![z_size];
+
+            while z_size.w > 1 || z_size.h > 1 {
+                z_size.w = ((z_size.w as f32 / 2.0).ceil() as u32).max(1) as _;
+                z_size.h = ((z_size.h as f32 / 2.0).ceil() as u32).max(1) as _;
+                level_dimensions.push(z_size);
+            }
+            level_dimensions.reverse();
+            level_dimensions
         };
-        let mut level_dimensions = vec![z_size];
-
-        while z_size.w > 1 || z_size.h > 1 {
-            z_size.w = ((z_size.w as f32 / 2.0).ceil() as u32).max(1) as _;
-            z_size.h = ((z_size.h as f32 / 2.0).ceil() as u32).max(1) as _;
-
-            level_dimensions.push(z_size);
-        }
-        level_dimensions.reverse();
 
         // Tile
         let level_tiles: Vec<Size> = level_dimensions
@@ -90,16 +100,18 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
             .collect();
 
         // Preferred slide levels for each Deep Zoom level
-        let mut slide_from_dz_level: Vec<u32> = Vec::with_capacity(l0_z_downsamples.len());
-        for downsample in l0_z_downsamples.iter() {
-            slide_from_dz_level.push(slide.get_best_level_for_downsample(*downsample)?);
-        }
+        let slide_from_dz_level: Result<Vec<u32>> = l0_z_downsamples
+            .iter()
+            .map(|downsample| slide.get_best_level_for_downsample(*downsample))
+            .collect();
+        let slide_from_dz_level = slide_from_dz_level?;
 
         // Piecewise downsamples
-        let mut l0_l_downsamples: Vec<f64> = Vec::with_capacity(nb_level as usize);
-        for level in 0..nb_level {
-            l0_l_downsamples.push(slide.get_level_downsample(level)?);
-        }
+        let l0_l_downsamples: Result<Vec<f64>> = (0..nb_level)
+            .into_iter()
+            .map(|level| slide.get_level_downsample(level))
+            .collect();
+        let l0_l_downsamples = l0_l_downsamples?;
 
         let l_z_downsamples: Vec<f64> = (0..level_count)
             .map(|dz_level| {
