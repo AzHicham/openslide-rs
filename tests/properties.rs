@@ -68,8 +68,11 @@ fn test_tiff_properties(#[case] filename: &Path) {
 
     println!("{properties:?}");
 
-    let prop = if let VendorProperties::GenericTiff(prop) = &properties.vendor_properties {
-        prop
+    if let VendorProperties::GenericTiff = &properties.vendor_properties {
+        let prop = &properties.tiff_properties;
+        assert_eq!(prop.x_resolution, Some(28.34));
+        assert_eq!(prop.y_resolution, Some(28.34));
+        assert_eq!(prop.resolution_unit, Some("centimeter".to_string()));
     } else {
         panic!("Not Aperio")
     };
@@ -110,10 +113,6 @@ fn test_tiff_properties(#[case] filename: &Path) {
     );
     assert_eq!(properties.openslide_properties.levels[3].height, Some(31));
     assert_eq!(properties.openslide_properties.levels[3].width, Some(37));
-
-    assert_eq!(prop.x_resolution, Some(28.34));
-    assert_eq!(prop.y_resolution, Some(28.34));
-    assert_eq!(prop.resolution_unit, Some("centimeter".to_string()));
 }
 
 #[rstest]

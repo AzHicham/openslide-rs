@@ -1,4 +1,4 @@
-//! MiraxMIRAX properties
+//! Mirax properties
 //!
 
 pub const MIRAX_PROPERTY_ADAPTER_SIZE: &str = "mirax.GENERAL.ADAPTER_SIZE";
