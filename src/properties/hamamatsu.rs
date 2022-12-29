@@ -18,6 +18,9 @@ pub const HAMAMATSU_PROPERTY_REFERENCE: &str = "hamamatsu.Reference";
 pub const HAMAMATSU_PROPERTY_SOURCE_LENS: &str = "hamamatsu.SourceLens";
 pub const HAMAMATSU_PROPERTY_X_OFFSET_FROM_SLIDE_CENTER: &str = "hamamatsu.XOffsetFromSlideCentre";
 pub const HAMAMATSU_PROPERTY_Y_OFFSET_FROM_SLIDE_CENTER: &str = "hamamatsu.YOffsetFromSlideCentre";
+pub const HAMAMATSU_PROPERTY_CREATOR: &str = "hamamatsu.Creator";
+pub const HAMAMATSU_PROPERTY_HARDWARE_MODEL: &str = "hamamatsu.HardwareModel";
+pub const HAMAMATSU_PROPERTY_HARDWARE_SERIAL: &str = "hamamatsu.HardwareSerial";
 
 #[derive(Clone, Debug, Default)]
 pub struct Hamamatsu {
@@ -38,6 +41,9 @@ pub struct Hamamatsu {
     pub source_lens: Option<String>,
     pub x_offset_from_slide_center: Option<f32>,
     pub y_offset_from_slide_center: Option<f32>,
+    pub creator: Option<String>,
+    pub hardware_model: Option<String>,
+    pub hardware_serial: Option<String>,
 }
 
 impl Hamamatsu {
@@ -78,6 +84,9 @@ impl Hamamatsu {
             HAMAMATSU_PROPERTY_Y_OFFSET_FROM_SLIDE_CENTER => {
                 self.y_offset_from_slide_center = value.parse().ok()
             }
+            HAMAMATSU_PROPERTY_CREATOR => self.creator = value.parse().ok(),
+            HAMAMATSU_PROPERTY_HARDWARE_MODEL => self.hardware_model = value.parse().ok(),
+            HAMAMATSU_PROPERTY_HARDWARE_SERIAL => self.hardware_serial = value.parse().ok(),
             _ => {}
         }
     }
