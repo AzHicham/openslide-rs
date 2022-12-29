@@ -20,6 +20,15 @@ jobs:
         with:
           toolchain: stable
           override: true
+      - name: Cache sample slide
+        id: cache-slide
+        uses: actions/cache@v3
+        with:
+          path: tests/assets/
+          key: slides-test
+      - name: Download sample tests data
+        if: steps.cache-slide.outputs.cache-hit != 'true'
+        run: make dl-test-images
       - name: Install llvm-cov & Build & Tests
         run: |
           rustup component add llvm-tools-preview

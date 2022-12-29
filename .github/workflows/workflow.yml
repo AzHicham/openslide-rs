@@ -1,6 +1,8 @@
 name: Build and test
 
 on:
+  schedule:
+   - cron: "0 0 * * 1,5"
   push:
     branches: [ main ]
   pull_request:
@@ -25,6 +27,15 @@ jobs:
       with:
         toolchain: stable
         override: true
+    - name: Cache sample slide
+      id: cache-slide
+      uses: actions/cache@v3
+      with:
+        path: tests/assets/
+        key: slides-test
+    - name: Download sample tests data
+      if: steps.cache-slide.outputs.cache-hit != 'true'
+      run: make dl-test-images
     - uses: Swatinem/rust-cache@v2
       with:
         key: ${{ matrix.os }}-${{ matrix.feature }}
