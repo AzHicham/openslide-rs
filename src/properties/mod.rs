@@ -2,17 +2,21 @@
 //!
 
 pub mod aperio;
+pub mod hamamatsu;
+pub mod leica;
 pub mod openslide;
 pub mod tiff;
 
-use crate::properties::{aperio::Aperio, openslide::OpenSlide, tiff::Tiff};
+use crate::properties::{
+    aperio::Aperio, hamamatsu::Hamamatsu, leica::Leica, openslide::OpenSlide, tiff::Tiff,
+};
 
 #[derive(Clone, Debug)]
 pub enum VendorProperties {
     GenericTiff(Tiff),
     Aperio(Aperio),
-    Hamamatsu,
-    Leica,
+    Hamamatsu(Hamamatsu),
+    Leica(Leica),
     Philips,
     Sakura,
     MIRAX,
@@ -37,6 +41,8 @@ impl Properties {
         let vendor_properties = match vendor.to_lowercase().as_str() {
             "generic-tiff" => VendorProperties::GenericTiff(Tiff::new(property_iter)),
             "aperio" => VendorProperties::Aperio(Aperio::new(property_iter)),
+            "hamamatsu" => VendorProperties::Hamamatsu(Hamamatsu::new(property_iter)),
+            "leica" => VendorProperties::Leica(Leica::new(property_iter)),
             _ => VendorProperties::None,
         };
         Properties {
