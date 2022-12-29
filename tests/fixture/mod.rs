@@ -42,3 +42,34 @@ pub fn small_svs() -> &'static Path {
 pub fn unreadable_svs() -> &'static Path {
     Path::new("tests/assets/unreadable.svs")
 }
+
+#[fixture]
+#[once]
+pub fn ventana() -> &'static Path {
+    Path::new("tests/assets/ventana.bif")
+}
+
+#[fixture]
+#[once]
+pub fn hamamatsu() -> &'static Path {
+    Path::new("tests/assets/hamamatsu/CMU-3-40x - 2010-01-12 13.57.09.vms")
+}
+
+#[fixture]
+#[once]
+pub fn leica() -> &'static Path {
+    Path::new("tests/assets/leica.scn")
+}
+
+#[fixture]
+#[once]
+pub fn mirax() -> &'static Path {
+    Path::new("tests/assets/mirax/CMU-1-Saved-1_16.mrxs")
+}
+
+#[fixture]
+#[once]
+pub fn trestle() -> &'static Path {
+    Path::new("tests/assets/trestle/CMU-1.tif")
+}
+

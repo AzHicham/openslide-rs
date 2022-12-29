@@ -21,7 +21,7 @@ pub const HAMAMATSU_PROPERTY_Y_OFFSET_FROM_SLIDE_CENTER: &str = "hamamatsu.YOffs
 
 #[derive(Clone, Debug, Default)]
 pub struct Hamamatsu {
-    pub auth_code: Option<u32>,
+    pub auth_code: Option<i32>,
     pub image_file: Option<String>,
     pub layer_spacing: Option<u32>,
     pub macro_image: Option<String>,

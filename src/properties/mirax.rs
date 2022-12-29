@@ -60,7 +60,7 @@ impl Mirax {
     pub(crate) fn new(property_iter: impl Iterator<Item = (String, String)>) -> Self {
         let mut mirax_property = Mirax::default();
         property_iter
-            .filter(|(name, _)| name.starts_with("leica."))
+            .filter(|(name, _)| name.starts_with("mirax."))
             .for_each(|(name, value)| mirax_property.parse_property_name(&name, &value));
         mirax_property
     }

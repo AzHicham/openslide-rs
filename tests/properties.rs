@@ -3,7 +3,7 @@ use rstest::rstest;
 use std::path::Path;
 
 mod fixture;
-use fixture::{boxes_tiff, default};
+use fixture::{boxes_tiff, default, leica, trestle, hamamatsu, mirax};
 use openslide_rs::properties::VendorProperties;
 
 #[rstest]
@@ -117,7 +117,7 @@ fn test_tiff_properties(#[case] filename: &Path) {
 
 #[rstest]
 #[case(default())]
-fn test_svs_properties(#[case] filename: &Path) {
+fn test_aperio_properties(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
     let properties = slide.properties();
@@ -137,7 +137,6 @@ fn test_svs_properties(#[case] filename: &Path) {
         properties.openslide_properties.quickhash_1,
         Some("6335ea0e6cc54c2cba64bb265d3c713a50cd84484924e3a9c109558c13521d5c".to_string())
     );
-    assert_eq!(properties.openslide_properties.mpp_x, Some(0.499));
     assert_eq!(properties.openslide_properties.mpp_x, Some(0.499));
     assert_eq!(properties.openslide_properties.mpp_y, Some(0.499));
     assert_eq!(properties.openslide_properties.level_count, Some(1));
@@ -178,4 +177,278 @@ fn test_svs_properties(#[case] filename: &Path) {
     assert_eq!(prop.exposure_time, None);
     assert_eq!(prop.exposure_scale, None);
     assert_eq!(prop.sesson_mode, None);
+}
+
+#[rstest]
+#[case(leica())]
+fn test_leica_properties(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+
+    let properties = slide.properties();
+
+    println!("{properties:?}");
+
+    let prop = if let VendorProperties::Leica(prop) = &properties.vendor_properties {
+        prop
+    } else {
+        panic!("Not Leica")
+    };
+
+    assert_eq!(
+        properties.openslide_properties.vendor,
+        Some("leica".to_string())
+    );
+    assert_eq!(
+        properties.openslide_properties.quickhash_1,
+        Some("f600ae1d83abaa21b6fda9284ff35a51d7031f60854b5674fac88c8ac6d66298".to_string())
+    );
+    assert_eq!(properties.openslide_properties.mpp_x, Some(0.5));
+    assert_eq!(properties.openslide_properties.mpp_y, Some(0.5));
+    assert_eq!(properties.openslide_properties.level_count, Some(5));
+    assert_eq!(
+        properties.openslide_properties.levels[0].downsample,
+        Some(1.0)
+    );
+    assert_eq!(
+        properties.openslide_properties.levels[4].downsample,
+        Some(255.39522)
+    );
+    assert_eq!(properties.openslide_properties.levels[0].height, Some(153470));
+    assert_eq!(properties.openslide_properties.levels[0].width, Some(53130));
+    assert_eq!(properties.openslide_properties.levels[4].height, Some(601));
+    assert_eq!(properties.openslide_properties.levels[4].width, Some(208));
+
+    assert_eq!(prop.aperture, Some(0.4));
+    assert_eq!(prop.barcode, Some("04050629C".to_string()));
+    assert_eq!(prop.creation_date, Some("2011-05-31T09:43:06.873Z".to_string()));
+    assert_eq!(prop.device_model, Some("Leica SCN400;Leica SCN".to_string()));
+    assert_eq!(prop.device_version, Some("1.4.0.9691 2011/03/30 10:30:59;1.4.0.9708".to_string()));
+    assert_eq!(prop.illumination_source, Some("brightfield".to_string()));
+    assert_eq!(prop.objective, Some(20));
+}
+
+/*
+#[rstest]
+#[case(ventana())]
+fn test_ventana_properties(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+
+    let properties = slide.properties();
+
+    println!("{properties:?}");
+
+    let prop = if let VendorProperties::Ventana(prop) = &properties.vendor_properties {
+        prop
+    } else {
+        panic!("Not Ventana")
+    };
+
+    assert_eq!(
+        properties.openslide_properties.vendor,
+        Some("ventana".to_string())
+    );
+    assert_eq!(
+        properties.openslide_properties.quickhash_1,
+        Some("f600ae1d83abaa21b6fda9284ff35a51d7031f60854b5674fac88c8ac6d66298".to_string())
+    );
+    assert_eq!(properties.openslide_properties.mpp_x, Some(0.5));
+    assert_eq!(properties.openslide_properties.mpp_y, Some(0.5));
+    assert_eq!(properties.openslide_properties.level_count, Some(5));
+    assert_eq!(
+        properties.openslide_properties.levels[0].downsample,
+        Some(1.0)
+    );
+    assert_eq!(
+        properties.openslide_properties.levels[4].downsample,
+        Some(255.39522)
+    );
+    assert_eq!(properties.openslide_properties.levels[0].height, Some(153470));
+    assert_eq!(properties.openslide_properties.levels[0].width, Some(53130));
+    assert_eq!(properties.openslide_properties.levels[4].height, Some(601));
+    assert_eq!(properties.openslide_properties.levels[4].width, Some(208));
+
+    assert_eq!(prop.build_date, Some("December, 13 2011".to_string()));
+    assert_eq!(prop.build_version, Some("3.3.1.1".to_string()));
+    assert_eq!(prop.focus_mode, Some(0));
+    assert_eq!(prop.focus_quality, Some(1));
+    assert_eq!(prop.label_boundary, Some(1000));
+    assert_eq!(prop.magnification, Some(40));
+    assert_eq!(prop.scan_mode, Some(1));
+    assert_eq!(prop.scan_res, Some(0.232500));
+    assert_eq!(prop.show_label, Some("1".to_string()));
+    assert_eq!(prop.unit_number, Some("BI10N0306".to_string()));
+    assert_eq!(prop.user_name, Some("admin".to_string()));
+    assert_eq!(prop.z_layers, Some(1));
+    assert_eq!(prop.z_spacing, Some(1));
+}*/
+
+#[rstest]
+#[case(trestle())]
+fn test_trestle_properties(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+
+    let properties = slide.properties();
+
+    println!("{properties:?}");
+
+    let prop = if let VendorProperties::Trestle(prop) = &properties.vendor_properties {
+        prop
+    } else {
+        panic!("Not Trestle")
+    };
+
+    assert_eq!(
+        properties.openslide_properties.vendor,
+        Some("trestle".to_string())
+    );
+    assert_eq!(
+        properties.openslide_properties.quickhash_1,
+        Some("de8cb6d7ee9741ed76b08b11b68c20583d34e6e135d3586cf3000e2c7572b641".to_string())
+    );
+    assert_eq!(properties.openslide_properties.mpp_x, Some(0.5746919));
+    assert_eq!(properties.openslide_properties.mpp_y, Some(0.57506245));
+    assert_eq!(properties.openslide_properties.level_count, Some(7));
+    assert_eq!(
+        properties.openslide_properties.levels[0].downsample,
+        Some(1.0)
+    );
+    assert_eq!(
+        properties.openslide_properties.levels[6].downsample,
+        Some(64.12536)
+    );
+    assert_eq!(properties.openslide_properties.levels[0].height, Some(27712));
+    assert_eq!(properties.openslide_properties.levels[0].width, Some(40000));
+    assert_eq!(properties.openslide_properties.levels[4].height, Some(1728));
+    assert_eq!(properties.openslide_properties.levels[4].width, Some(2496));
+
+    assert_eq!(prop.background_color, Some("E6E6E6".to_string()));
+    assert_eq!(prop.jpeg_quality, Some(75));
+    assert_eq!(prop.objective_power, Some(10));
+    assert_eq!(prop.overlaps_xy, Some("64 64 32 32 16 16".to_string()));
+    assert_eq!(prop.white_balance, Some("C0AAA1".to_string()));
+}
+
+#[rstest]
+#[case(mirax())]
+fn test_mirax_properties(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+
+    let properties = slide.properties();
+
+    println!("{properties:?}");
+
+    let prop = if let VendorProperties::Mirax(prop) = &properties.vendor_properties {
+        prop
+    } else {
+        panic!("Not Leica")
+    };
+
+    assert_eq!(
+        properties.openslide_properties.vendor,
+        Some("mirax".to_string())
+    );
+    assert_eq!(
+        properties.openslide_properties.quickhash_1,
+        Some("7fa0eea07df29f449e5aa0ad5df56c5f411f6029d5293f9d68335d6add3fb00e".to_string())
+    );
+    assert_eq!(properties.openslide_properties.mpp_x, Some(3.7172363));
+    assert_eq!(properties.openslide_properties.mpp_y, Some(3.716317));
+    assert_eq!(properties.openslide_properties.level_count, Some(6));
+    assert_eq!(
+        properties.openslide_properties.levels[0].downsample,
+        Some(1.0)
+    );
+    assert_eq!(
+        properties.openslide_properties.levels[4].downsample,
+        Some(16.0)
+    );
+    assert_eq!(properties.openslide_properties.levels[0].height, Some(15494));
+    assert_eq!(properties.openslide_properties.levels[0].width, Some(7436));
+    assert_eq!(properties.openslide_properties.levels[4].height, Some(968));
+    assert_eq!(properties.openslide_properties.levels[4].width, Some(464));
+
+    assert_eq!(prop.adapter_size, Some(1));
+    assert_eq!(prop.camera_type, Some("Hitachi_HV_F22CL".to_string()));
+    assert_eq!(prop.current_slide_version, Some("1.9".to_string()));
+    assert_eq!(prop.image_number_y, Some(976));
+    assert_eq!(prop.image_number_x, Some(352));
+    assert_eq!(prop.overlap_micrometers_x, Some(0));
+    assert_eq!(prop.overlap_micrometers_y, Some(0));
+    assert_eq!(prop.individually_exp_times, None);
+    assert_eq!(prop.max_exp_time, None);
+    assert_eq!(prop.objective_magnification, Some(20));
+    assert_eq!(prop.objective_name, Some("Default objective".to_string()));
+    assert_eq!(prop.optovar_size, Some(1));
+    assert_eq!(prop.project_name, Some("ProjectName".to_string()));
+    assert_eq!(prop.scanning_algorithm, None);
+    assert_eq!(prop.slide_content, Some("DIGITAL_SLIDE".to_string()));
+    assert_eq!(prop.slide_creation_datetime, Some("29/12/2009 12:43:52".to_string()));
+    assert_eq!(prop.slide_creation_finished, Some("True".to_string()));
+    assert_eq!(prop.slide_id, Some("BADA36D12F704EDB97AA6DF9A7C2A108".to_string()));
+    assert_eq!(prop.slide_name, Some("CMU-1".to_string()));
+    assert_eq!(prop.original_source, None);
+    assert_eq!(prop.position_x, Some(0));
+    assert_eq!(prop.position_y, Some(0));
+    assert_eq!(prop.slide_type, Some("SLIDE_TYPE_BRIGHTFIELD".to_string()));
+    assert_eq!(prop.slide_version, Some("01.03".to_string()));
+}
+
+#[rstest]
+#[case(hamamatsu())]
+fn test_hamamatsu_properties(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+
+    let properties = slide.properties();
+
+    println!("{properties:?}");
+
+    let prop = if let VendorProperties::Hamamatsu(prop) = &properties.vendor_properties {
+        prop
+    } else {
+        panic!("Not Hamamatsu")
+    };
+
+    assert_eq!(
+        properties.openslide_properties.vendor,
+        Some("hamamatsu".to_string())
+    );
+    assert_eq!(
+        properties.openslide_properties.quickhash_1,
+        Some("e744b59188a26025e2b7a0414435e33679dd96e81452fae4ce2da361ef0e46c9".to_string())
+    );
+    assert_eq!(properties.openslide_properties.mpp_x, Some(0.22819825));
+    assert_eq!(properties.openslide_properties.mpp_y, Some(0.22753125));
+    assert_eq!(properties.openslide_properties.level_count, Some(7));
+    assert_eq!(
+        properties.openslide_properties.levels[0].downsample,
+        Some(1.0)
+    );
+    assert_eq!(
+        properties.openslide_properties.levels[6].downsample,
+        Some(64.0)
+    );
+    assert_eq!(properties.openslide_properties.levels[0].height, Some(101888));
+    assert_eq!(properties.openslide_properties.levels[0].width, Some(143360));
+    assert_eq!(properties.openslide_properties.levels[4].height, Some(6368));
+    assert_eq!(properties.openslide_properties.levels[4].width, Some(8960));
+
+
+
+    assert_eq!(prop.auth_code, Some(-2137798033));
+    assert_eq!(prop.image_file, Some("CMU-3-40x - 2010-01-12 13.57.09.jpg".to_string()));
+    assert_eq!(prop.layer_spacing, Some(2032236150));
+    assert_eq!(prop.macro_image, Some("CMU-3-40x - 2010-01-12 13.57.09_macro.jpg".to_string()));
+    assert_eq!(prop.map_file, Some("CMU-3-40x - 2010-01-12 13.57.09_map2.jpg".to_string()));
+    assert_eq!(prop.no_jpeg_columns, Some(3));
+    assert_eq!(prop.no_jpeg_rows, Some(2));
+    assert_eq!(prop.no_layers, Some(1));
+    assert_eq!(prop.optimisation_file, Some("CMU-3-40x - 2010-01-12 13.57.09.opt".to_string()));
+    assert_eq!(prop.physical_height, Some(23182704));
+    assert_eq!(prop.physical_width, Some(32714500));
+    assert_eq!(prop.physical_macro_height, Some(26000000));
+    assert_eq!(prop.physical_macro_width, Some(76000000));
+    assert_eq!(prop.reference, Some("CMU-3-40x".to_string()));
+    assert_eq!(prop.source_lens, Some("40.000000".to_string()));
+    assert_eq!(prop.x_offset_from_slide_center, Some(6903333.));
+    assert_eq!(prop.y_offset_from_slide_center, Some(-195000.));
 }

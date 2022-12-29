@@ -29,7 +29,7 @@ pub enum VendorProperties {
     None,
 }
 
-/// This struct defines an inferface to the various properties of the various formats.
+/// This struct defines an interface to the various properties of the various formats.
 #[derive(Clone, Debug)]
 pub struct Properties {
     pub openslide_properties: OpenSlide,
