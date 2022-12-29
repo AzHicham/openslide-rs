@@ -3,7 +3,7 @@ use rstest::rstest;
 use std::path::Path;
 
 mod fixture;
-use fixture::{boxes_tiff, default, leica, trestle, hamamatsu, mirax};
+use fixture::{boxes_tiff, default, hamamatsu, leica, mirax, trestle};
 use openslide_rs::properties::VendorProperties;
 
 #[rstest]
@@ -213,16 +213,28 @@ fn test_leica_properties(#[case] filename: &Path) {
         properties.openslide_properties.levels[4].downsample,
         Some(255.39522)
     );
-    assert_eq!(properties.openslide_properties.levels[0].height, Some(153470));
+    assert_eq!(
+        properties.openslide_properties.levels[0].height,
+        Some(153470)
+    );
     assert_eq!(properties.openslide_properties.levels[0].width, Some(53130));
     assert_eq!(properties.openslide_properties.levels[4].height, Some(601));
     assert_eq!(properties.openslide_properties.levels[4].width, Some(208));
 
     assert_eq!(prop.aperture, Some(0.4));
     assert_eq!(prop.barcode, Some("04050629C".to_string()));
-    assert_eq!(prop.creation_date, Some("2011-05-31T09:43:06.873Z".to_string()));
-    assert_eq!(prop.device_model, Some("Leica SCN400;Leica SCN".to_string()));
-    assert_eq!(prop.device_version, Some("1.4.0.9691 2011/03/30 10:30:59;1.4.0.9708".to_string()));
+    assert_eq!(
+        prop.creation_date,
+        Some("2011-05-31T09:43:06.873Z".to_string())
+    );
+    assert_eq!(
+        prop.device_model,
+        Some("Leica SCN400;Leica SCN".to_string())
+    );
+    assert_eq!(
+        prop.device_version,
+        Some("1.4.0.9691 2011/03/30 10:30:59;1.4.0.9708".to_string())
+    );
     assert_eq!(prop.illumination_source, Some("brightfield".to_string()));
     assert_eq!(prop.objective, Some(20));
 }
@@ -316,7 +328,10 @@ fn test_trestle_properties(#[case] filename: &Path) {
         properties.openslide_properties.levels[6].downsample,
         Some(64.12536)
     );
-    assert_eq!(properties.openslide_properties.levels[0].height, Some(27712));
+    assert_eq!(
+        properties.openslide_properties.levels[0].height,
+        Some(27712)
+    );
     assert_eq!(properties.openslide_properties.levels[0].width, Some(40000));
     assert_eq!(properties.openslide_properties.levels[4].height, Some(1728));
     assert_eq!(properties.openslide_properties.levels[4].width, Some(2496));
@@ -362,7 +377,10 @@ fn test_mirax_properties(#[case] filename: &Path) {
         properties.openslide_properties.levels[4].downsample,
         Some(16.0)
     );
-    assert_eq!(properties.openslide_properties.levels[0].height, Some(15494));
+    assert_eq!(
+        properties.openslide_properties.levels[0].height,
+        Some(15494)
+    );
     assert_eq!(properties.openslide_properties.levels[0].width, Some(7436));
     assert_eq!(properties.openslide_properties.levels[4].height, Some(968));
     assert_eq!(properties.openslide_properties.levels[4].width, Some(464));
@@ -382,9 +400,15 @@ fn test_mirax_properties(#[case] filename: &Path) {
     assert_eq!(prop.project_name, Some("ProjectName".to_string()));
     assert_eq!(prop.scanning_algorithm, None);
     assert_eq!(prop.slide_content, Some("DIGITAL_SLIDE".to_string()));
-    assert_eq!(prop.slide_creation_datetime, Some("29/12/2009 12:43:52".to_string()));
+    assert_eq!(
+        prop.slide_creation_datetime,
+        Some("29/12/2009 12:43:52".to_string())
+    );
     assert_eq!(prop.slide_creation_finished, Some("True".to_string()));
-    assert_eq!(prop.slide_id, Some("BADA36D12F704EDB97AA6DF9A7C2A108".to_string()));
+    assert_eq!(
+        prop.slide_id,
+        Some("BADA36D12F704EDB97AA6DF9A7C2A108".to_string())
+    );
     assert_eq!(prop.slide_name, Some("CMU-1".to_string()));
     assert_eq!(prop.original_source, None);
     assert_eq!(prop.position_x, Some(0));
@@ -427,22 +451,38 @@ fn test_hamamatsu_properties(#[case] filename: &Path) {
         properties.openslide_properties.levels[6].downsample,
         Some(64.0)
     );
-    assert_eq!(properties.openslide_properties.levels[0].height, Some(101888));
-    assert_eq!(properties.openslide_properties.levels[0].width, Some(143360));
+    assert_eq!(
+        properties.openslide_properties.levels[0].height,
+        Some(101888)
+    );
+    assert_eq!(
+        properties.openslide_properties.levels[0].width,
+        Some(143360)
+    );
     assert_eq!(properties.openslide_properties.levels[4].height, Some(6368));
     assert_eq!(properties.openslide_properties.levels[4].width, Some(8960));
 
-
-
     assert_eq!(prop.auth_code, Some(-2137798033));
-    assert_eq!(prop.image_file, Some("CMU-3-40x - 2010-01-12 13.57.09.jpg".to_string()));
+    assert_eq!(
+        prop.image_file,
+        Some("CMU-3-40x - 2010-01-12 13.57.09.jpg".to_string())
+    );
     assert_eq!(prop.layer_spacing, Some(2032236150));
-    assert_eq!(prop.macro_image, Some("CMU-3-40x - 2010-01-12 13.57.09_macro.jpg".to_string()));
-    assert_eq!(prop.map_file, Some("CMU-3-40x - 2010-01-12 13.57.09_map2.jpg".to_string()));
+    assert_eq!(
+        prop.macro_image,
+        Some("CMU-3-40x - 2010-01-12 13.57.09_macro.jpg".to_string())
+    );
+    assert_eq!(
+        prop.map_file,
+        Some("CMU-3-40x - 2010-01-12 13.57.09_map2.jpg".to_string())
+    );
     assert_eq!(prop.no_jpeg_columns, Some(3));
     assert_eq!(prop.no_jpeg_rows, Some(2));
     assert_eq!(prop.no_layers, Some(1));
-    assert_eq!(prop.optimisation_file, Some("CMU-3-40x - 2010-01-12 13.57.09.opt".to_string()));
+    assert_eq!(
+        prop.optimisation_file,
+        Some("CMU-3-40x - 2010-01-12 13.57.09.opt".to_string())
+    );
     assert_eq!(prop.physical_height, Some(23182704));
     assert_eq!(prop.physical_width, Some(32714500));
     assert_eq!(prop.physical_macro_height, Some(26000000));

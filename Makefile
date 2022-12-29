@@ -17,7 +17,7 @@ dl-test-images:
 	wget -q -O ./tests/assets/trestle.zip "https://openslide.cs.cmu.edu/download/openslide-testdata/Trestle/CMU-1.zip"
 	unzip tests/assets/trestle.zip -d ./tests/assets/trestle
 	rm -f ./tests/assets/trestle.zip
-	wget -q -O ./tests/assets/mirax.zip "https://openslide.cs.cmu.edu/download/openslide-testdata/Mirax/CMU-1-Saved-1_2.zip"
+	wget -q -O ./tests/assets/mirax.zip "https://openslide.cs.cmu.edu/download/openslide-testdata/Mirax/CMU-1-Saved-1_16.zip"
 	unzip tests/assets/mirax.zip -d ./tests/assets/mirax
 	rm -f ./tests/assets/mirax.zip
 	wget -q -O ./tests/assets/leica.scn "https://openslide.cs.cmu.edu/download/openslide-testdata/Leica/Leica-1.scn"

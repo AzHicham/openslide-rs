@@ -72,4 +72,3 @@ pub fn mirax() -> &'static Path {
 pub fn trestle() -> &'static Path {
     Path::new("tests/assets/trestle/CMU-1.tif")
 }
-
