@@ -6,6 +6,7 @@ pub mod hamamatsu;
 pub mod leica;
 pub mod mirax;
 pub mod openslide;
+pub mod philips;
 pub mod sakura;
 pub mod tiff;
 pub mod trestle;
@@ -13,7 +14,7 @@ pub mod ventana;
 
 use crate::properties::{
     aperio::Aperio, hamamatsu::Hamamatsu, leica::Leica, mirax::Mirax, openslide::OpenSlide,
-    sakura::Sakura, tiff::Tiff, trestle::Trestle, ventana::Ventana,
+    philips::Philips, sakura::Sakura, tiff::Tiff, trestle::Trestle, ventana::Ventana,
 };
 
 #[derive(Clone, Debug)]
@@ -26,7 +27,7 @@ pub enum VendorProperties {
     Trestle(Trestle),
     Ventana(Ventana),
     Sakura(Sakura),
-    Philips,
+    Philips(Philips),
     None,
 }
 
@@ -54,6 +55,7 @@ impl Properties {
             "trestle" => VendorProperties::Trestle(Trestle::new(property_iter)),
             "ventana" => VendorProperties::Ventana(Ventana::new(property_iter)),
             "sakura" => VendorProperties::Sakura(Sakura::new(property_iter)),
+            "philips" => VendorProperties::Philips(Philips::new(property_iter)),
             _ => VendorProperties::None,
         };
         Properties {
