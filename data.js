@@ -1,64 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1672324980652,
+  "lastUpdate": 1672327888145,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "id": "4c630e6d86a67694c8c61599eb34e3bb2ac48776",
-          "message": "refactor: Stabilize API",
-          "timestamp": "2022-11-05T12:23:07Z",
-          "url": "https://github.com/AzHicham/openslide-rs/pull/17/commits/4c630e6d86a67694c8c61599eb34e3bb2ac48776"
-        },
-        "date": 1667839665976,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2681852,
-            "range": "± 317600",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 11452869,
-            "range": "± 1418527",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2576985,
-            "range": "± 497880",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 10937263,
-            "range": "± 1774508",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 2443372,
-            "range": "± 625928",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 10628042,
-            "range": "± 1806177",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1731,6 +1675,62 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 8168649,
             "range": "± 132505",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "id": "d70eb0e1f984597b0ae92d73619df3edd7afb82b",
+          "message": "feat: Handle more vendor properties",
+          "timestamp": "2022-11-09T13:23:58Z",
+          "url": "https://github.com/AzHicham/openslide-rs/pull/36/commits/d70eb0e1f984597b0ae92d73619df3edd7afb82b"
+        },
+        "date": 1672327887686,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1960037,
+            "range": "± 10371",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 8001680,
+            "range": "± 39598",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1886157,
+            "range": "± 9705",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 8031898,
+            "range": "± 48670",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1809187,
+            "range": "± 3544",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 7717058,
+            "range": "± 15112",
             "unit": "ns/iter"
           }
         ]
