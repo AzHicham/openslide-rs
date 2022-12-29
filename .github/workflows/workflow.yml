@@ -1,6 +1,8 @@
 name: Build and test
 
 on:
+  schedule:
+   - cron: "0 0 * * 1,5"
   push:
     branches: [ main ]
   pull_request:
@@ -16,8 +18,8 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-          os: [ "ubuntu-20.04" ]
-          feature: ["--features image" ]
+          os: [ "ubuntu-20.04", "macos-12" ]
+          feature: [ "--no-default-features", "--features deepzoom", "--features image" ]
 
     steps:
     - uses: actions/checkout@v3
