@@ -36,7 +36,7 @@ impl Ventana {
     pub(crate) fn new(property_iter: impl Iterator<Item = (String, String)>) -> Self {
         let mut ventana_property = Ventana::default();
         property_iter
-            .filter(|(name, _)| name.starts_with("ventanaVENTANA."))
+            .filter(|(name, _)| name.starts_with("ventana."))
             .for_each(|(name, value)| ventana_property.parse_property_name(&name, &value));
         ventana_property
     }
