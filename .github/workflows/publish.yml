@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
-      - uses: MeilCli/regex-match@v1.5.18
+      - uses: MeilCli/regex-match@v1.5.19
         name: SemVer Validation
         id: regex-match
         with:
