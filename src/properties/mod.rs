@@ -4,11 +4,13 @@
 pub mod aperio;
 pub mod hamamatsu;
 pub mod leica;
+pub mod mirax;
 pub mod openslide;
 pub mod tiff;
 
 use crate::properties::{
-    aperio::Aperio, hamamatsu::Hamamatsu, leica::Leica, openslide::OpenSlide, tiff::Tiff,
+    aperio::Aperio, hamamatsu::Hamamatsu, leica::Leica, mirax::Mirax, openslide::OpenSlide,
+    tiff::Tiff,
 };
 
 #[derive(Clone, Debug)]
@@ -17,9 +19,9 @@ pub enum VendorProperties {
     Aperio(Aperio),
     Hamamatsu(Hamamatsu),
     Leica(Leica),
+    Mirax(Mirax),
     Philips,
     Sakura,
-    MIRAX,
     Trestle,
     Ventana,
     None,
@@ -43,7 +45,8 @@ impl Properties {
             "aperio" => VendorProperties::Aperio(Aperio::new(property_iter)),
             "hamamatsu" => VendorProperties::Hamamatsu(Hamamatsu::new(property_iter)),
             "leica" => VendorProperties::Leica(Leica::new(property_iter)),
-            _ => VendorProperties::None,
+            "mirax" => VendorProperties::Mirax(Mirax::new(property_iter)),
+            _ => VendorProperties::GenericTiff(Tiff::new(property_iter)),
         };
         Properties {
             openslide_properties,
