@@ -44,7 +44,6 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
             );
 
             let slide_level_dimensions: Result<Vec<Size>> = (0..nb_level)
-                .into_iter()
                 .map(|level| match slide.get_level_dimensions(level) {
                     Ok(size) => Ok(Size {
                         w: (size.w as f32 * size_scale.0).ceil() as _,
@@ -57,7 +56,6 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
         } else {
             let l0_offset = Address { x: 0, y: 0 };
             let slide_level_dimensions: Result<Vec<Size>> = (0..nb_level)
-                .into_iter()
                 .map(|level| slide.get_level_dimensions(level))
                 .collect();
             (slide_level_dimensions?, l0_offset)
@@ -108,7 +106,6 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
 
         // Piecewise downsamples
         let l0_l_downsamples: Result<Vec<f64>> = (0..nb_level)
-            .into_iter()
             .map(|level| slide.get_level_downsample(level))
             .collect();
         let l0_l_downsamples = l0_l_downsamples?;
