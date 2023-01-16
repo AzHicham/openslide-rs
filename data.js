@@ -1,68 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1672742084237,
+  "lastUpdate": 1673861541861,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hicham.azimani@owkin.com",
-            "name": "HichamAz",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "418eab3268621bddb44b63c9d10573ebcc60e1a8",
-          "message": "fix: build doc on docs.rs (#23)",
-          "timestamp": "2022-11-17T08:41:45+01:00",
-          "tree_id": "2e6724a4ed0b11551a7f1bba08a5db41ea28e304",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/418eab3268621bddb44b63c9d10573ebcc60e1a8"
-        },
-        "date": 1668671058210,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2340495,
-            "range": "± 356874",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 9893434,
-            "range": "± 1033719",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2441128,
-            "range": "± 184001",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 10320068,
-            "range": "± 1093601",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 2348616,
-            "range": "± 83665",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 9948106,
-            "range": "± 748668",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1739,6 +1679,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 8258948,
             "range": "± 176193",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "fc3a6257b078a509860dbab4124a19a7d0f018b5",
+          "message": "build(deps): bump MeilCli/regex-match from 1.5.20 to 1.5.21 (#41)\n\nBumps [MeilCli/regex-match](https://github.com/MeilCli/regex-match) from 1.5.20 to 1.5.21.\r\n- [Release notes](https://github.com/MeilCli/regex-match/releases)\r\n- [Commits](https://github.com/MeilCli/regex-match/compare/v1.5.20...v1.5.21)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: MeilCli/regex-match\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2023-01-16T10:29:33+01:00",
+          "tree_id": "5d886f945e08b869020925299e7c479b44989c4b",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/fc3a6257b078a509860dbab4124a19a7d0f018b5"
+        },
+        "date": 1673861541305,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1965185,
+            "range": "± 12148",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 7999902,
+            "range": "± 40250",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1889474,
+            "range": "± 9761",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 8027921,
+            "range": "± 40035",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1809018,
+            "range": "± 4573",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 7698976,
+            "range": "± 57384",
             "unit": "ns/iter"
           }
         ]
