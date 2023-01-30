@@ -1,68 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1675071363481,
+  "lastUpdate": 1675071415329,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "49699333+dependabot[bot]@users.noreply.github.com",
-            "name": "dependabot[bot]",
-            "username": "dependabot[bot]"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a0c6608d0fa5c418ccd554137c0ae6a569f2acf6",
-          "message": "build(deps): bump fast_image_resize from 2.2.0 to 2.3.0 (#27)\n\nBumps [fast_image_resize](https://github.com/cykooz/fast_image_resize) from 2.2.0 to 2.3.0.\r\n- [Release notes](https://github.com/cykooz/fast_image_resize/releases)\r\n- [Changelog](https://github.com/Cykooz/fast_image_resize/blob/main/CHANGELOG.md)\r\n- [Commits](https://github.com/cykooz/fast_image_resize/compare/v2.2.0...v2.3.0)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: fast_image_resize\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
-          "timestamp": "2022-11-28T10:28:00+01:00",
-          "tree_id": "7e1b5d6178ec67ec1a51f3b1244155574478f5c6",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/a0c6608d0fa5c418ccd554137c0ae6a569f2acf6"
-        },
-        "date": 1669627813145,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2094166,
-            "range": "± 22018",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 8512247,
-            "range": "± 86178",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2009601,
-            "range": "± 11183",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 8572737,
-            "range": "± 136519",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1931515,
-            "range": "± 10355",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 8232675,
-            "range": "± 179342",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1739,6 +1679,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 8407591,
             "range": "± 157863",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d75f478685bb60c383a1843d901ce41831cd9e0c",
+          "message": "build(deps): bump fast_image_resize from 2.4.0 to 2.5.0 (#43)\n\nBumps [fast_image_resize](https://github.com/cykooz/fast_image_resize) from 2.4.0 to 2.5.0.\r\n- [Release notes](https://github.com/cykooz/fast_image_resize/releases)\r\n- [Changelog](https://github.com/Cykooz/fast_image_resize/blob/main/CHANGELOG.md)\r\n- [Commits](https://github.com/cykooz/fast_image_resize/compare/v2.4.0...v2.5.0)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: fast_image_resize\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-minor\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2023-01-30T10:33:50+01:00",
+          "tree_id": "dee20df08b8a80a169bc7ad89bb18f478c6ca063",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/d75f478685bb60c383a1843d901ce41831cd9e0c"
+        },
+        "date": 1675071414830,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2091983,
+            "range": "± 19483",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 8508490,
+            "range": "± 75598",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2005915,
+            "range": "± 12208",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 8544501,
+            "range": "± 94013",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1924560,
+            "range": "± 9599",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 8197732,
+            "range": "± 103880",
             "unit": "ns/iter"
           }
         ]
