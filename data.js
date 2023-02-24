@@ -1,64 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1676541668477,
+  "lastUpdate": 1677243924935,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "id": "1ec416b6890903de1395bf0029ceedb9057d6c25",
-          "message": "refactor(deepzoom): reduce usage of for-loop & mut",
-          "timestamp": "2022-11-09T13:23:58Z",
-          "url": "https://github.com/AzHicham/openslide-rs/pull/29/commits/1ec416b6890903de1395bf0029ceedb9057d6c25"
-        },
-        "date": 1671024384424,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2330349,
-            "range": "± 455113",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 9867850,
-            "range": "± 2649024",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2231361,
-            "range": "± 319271",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 9664641,
-            "range": "± 1584474",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 2125656,
-            "range": "± 463078",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 9557306,
-            "range": "± 1783025",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1739,6 +1683,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 9897560,
             "range": "± 1635256",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hicham.azimani@owkin.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a292fa988a8957231d3dd4e96ed9b8a2ac03017c",
+          "message": "ci(publish): Use @v1 of MeilCli/regex-match (#47)",
+          "timestamp": "2023-02-24T14:01:10+01:00",
+          "tree_id": "fc12b79dab0c338acf9249b5d5100493aa35794b",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/a292fa988a8957231d3dd4e96ed9b8a2ac03017c"
+        },
+        "date": 1677243923776,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2615043,
+            "range": "± 33204",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 10690714,
+            "range": "± 168626",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2516445,
+            "range": "± 18031",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 10643614,
+            "range": "± 139181",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2403759,
+            "range": "± 18068",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 10248593,
+            "range": "± 152869",
             "unit": "ns/iter"
           }
         ]
