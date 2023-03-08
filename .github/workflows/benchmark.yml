@@ -26,7 +26,7 @@ jobs:
     - name: Run cargo bench
       run: cargo bench --workspace | tee bench-output.txt
     - name: Store benchmark result
-      uses: rhysd/github-action-benchmark@v1.15.0
+      uses: rhysd/github-action-benchmark@v1.16.1
       with:
         name: openslide-rs Benchmark
         tool: 'cargo'
