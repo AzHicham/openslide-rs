@@ -1,64 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1680613527395,
+  "lastUpdate": 1682366232728,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "id": "fd7908a30e8c0eaa94d776a3a9d2440604aafe47",
-          "message": "feat: Handle more vendor properties",
-          "timestamp": "2022-11-09T13:23:58Z",
-          "url": "https://github.com/AzHicham/openslide-rs/pull/36/commits/fd7908a30e8c0eaa94d776a3a9d2440604aafe47"
-        },
-        "date": 1672321176851,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2102757,
-            "range": "± 18168",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 8592050,
-            "range": "± 101072",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2018710,
-            "range": "± 15449",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 8625044,
-            "range": "± 132575",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1934239,
-            "range": "± 9564",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 8275073,
-            "range": "± 197046",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1759,6 +1703,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 8269065,
             "range": "± 145310",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "ce30e8baf18055bf340ac8bf0983f483044f67c9",
+          "message": "build(deps): bump regex from 1.7.3 to 1.8.1 (#64)",
+          "timestamp": "2023-04-24T19:53:59Z",
+          "tree_id": "6d8b8c04b6978a3fc89d2cd91ab2e33152965663",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/ce30e8baf18055bf340ac8bf0983f483044f67c9"
+        },
+        "date": 1682366231976,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1981004,
+            "range": "± 13990",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 8073576,
+            "range": "± 67762",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1896934,
+            "range": "± 14311",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 8098906,
+            "range": "± 93501",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1812230,
+            "range": "± 5994",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 7755538,
+            "range": "± 69217",
             "unit": "ns/iter"
           }
         ]
