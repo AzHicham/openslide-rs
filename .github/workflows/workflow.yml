@@ -10,6 +10,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  RUST_VERSION: 1.68.2
 
 jobs:
   build:
@@ -18,14 +19,14 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-          os: [ "ubuntu-20.04", "macos-12" ]
+          os: [ "ubuntu-22.04", "ubuntu-20.04", "macos-12" ]
           feature: [ "--no-default-features", "--features deepzoom", "--features image" ]
 
     steps:
     - uses: actions/checkout@v3
     - uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: 1.68.2
+        toolchain: ${{ env.RUST_VERSION }}
         components: clippy, rustfmt
     - name: Cache sample slide
       id: cache-slide
@@ -40,7 +41,7 @@ jobs:
       with:
         key: ${{ matrix.os }}-${{ matrix.feature }}
     - name: Install dependencies ubuntu
-      if: ${{ matrix.os == 'ubuntu-20.04' }}
+      if: ${{ matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04' }}
       run: make install-deps-apt
     - name: Install dependencies macos
       if: ${{ matrix.os == 'macos-12' }}
@@ -51,12 +52,12 @@ jobs:
       run: cargo test --release --workspace ${{ matrix.feature }}
 
   doc-rs:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
-    - uses: dtolnay/rust-toolchain@master
+    - uses: dtolnay/rust-toolchain@stable
       with:
-        toolchain: 1.68.2
+        toolchain: ${{ env.RUST_VERSION }}
         components: clippy, rustfmt
     - name: Install dependencies ubuntu
       run: make install-deps-apt
@@ -66,14 +67,14 @@ jobs:
       run: cargo doc -v
 
   pre-commit:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: actions-rs/toolchain@v1
       with:
-        toolchain: stable
+        toolchain: ${{ env.RUST_VERSION }}
         override: true
-        components: clippy, rustfmt
+        components: rustfmt, clippy
     - uses: actions/setup-python@v4
       with:
         python-version: '3.9'
