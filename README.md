@@ -55,20 +55,29 @@ OpenSlide can read virtual slides in several formats:
 
 ## Installation
 
-OpenSlide-rs requires [OpenSlide] build dependencies.
+OpenSlide-rs requires [OpenSlide].
 
 You will find a Makefile to help you install all required dependencies for Ubuntu and MacOs.
 Bellow you will find command to run to be able to build this crate
 
-### MacOs
+## Dependencies
 
-`brew install openslide --only-dependencies`
+To be able to build this crate you need to install [OpenSlide](https://github.com/openslide/openslide)
 
-### Ubuntu
+You will also find a Makefile to help you install all required dependencies for Ubuntu and MacOs
 
+## MacOs
+
+```bash
+brew update
+brew install openslide
 ```
-apt-get install -y --no-install-recommends libwebp-dev libzstd-dev pkg-config clang
-apt-get build-dep -y --no-install-recommends libopenslide0
+
+## Ubuntu
+
+```bash
+apt-get update
+apt-get install -y --no-install-recommends libopenslide-dev
 ```
 
 ## More Information

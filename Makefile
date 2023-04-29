@@ -1,13 +1,11 @@
 .PHONY: install-deps-brew install-deps-apt dl-test-images
 
 install-deps-brew:
-	brew install openslide --only-dependencies
+	brew install openslide
 
 install-deps-apt:
-	sudo find /etc/apt/sources.list* -type f -exec sed -i 'p; s/^deb /deb-src /' '{}' +
 	sudo apt-get update
-	sudo apt-get install -y --no-install-recommends libwebp-dev libzstd-dev pkg-config clang
-	sudo apt-get build-dep -y --no-install-recommends libopenslide0
+	sudo apt-get install -y --no-install-recommends libopenslide-dev
 
 dl-test-images:
 	mkdir ./tests/assets/hamamatsu ./tests/assets/trestle ./tests/assets/mirax

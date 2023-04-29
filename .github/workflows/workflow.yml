@@ -45,8 +45,10 @@ jobs:
     - name: Install dependencies macos
       if: ${{ matrix.os == 'macos-12' }}
       run: make install-deps-brew
-    - name: Build & Test
+    - name: Build & Test (Debug)
       run: cargo test --workspace ${{ matrix.feature }}
+    - name: Build & Test (Release)
+      run: cargo test --release --workspace ${{ matrix.feature }}
 
   doc-rs:
     runs-on: ubuntu-20.04
