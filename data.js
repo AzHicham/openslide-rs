@@ -1,68 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1682767682110,
+  "lastUpdate": 1682767783379,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hicham.azimani@owkin.com",
-            "name": "HichamAz",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "a8c15635652e0aaac85df1f0137ba76b9305080f",
-          "message": "build: release 1.1.0 (#37)",
-          "timestamp": "2022-12-30T11:57:07+01:00",
-          "tree_id": "23293259568a7132f34f0b6d5ac752d2c8ae5a3c",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/a8c15635652e0aaac85df1f0137ba76b9305080f"
-        },
-        "date": 1672397968807,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2107072,
-            "range": "± 21027",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 8584408,
-            "range": "± 85686",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2012231,
-            "range": "± 14683",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 8576348,
-            "range": "± 97312",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1919655,
-            "range": "± 9559",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 8251317,
-            "range": "± 132601",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1763,6 +1703,62 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 8512840,
             "range": "± 547934",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "id": "3f673754b590a71993520c338ad37645680da10f",
+          "message": "chore(deps): Upgrade openslide-sys",
+          "timestamp": "2023-04-04T15:18:51Z",
+          "url": "https://github.com/AzHicham/openslide-rs/pull/66/commits/3f673754b590a71993520c338ad37645680da10f"
+        },
+        "date": 1682767782796,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1958355,
+            "range": "± 10775",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 7990041,
+            "range": "± 59161",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1879205,
+            "range": "± 16603",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 8009671,
+            "range": "± 59281",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1806685,
+            "range": "± 4473",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 7735551,
+            "range": "± 92549",
             "unit": "ns/iter"
           }
         ]
