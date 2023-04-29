@@ -41,7 +41,7 @@ jobs:
       with:
         key: ${{ matrix.os }}-${{ matrix.feature }}
     - name: Install dependencies ubuntu
-      if: ${{ matrix.os == 'ubuntu-20.04' }}
+      if: ${{ matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04' }}
       run: make install-deps-apt
     - name: Install dependencies macos
       if: ${{ matrix.os == 'macos-12' }}
@@ -70,10 +70,11 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
-    - uses: dtolnay/rust-toolchain@stable
+    - uses: actions-rs/toolchain@v1
       with:
         toolchain: ${{ env.RUST_VERSION }}
-        components: clippy, rustfmt
+        override: true
+        components: rustfmt, clippy
     - uses: actions/setup-python@v4
       with:
         python-version: '3.9'
