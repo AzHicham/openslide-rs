@@ -24,10 +24,10 @@ jobs:
     needs: [validate]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: stable
-          override: true
+          toolchain: 1.68.2
+          components: clippy, rustfmt
       - name: Install dependencies ubuntu
         run: make install-deps-apt
       - uses: katyo/publish-crates@v2
