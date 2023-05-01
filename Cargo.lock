@@ -346,7 +346,7 @@ dependencies = [
 [[package]]
 name = "openslide-sys"
 version = "1.0.0"
-source = "git+https://github.com/AzHicham/openslide-sys?branch=main#617a0f3dce368b96fd37220222a6b72268c2972e"
+source = "git+https://github.com/AzHicham/openslide-sys?branch=main#b1bcc3f7fde80bed74211e462f6744a53514f890"
 dependencies = [
  "bindgen",
  "pkg-config",
