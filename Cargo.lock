@@ -329,7 +329,7 @@ checksum = "b7e5500299e16ebb147ae15a00a942af264cf3688f47923b8fc2cd5858f23ad3"
 
 [[package]]
 name = "openslide-rs"
-version = "1.1.1"
+version = "1.2.0"
 dependencies = [
  "assert_approx_eq",
  "bencher",
@@ -346,7 +346,8 @@ dependencies = [
 [[package]]
 name = "openslide-sys"
 version = "1.0.0"
-source = "git+https://github.com/AzHicham/openslide-sys?branch=main#617a0f3dce368b96fd37220222a6b72268c2972e"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bcc583d2c33e9fb25bd13e3c278cc6b1486d80141c29f4676880b7a2aedde90a"
 dependencies = [
  "bindgen",
  "pkg-config",
