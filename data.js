@@ -1,68 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1688623523306,
+  "lastUpdate": 1688625003715,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "49699333+dependabot[bot]@users.noreply.github.com",
-            "name": "dependabot[bot]",
-            "username": "dependabot[bot]"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "f998a2369a49300ef5ecf16d20c08f6c41aed839",
-          "message": "build(deps): bump libc from 0.2.139 to 0.2.140 (#53)\n\nBumps [libc](https://github.com/rust-lang/libc) from 0.2.139 to 0.2.140.\r\n- [Release notes](https://github.com/rust-lang/libc/releases)\r\n- [Commits](https://github.com/rust-lang/libc/compare/0.2.139...0.2.140)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: libc\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
-          "timestamp": "2023-03-16T16:31:29+01:00",
-          "tree_id": "36cceed66a292b251a1c58db41a0980270315663",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/f998a2369a49300ef5ecf16d20c08f6c41aed839"
-        },
-        "date": 1678980981281,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1963561,
-            "range": "± 9321",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 8004256,
-            "range": "± 48111",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1881902,
-            "range": "± 4970",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 8025244,
-            "range": "± 53848",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1811383,
-            "range": "± 5515",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 7757710,
-            "range": "± 71378",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1747,6 +1687,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 10496382,
             "range": "± 170783",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e831ed056e395939bdb180d84be0951082e530a5",
+          "message": "fix(deps): update rust crate regex to 1.9 (#83)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
+          "timestamp": "2023-07-06T08:24:45+02:00",
+          "tree_id": "fc9f84b6ce8c0d5c2320b30c7e01e373a5ab30e6",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/e831ed056e395939bdb180d84be0951082e530a5"
+        },
+        "date": 1688625001841,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2594381,
+            "range": "± 134862",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 10491688,
+            "range": "± 637439",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2493315,
+            "range": "± 83148",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 11021852,
+            "range": "± 1368751",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2372790,
+            "range": "± 196458",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 9808802,
+            "range": "± 902560",
             "unit": "ns/iter"
           }
         ]
