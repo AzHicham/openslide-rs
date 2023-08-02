@@ -1,68 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1690991449766,
+  "lastUpdate": 1690991663237,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "49699333+dependabot[bot]@users.noreply.github.com",
-            "name": "dependabot[bot]",
-            "username": "dependabot[bot]"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "6fcd512c629660da54f85ab512fa1fdb84ec2ca1",
-          "message": "build(deps): bump regex from 1.7.1 to 1.7.3 (#58)\n\nBumps [regex](https://github.com/rust-lang/regex) from 1.7.1 to 1.7.3.\r\n- [Release notes](https://github.com/rust-lang/regex/releases)\r\n- [Changelog](https://github.com/rust-lang/regex/blob/master/CHANGELOG.md)\r\n- [Commits](https://github.com/rust-lang/regex/compare/1.7.1...1.7.3)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: regex\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
-          "timestamp": "2023-04-03T22:20:35+02:00",
-          "tree_id": "9fabfd6e68acbc3ed6fc8377d208adac087b87d7",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/6fcd512c629660da54f85ab512fa1fdb84ec2ca1"
-        },
-        "date": 1680553863586,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2100331,
-            "range": "± 11892",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 8586357,
-            "range": "± 77706",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2011910,
-            "range": "± 12014",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 8608909,
-            "range": "± 90359",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1936721,
-            "range": "± 12775",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 8299967,
-            "range": "± 114731",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1747,6 +1687,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 8777568,
             "range": "± 171777",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "a5f5cb15b8bfa9a584b7d662a9d25a277477aa58",
+          "message": "build(deps): bump regex from 1.9.0 to 1.9.1 (#85)\n\nBumps [regex](https://github.com/rust-lang/regex) from 1.9.0 to 1.9.1.\r\n- [Release notes](https://github.com/rust-lang/regex/releases)\r\n- [Changelog](https://github.com/rust-lang/regex/blob/master/CHANGELOG.md)\r\n- [Commits](https://github.com/rust-lang/regex/compare/1.9.0...1.9.1)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: regex\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+          "timestamp": "2023-08-02T17:47:15+02:00",
+          "tree_id": "afef572974d4f9be48f30583be7f69b7cd912e95",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/a5f5cb15b8bfa9a584b7d662a9d25a277477aa58"
+        },
+        "date": 1690991662386,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2203816,
+            "range": "± 15307",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 9040031,
+            "range": "± 168426",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2125766,
+            "range": "± 14019",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 9013900,
+            "range": "± 133806",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2044175,
+            "range": "± 11350",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 8739816,
+            "range": "± 197931",
             "unit": "ns/iter"
           }
         ]
