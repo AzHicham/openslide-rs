@@ -1,68 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1690992051609,
+  "lastUpdate": 1691587666178,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "49699333+dependabot[bot]@users.noreply.github.com",
-            "name": "dependabot[bot]",
-            "username": "dependabot[bot]"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ce30e8baf18055bf340ac8bf0983f483044f67c9",
-          "message": "build(deps): bump regex from 1.7.3 to 1.8.1 (#64)",
-          "timestamp": "2023-04-24T19:53:59Z",
-          "tree_id": "6d8b8c04b6978a3fc89d2cd91ab2e33152965663",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/ce30e8baf18055bf340ac8bf0983f483044f67c9"
-        },
-        "date": 1682366231976,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1981004,
-            "range": "± 13990",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 8073576,
-            "range": "± 67762",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1896934,
-            "range": "± 14311",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 8098906,
-            "range": "± 93501",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1812230,
-            "range": "± 5994",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 7755538,
-            "range": "± 69217",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1747,6 +1687,62 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 10489402,
             "range": "± 144001",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "id": "7a6d6e7b805d99cfa23ba13e776eb951e622d311",
+          "message": "chore(deps): update dependency ubuntu to v22",
+          "timestamp": "2023-07-19T14:01:57Z",
+          "url": "https://github.com/AzHicham/openslide-rs/pull/89/commits/7a6d6e7b805d99cfa23ba13e776eb951e622d311"
+        },
+        "date": 1691587665065,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2661725,
+            "range": "± 19084",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 10955450,
+            "range": "± 147900",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2557381,
+            "range": "± 16968",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 10993652,
+            "range": "± 250231",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2458917,
+            "range": "± 14176",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 10653950,
+            "range": "± 96547",
             "unit": "ns/iter"
           }
         ]
