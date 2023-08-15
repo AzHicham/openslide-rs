@@ -1,68 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1691587666178,
+  "lastUpdate": 1692097007973,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "49699333+dependabot[bot]@users.noreply.github.com",
-            "name": "dependabot[bot]",
-            "username": "dependabot[bot]"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "189dfd5b32f4b57b4935acce6b8eee374f5a4a23",
-          "message": "build(deps): bump peter-evans/create-pull-request from 4 to 5 (#61)",
-          "timestamp": "2023-04-24T19:55:01Z",
-          "tree_id": "429012fc4357d29fd1d9a6f4255a05872e8264d3",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/189dfd5b32f4b57b4935acce6b8eee374f5a4a23"
-        },
-        "date": 1682366330333,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2102328,
-            "range": "± 19484",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 8566673,
-            "range": "± 106350",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2016807,
-            "range": "± 8267",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 8617093,
-            "range": "± 90780",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1934872,
-            "range": "± 8129",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 8396113,
-            "range": "± 169402",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1743,6 +1683,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 10653950,
             "range": "± 96547",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d54ee8d12969187afb2feeac6776575834c84159",
+          "message": "chore(deps): update dependency ubuntu to v22 (#89)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
+          "timestamp": "2023-08-15T12:52:37+02:00",
+          "tree_id": "f88110a9f01be889ca57591ad886474bdcdc163b",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/d54ee8d12969187afb2feeac6776575834c84159"
+        },
+        "date": 1692097007522,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2215650,
+            "range": "± 21859",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 9044542,
+            "range": "± 108309",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2125938,
+            "range": "± 21018",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 9078595,
+            "range": "± 136409",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2050437,
+            "range": "± 16001",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 8757291,
+            "range": "± 185859",
             "unit": "ns/iter"
           }
         ]
