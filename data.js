@@ -1,64 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1693848351747,
+  "lastUpdate": 1693848366171,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "id": "df428044b856438e1fe9027085c47864f5d432b2",
-          "message": "Configure Renovate",
-          "timestamp": "2023-04-04T15:18:51Z",
-          "url": "https://github.com/AzHicham/openslide-rs/pull/67/commits/df428044b856438e1fe9027085c47864f5d432b2"
-        },
-        "date": 1682787275284,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1959685,
-            "range": "± 16172",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 8009235,
-            "range": "± 85190",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1879016,
-            "range": "± 5967",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 8020068,
-            "range": "± 50098",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1810063,
-            "range": "± 6959",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 7734376,
-            "range": "± 62382",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1767,6 +1711,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 7857582,
             "range": "± 136451",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "b9eed83ccfdf93d8fa499c5650f3d81c7d014b68",
+          "message": "chore(deps): update actions/checkout action to v4 (#97)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
+          "timestamp": "2023-09-04T19:20:53+02:00",
+          "tree_id": "7ea23cde0a4efb8a629ccf09731b60c87afe1f8e",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/b9eed83ccfdf93d8fa499c5650f3d81c7d014b68"
+        },
+        "date": 1693848365664,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2232002,
+            "range": "± 20281",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 9306683,
+            "range": "± 168420",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2139697,
+            "range": "± 21687",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 9295252,
+            "range": "± 185899",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2063671,
+            "range": "± 20398",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 9025516,
+            "range": "± 210542",
             "unit": "ns/iter"
           }
         ]
