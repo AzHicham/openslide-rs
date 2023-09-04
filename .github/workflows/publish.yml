@@ -11,7 +11,7 @@ jobs:
   validate:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: MeilCli/regex-match@v1
         name: SemVer Validation
         id: regex-match
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [validate]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ env.RUST_VERSION }}
