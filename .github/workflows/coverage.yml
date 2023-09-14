@@ -36,7 +36,7 @@ jobs:
           cargo llvm-cov clean --workspace # remove artifacts that may affect the coverage results
           cargo llvm-cov --no-report --workspace --features deepzoom
           cargo llvm-cov --no-run --workspace --lcov --output-path lcov.info
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: lcov.info
