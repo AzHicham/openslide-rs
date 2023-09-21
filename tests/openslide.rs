@@ -98,7 +98,7 @@ fn test_slide_info(#[case] filename: &Path) {
     assert_approx_eq!(slide.get_level_downsample(3).unwrap(), 8.086312118570184);
 
     let level_downsamples = slide.get_all_level_downsample().unwrap();
-    let expect_level_downsamples = vec![1.0, 2.0, 4.016129032258064, 8.086312118570184];
+    let expect_level_downsamples = [1.0, 2.0, 4.016129032258064, 8.086312118570184];
     for index in 0..expect_level_downsamples.len() {
         assert_approx_eq!(level_downsamples[index], expect_level_downsamples[index]);
     }
