@@ -1,68 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695294000099,
+  "lastUpdate": 1695294001877,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "49699333+dependabot[bot]@users.noreply.github.com",
-            "name": "dependabot[bot]",
-            "username": "dependabot[bot]"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "8c0f4cb7365bea5edb3de923e53c60cc5d79ad9e",
-          "message": "build(deps): bump fast_image_resize from 2.7.1 to 2.7.3 (#73)\n\nBumps [fast_image_resize](https://github.com/cykooz/fast_image_resize) from 2.7.1 to 2.7.3.\r\n- [Release notes](https://github.com/cykooz/fast_image_resize/releases)\r\n- [Changelog](https://github.com/Cykooz/fast_image_resize/blob/main/CHANGELOG.md)\r\n- [Commits](https://github.com/cykooz/fast_image_resize/compare/v2.7.1...v2.7.3)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: fast_image_resize\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
-          "timestamp": "2023-05-22T09:37:25+02:00",
-          "tree_id": "6240cbfa7017420096e553de859ebb7c27e91dc8",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/8c0f4cb7365bea5edb3de923e53c60cc5d79ad9e"
-        },
-        "date": 1684741339551,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2590287,
-            "range": "± 304113",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 10823366,
-            "range": "± 967785",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2520482,
-            "range": "± 207848",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 10828296,
-            "range": "± 794345",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 2404955,
-            "range": "± 251452",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 10325501,
-            "range": "± 1053358",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1771,6 +1711,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 7788579,
             "range": "± 59953",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hicham.azimani@owkin.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "2da3031258da95b0dc09c6d11a41ee00beedfccd",
+          "message": "Run clippy on the code base (#101)\n\nCo-authored-by: AzHicham <AzHicham@users.noreply.github.com>",
+          "timestamp": "2023-09-21T12:58:01+02:00",
+          "tree_id": "5fb1024002258b422fb200091ca57f2a0f2e5e55",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/2da3031258da95b0dc09c6d11a41ee00beedfccd"
+        },
+        "date": 1695294000181,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2644764,
+            "range": "± 36249",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 10771503,
+            "range": "± 582870",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2547367,
+            "range": "± 34780",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 10774217,
+            "range": "± 118102",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2451440,
+            "range": "± 28680",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 10417881,
+            "range": "± 159981",
             "unit": "ns/iter"
           }
         ]
