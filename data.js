@@ -1,64 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695295174521,
+  "lastUpdate": 1695295270546,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "id": "25b6b5c7babf32b10c1298fe1b2542929c9fdc26",
-          "message": "chore(deps): update rust crate rstest to 0.18",
-          "timestamp": "2023-04-04T15:18:51Z",
-          "url": "https://github.com/AzHicham/openslide-rs/pull/80/commits/25b6b5c7babf32b10c1298fe1b2542929c9fdc26"
-        },
-        "date": 1688523570194,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2573343,
-            "range": "± 627870",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 10059043,
-            "range": "± 1650803",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2338917,
-            "range": "± 305267",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 10129283,
-            "range": "± 939020",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 2251207,
-            "range": "± 361693",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 9730652,
-            "range": "± 1166449",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1759,6 +1703,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 8722962,
             "range": "± 256043",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e16646d152426afb4ea76ca073c0b00ebc8b433c",
+          "message": "fix(deps): update rust crate openslide-sys to 1.0.1 (#103)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
+          "timestamp": "2023-09-21T13:18:03+02:00",
+          "tree_id": "a07a05030e1e8e9d8e4d529c808fa5394fc3de55",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/e16646d152426afb4ea76ca073c0b00ebc8b433c"
+        },
+        "date": 1695295270012,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1982720,
+            "range": "± 21141",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 8082526,
+            "range": "± 488711",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1892151,
+            "range": "± 11032",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 8175072,
+            "range": "± 195697",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1811297,
+            "range": "± 9830",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 7842551,
+            "range": "± 116512",
             "unit": "ns/iter"
           }
         ]
