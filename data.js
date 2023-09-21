@@ -1,68 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695294714805,
+  "lastUpdate": 1695294744834,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "49699333+dependabot[bot]@users.noreply.github.com",
-            "name": "dependabot[bot]",
-            "username": "dependabot[bot]"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "ac167f90050860c38f17b168fda60d3a98d2f317",
-          "message": "build(deps): bump regex from 1.8.1 to 1.8.3 (#75)\n\nBumps [regex](https://github.com/rust-lang/regex) from 1.8.1 to 1.8.3.\r\n- [Release notes](https://github.com/rust-lang/regex/releases)\r\n- [Changelog](https://github.com/rust-lang/regex/blob/master/CHANGELOG.md)\r\n- [Commits](https://github.com/rust-lang/regex/compare/1.8.1...1.8.3)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: regex\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
-          "timestamp": "2023-06-04T11:42:21+02:00",
-          "tree_id": "539e7bcfde6b922004baa1674fddb8717782a4c6",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/ac167f90050860c38f17b168fda60d3a98d2f317"
-        },
-        "date": 1685871983652,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1954962,
-            "range": "± 4696",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 7986589,
-            "range": "± 39868",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1877687,
-            "range": "± 5149",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 8012618,
-            "range": "± 72666",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1809251,
-            "range": "± 5131",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 7724948,
-            "range": "± 39741",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1767,6 +1707,62 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 8728595,
             "range": "± 149685",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "id": "8d0b98aae8fca3803fc139fc9a492c2144501caf",
+          "message": "fix(deps): update rust crate openslide-sys to 1.0.1",
+          "timestamp": "2023-07-19T14:01:57Z",
+          "url": "https://github.com/AzHicham/openslide-rs/pull/103/commits/8d0b98aae8fca3803fc139fc9a492c2144501caf"
+        },
+        "date": 1695294743680,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2678828,
+            "range": "± 704083",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 11026210,
+            "range": "± 2557099",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2661269,
+            "range": "± 747374",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 11319573,
+            "range": "± 1709194",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2647913,
+            "range": "± 635869",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 10897829,
+            "range": "± 2477245",
             "unit": "ns/iter"
           }
         ]
