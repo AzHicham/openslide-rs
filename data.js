@@ -1,64 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695292608698,
+  "lastUpdate": 1695293196868,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "id": "1fad1c8c9b02a00393193d1383137255f58535b7",
-          "message": "chore: update ci",
-          "timestamp": "2023-04-04T15:18:51Z",
-          "url": "https://github.com/AzHicham/openslide-rs/pull/69/commits/1fad1c8c9b02a00393193d1383137255f58535b7"
-        },
-        "date": 1682789387734,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2483804,
-            "range": "± 271264",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 10802232,
-            "range": "± 1298611",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2519984,
-            "range": "± 714171",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 10610422,
-            "range": "± 1236780",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 2371664,
-            "range": "± 293181",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 9822199,
-            "range": "± 785447",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1771,6 +1715,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 8844007,
             "range": "± 154896",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hicham.azimani@owkin.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "0860d48f0f0eaaa27e3dbc3dd512a17ed03e99e6",
+          "message": "chore: Update rust toolchain in CI (#100)",
+          "timestamp": "2023-09-21T12:43:38+02:00",
+          "tree_id": "b7790a5f4b4d74daded1474d45dbc6cb1bd88932",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/0860d48f0f0eaaa27e3dbc3dd512a17ed03e99e6"
+        },
+        "date": 1695293195671,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2488575,
+            "range": "± 888304",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 9861381,
+            "range": "± 1345957",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2302894,
+            "range": "± 330504",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 10084484,
+            "range": "± 1080394",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2290700,
+            "range": "± 338425",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 9933771,
+            "range": "± 953575",
             "unit": "ns/iter"
           }
         ]
