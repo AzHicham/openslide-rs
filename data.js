@@ -1,64 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1695295270546,
+  "lastUpdate": 1696770747525,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "id": "ccab4a274297c94971fd2e544fc3118e3470c592",
-          "message": "fix(deps): update rust crate regex to 1.9",
-          "timestamp": "2023-04-04T15:18:51Z",
-          "url": "https://github.com/AzHicham/openslide-rs/pull/83/commits/ccab4a274297c94971fd2e544fc3118e3470c592"
-        },
-        "date": 1688623522173,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2656688,
-            "range": "± 24941",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 10820933,
-            "range": "± 171457",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2546966,
-            "range": "± 16627",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 10902777,
-            "range": "± 125536",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 2457435,
-            "range": "± 16867",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 10496382,
-            "range": "± 170783",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1763,6 +1707,66 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 7842551,
             "range": "± 116512",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "49699333+dependabot[bot]@users.noreply.github.com",
+            "name": "dependabot[bot]",
+            "username": "dependabot[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e15520a37fb473d5e8e23d80767b91f6b2b30646",
+          "message": "build(deps): bump thiserror from 1.0.48 to 1.0.49 (#104)",
+          "timestamp": "2023-10-08T14:10:40+01:00",
+          "tree_id": "5ea1465a3afe421e40f1b16f60369dd0a64c5be7",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/e15520a37fb473d5e8e23d80767b91f6b2b30646"
+        },
+        "date": 1696770747099,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 2219218,
+            "range": "± 16282",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 9034973,
+            "range": "± 98508",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 2135591,
+            "range": "± 16725",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 9048869,
+            "range": "± 78974",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 2043265,
+            "range": "± 13977",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 8661491,
+            "range": "± 77662",
             "unit": "ns/iter"
           }
         ]
