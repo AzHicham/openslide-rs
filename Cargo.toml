@@ -19,7 +19,7 @@ image = ["dep:image", "dep:fast_image_resize"]
 [dependencies]
 libc = "0.2"
 thiserror = "1.0"
-regex = "1.9"
+regex = "1.10"
 lazy_static = "1.4"
 openslide-sys = { version = "1.0.1" }
 image = { version = "0.24", optional = true, default-features = false}
