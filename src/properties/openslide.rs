@@ -1,6 +1,7 @@
 //! Openslide properties
 //!
 
+use lazy_static::lazy_static;
 use regex::Regex;
 
 lazy_static! {
@@ -20,6 +21,9 @@ pub const OPENSLIDE_PROPERTY_NAME_BOUNDS_Y: &str = "openslide.bounds-y";
 pub const OPENSLIDE_PROPERTY_NAME_BOUNDS_WIDTH: &str = "openslide.bounds-width";
 pub const OPENSLIDE_PROPERTY_NAME_BOUNDS_HEIGHT: &str = "openslide.bounds-height";
 pub const OPENSLIDE_PROPERTY_LEVEL_COUNT: &str = "openslide.level-count";
+
+#[cfg(feature = "openslide4")]
+pub const OPENSLIDE_PROPERTY_NAME_ICC_SIZE: &str = "openslide.icc-size";
 
 const OPENSLIDE_PROPERTY_LEVEL_DOWNSAMPLE: &str = "downsample";
 const OPENSLIDE_PROPERTY_LEVEL_HEIGHT: &str = "height";

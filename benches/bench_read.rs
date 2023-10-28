@@ -1,5 +1,5 @@
 use bencher::{benchmark_group, benchmark_main, Bencher};
-use openslide_rs::{traits::Slide, Address, DeepZoomGenerator, OpenSlide, Region, Size};
+use openslide_rs::{Address, DeepZoomGenerator, OpenSlide, Region, Size};
 use std::path::Path;
 
 fn openslide_read_region_256(bench: &mut Bencher) {

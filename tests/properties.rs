@@ -1,4 +1,4 @@
-use openslide_rs::{traits::Slide, OpenSlide};
+use openslide_rs::OpenSlide;
 use rstest::rstest;
 use std::path::Path;
 

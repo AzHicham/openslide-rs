@@ -1,19 +1,14 @@
-#[macro_use]
-extern crate lazy_static;
-
-use crate::properties::Properties;
-
-#[cfg(feature = "deepzoom")]
-use crate::traits::Slide;
-
 mod bindings;
+pub mod errors;
+mod openslide;
+pub mod properties;
+mod utils;
+
 #[cfg(feature = "deepzoom")]
 pub mod deepzoom;
-pub mod errors;
-pub mod properties;
-pub mod traits;
-mod utils;
-mod wrapper;
+
+#[cfg(feature = "openslide4")]
+mod cache;
 
 /// The corresponding result type used by the crate.
 pub type Result<T, E = errors::OpenSlideError> = std::result::Result<T, E>;
@@ -27,14 +22,14 @@ pub type Result<T, E = errors::OpenSlideError> = std::result::Result<T, E>;
 #[derive(Debug)]
 pub struct OpenSlide {
     osr: bindings::OpenSlideWrapper,
-    pub properties: Properties,
+    pub properties: properties::Properties,
 }
 
 /// Generates Deep Zoom tiles and metadata.
 #[cfg(feature = "deepzoom")]
 #[derive(Debug)]
-pub struct DeepZoomGenerator<'a, T: Slide> {
-    slide: &'a T,
+pub struct DeepZoomGenerator<'a> {
+    slide: &'a OpenSlide,
 
     level_count: usize,
     level_tiles: Vec<Size>,

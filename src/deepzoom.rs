@@ -4,19 +4,18 @@
 
 use crate::{
     errors::OpenSlideError,
-    traits::Slide,
     utils::{resize_rgb_image, resize_rgba_image},
-    Address, DeepZoomGenerator, Region, Result, Size,
+    Address, DeepZoomGenerator, OpenSlide, Region, Result, Size,
 };
 use image::{RgbImage, RgbaImage};
 
-impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
+impl<'a> DeepZoomGenerator<'a> {
     pub fn new(
-        slide: &'a T,
+        slide: &'a OpenSlide,
         tile_size: u32,
         overlap: u32,
         limit_bounds: bool,
-    ) -> Result<DeepZoomGenerator<T>> {
+    ) -> Result<DeepZoomGenerator<'a>> {
         let nb_level = slide.get_level_count()?;
 
         let (slide_level_dimensions, l0_offset) = if limit_bounds {
@@ -25,7 +24,6 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
             let bounds_y = os_property.bounds_y.unwrap_or(0);
 
             // Level 0 coordinate offset
-
             let l0_offset = Address {
                 x: bounds_x,
                 y: bounds_y,
