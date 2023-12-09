@@ -22,7 +22,7 @@ libc = "0.2"
 thiserror = "1.0"
 regex = "1.10"
 lazy_static = "1.4"
-openslide-sys = { version = "1.0.1" }
+openslide-sys = { version = "1.0.3" }
 image = { version = "0.24", optional = true, default-features = false}
 fast_image_resize = { version = "2.7", optional = true}
 
