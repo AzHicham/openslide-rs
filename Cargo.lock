@@ -31,9 +31,9 @@ checksum = "7dfdb4953a096c551ce9ace855a604d702e6e62d77fac690575ae347571717f5"
 
 [[package]]
 name = "bindgen"
-version = "0.68.1"
+version = "0.69.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "726e4313eb6ec35d2730258ad4e15b547ee75d6afaa1361a922e78e59b7d8078"
+checksum = "9ffcebc3849946a7170a05992aac39da343a90676ab392c51a4280981d6379c2"
 dependencies = [
  "bitflags",
  "cexpr",
@@ -388,9 +388,9 @@ dependencies = [
 
 [[package]]
 name = "openslide-sys"
-version = "1.0.1"
+version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18a69fbaa9e001fdcc5640a38a72c322630747ff1d9c8353e750d91dfc3ed4c2"
+checksum = "fd6ac90da60c1f8e1c5e41b220d77edd27489b88ee48b1cf3b4586515e54699e"
 dependencies = [
  "bindgen",
  "pkg-config",
