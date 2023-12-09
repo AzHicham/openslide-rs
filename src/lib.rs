@@ -4,13 +4,17 @@ extern crate lazy_static;
 use crate::properties::Properties;
 
 #[cfg(feature = "deepzoom")]
-use crate::traits::Slide;
+use {
+    crate::traits::Slide,
+    std::{borrow::Borrow, marker::PhantomData},
+};
 
 mod bindings;
 #[cfg(feature = "deepzoom")]
 pub mod deepzoom;
 pub mod errors;
 pub mod properties;
+#[cfg(feature = "deepzoom")]
 pub mod traits;
 mod utils;
 mod wrapper;
@@ -33,8 +37,9 @@ pub struct OpenSlide {
 /// Generates Deep Zoom tiles and metadata.
 #[cfg(feature = "deepzoom")]
 #[derive(Debug)]
-pub struct DeepZoomGenerator<'a, T: Slide> {
-    slide: &'a T,
+pub struct DeepZoomGenerator<S: Slide, B: Borrow<S>> {
+    slide: B,
+    _phantom: PhantomData<S>,
 
     level_count: usize,
     level_tiles: Vec<Size>,

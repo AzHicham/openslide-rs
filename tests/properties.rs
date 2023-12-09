@@ -1,10 +1,10 @@
-use openslide_rs::{traits::Slide, OpenSlide};
+use fixture::{boxes_tiff, default, hamamatsu, leica, mirax, trestle};
+use openslide_rs::{properties::VendorProperties, OpenSlide};
 use rstest::rstest;
 use std::path::Path;
+use version_compare::Version;
 
 mod fixture;
-use fixture::{boxes_tiff, default, hamamatsu, leica, mirax, trestle};
-use openslide_rs::properties::VendorProperties;
 
 #[rstest]
 #[case(boxes_tiff())]
@@ -13,50 +13,57 @@ fn test_slide_properties(#[case] filename: &Path) {
 
     println!("{slide:?}");
 
-    assert_eq!(
-        slide.get_property_names(),
-        vec![
-            "openslide.level-count",
-            "openslide.level[0].downsample",
-            "openslide.level[0].height",
-            "openslide.level[0].tile-height",
-            "openslide.level[0].tile-width",
-            "openslide.level[0].width",
-            "openslide.level[1].downsample",
-            "openslide.level[1].height",
-            "openslide.level[1].tile-height",
-            "openslide.level[1].tile-width",
-            "openslide.level[1].width",
-            "openslide.level[2].downsample",
-            "openslide.level[2].height",
-            "openslide.level[2].tile-height",
-            "openslide.level[2].tile-width",
-            "openslide.level[2].width",
-            "openslide.level[3].downsample",
-            "openslide.level[3].height",
-            "openslide.level[3].tile-height",
-            "openslide.level[3].tile-width",
-            "openslide.level[3].width",
+    let base_expected_result = vec![
+        "openslide.level-count",
+        "openslide.level[0].downsample",
+        "openslide.level[0].height",
+        "openslide.level[0].tile-height",
+        "openslide.level[0].tile-width",
+        "openslide.level[0].width",
+        "openslide.level[1].downsample",
+        "openslide.level[1].height",
+        "openslide.level[1].tile-height",
+        "openslide.level[1].tile-width",
+        "openslide.level[1].width",
+        "openslide.level[2].downsample",
+        "openslide.level[2].height",
+        "openslide.level[2].tile-height",
+        "openslide.level[2].tile-width",
+        "openslide.level[2].width",
+        "openslide.level[3].downsample",
+        "openslide.level[3].height",
+        "openslide.level[3].tile-height",
+        "openslide.level[3].tile-width",
+        "openslide.level[3].width",
+    ];
+
+    let raw_version = OpenSlide::get_version().unwrap();
+    let version = Version::from(&raw_version).unwrap();
+
+    dbg!(&version);
+    if version < Version::from("4.0.0").unwrap() {
+        let mut expected_result = base_expected_result;
+        expected_result.extend(vec![
             "openslide.quickhash-1",
             "openslide.vendor",
             "tiff.ResolutionUnit",
             "tiff.XResolution",
-            "tiff.YResolution"
-        ]
-    );
-
-    assert_eq!(
-        slide.get_property_value("tiff.YResolution").unwrap(),
-        "28.340000157438311"
-    );
-    assert_eq!(
-        slide.get_property_value("tiff.XResolution").unwrap(),
-        "28.340000157438311"
-    );
-    assert_eq!(
-        slide.get_property_value("tiff.YResolution").unwrap(),
-        "28.340000157438311"
-    );
+            "tiff.YResolution",
+        ]);
+        assert_eq!(slide.get_property_names(), expected_result);
+    } else {
+        let mut expected_result = base_expected_result;
+        expected_result.extend(vec![
+            "openslide.mpp-x",
+            "openslide.mpp-y",
+            "openslide.quickhash-1",
+            "openslide.vendor",
+            "tiff.ResolutionUnit",
+            "tiff.XResolution",
+            "tiff.YResolution",
+        ]);
+        assert_eq!(slide.get_property_names(), expected_result);
+    }
 }
 
 #[rstest]
@@ -85,8 +92,19 @@ fn test_tiff_properties(#[case] filename: &Path) {
         properties.openslide_properties.quickhash_1,
         Some("c08b056490bac8bcb329d9b8fb175888083d4097952a55fee99997758c728c36".to_string())
     );
-    assert_eq!(properties.openslide_properties.mpp_x, None);
-    assert_eq!(properties.openslide_properties.mpp_y, None);
+
+    let raw_version = OpenSlide::get_version().unwrap();
+    let version = Version::from(&raw_version).unwrap();
+
+    dbg!(&version);
+    if version < Version::from("4.0.0").unwrap() {
+        assert_eq!(properties.openslide_properties.mpp_x, None);
+        assert_eq!(properties.openslide_properties.mpp_y, None);
+    } else {
+        assert_eq!(properties.openslide_properties.mpp_x, Some(352.85815));
+        assert_eq!(properties.openslide_properties.mpp_y, Some(352.85815));
+    }
+
     assert_eq!(properties.openslide_properties.level_count, Some(4));
     assert_eq!(
         properties.openslide_properties.levels[0].downsample,

@@ -1,11 +1,10 @@
 use assert_approx_eq::assert_approx_eq;
+use fixture::{boxes_tiff, missing_file, small_svs, unopenable_tiff, unsupported_file};
 use openslide_rs::{Address, OpenSlide, Region, Size};
 use rstest::rstest;
 use std::path::Path;
 
 mod fixture;
-use fixture::{boxes_tiff, missing_file, small_svs, unopenable_tiff, unsupported_file};
-use openslide_rs::traits::Slide;
 
 #[rstest]
 #[should_panic(expected = "MissingFile(\"missing_file\")")]
