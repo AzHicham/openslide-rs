@@ -9,18 +9,14 @@ use crate::{
     Address, DeepZoomGenerator, Region, Result, Size,
 };
 use image::{RgbImage, RgbaImage};
+use std::borrow::Borrow;
 
-impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
-    pub fn new(
-        slide: &'a T,
-        tile_size: u32,
-        overlap: u32,
-        limit_bounds: bool,
-    ) -> Result<DeepZoomGenerator<T>> {
-        let nb_level = slide.get_level_count()?;
+impl<S: Slide, B: Borrow<S>> DeepZoomGenerator<S, B> {
+    pub fn new(slide: B, tile_size: u32, overlap: u32, limit_bounds: bool) -> Result<Self> {
+        let nb_level = slide.borrow().get_level_count()?;
 
         let (slide_level_dimensions, l0_offset) = if limit_bounds {
-            let bounds = slide.get_bounds();
+            let bounds = slide.borrow().get_bounds();
             let bounds_x = bounds.x.unwrap_or(0);
             let bounds_y = bounds.y.unwrap_or(0);
 
@@ -32,7 +28,7 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
             };
 
             // Slide level dimensions scale factor in each axis
-            let slide_dimensions = slide.get_level_dimensions(0)?;
+            let slide_dimensions = slide.borrow().get_level_dimensions(0)?;
             let slide_dimensions = &slide_dimensions;
 
             let bounds_width = bounds.width.unwrap_or(slide_dimensions.w);
@@ -44,7 +40,7 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
             );
 
             let slide_level_dimensions: Result<Vec<Size>> = (0..nb_level)
-                .map(|level| match slide.get_level_dimensions(level) {
+                .map(|level| match slide.borrow().get_level_dimensions(level) {
                     Ok(size) => Ok(Size {
                         w: (size.w as f32 * size_scale.0).ceil() as _,
                         h: (size.h as f32 * size_scale.1).ceil() as _,
@@ -56,7 +52,7 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
         } else {
             let l0_offset = Address { x: 0, y: 0 };
             let slide_level_dimensions: Result<Vec<Size>> = (0..nb_level)
-                .map(|level| slide.get_level_dimensions(level))
+                .map(|level| slide.borrow().get_level_dimensions(level))
                 .collect();
             (slide_level_dimensions?, l0_offset)
         };
@@ -100,13 +96,13 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
         // Preferred slide levels for each Deep Zoom level
         let slide_from_dz_level: Result<Vec<u32>> = l0_z_downsamples
             .iter()
-            .map(|downsample| slide.get_best_level_for_downsample(*downsample))
+            .map(|downsample| slide.borrow().get_best_level_for_downsample(*downsample))
             .collect();
         let slide_from_dz_level = slide_from_dz_level?;
 
         // Piecewise downsamples
         let l0_l_downsamples: Result<Vec<f64>> = (0..nb_level)
-            .map(|level| slide.get_level_downsample(level))
+            .map(|level| slide.borrow().get_level_downsample(level))
             .collect();
         let l0_l_downsamples = l0_l_downsamples?;
 
@@ -119,6 +115,7 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
 
         Ok(DeepZoomGenerator {
             slide,
+            _phantom: Default::default(),
             tile_size,
             overlap,
             l0_offset,
@@ -151,7 +148,7 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
     pub fn get_tile_rgba(&self, level: u32, location: Address) -> Result<RgbaImage> {
         let (region, final_size) = self.get_tile_info(level, location)?;
 
-        let image = self.slide.read_image_rgba(&region)?;
+        let image = self.slide.borrow().read_image_rgba(&region)?;
 
         let size = Size {
             w: image.width(),
@@ -167,7 +164,7 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
 
     pub fn get_tile_rgb(&self, level: u32, location: Address) -> Result<RgbImage> {
         let (region, final_size) = self.get_tile_info(level, location)?;
-        let image = self.slide.read_image_rgb(&region)?;
+        let image = self.slide.borrow().read_image_rgb(&region)?;
 
         let size = Size {
             w: image.width(),

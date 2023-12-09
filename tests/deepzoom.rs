@@ -13,7 +13,8 @@ mod deepzoom {
     #[case(boxes_tiff())]
     fn test_slide_no_limit_bounds(#[case] filename: &Path) {
         let slide = OpenSlide::new(filename).unwrap();
-        let dz = DeepZoomGenerator::new(&slide, 254, 1, false).unwrap();
+        let dz: DeepZoomGenerator<OpenSlide, _> =
+            DeepZoomGenerator::new(&slide, 254, 1, false).unwrap();
 
         assert_eq!(dz.level_count(), 10);
         assert_eq!(dz.tile_count(), 11);
@@ -75,8 +76,11 @@ mod deepzoom {
     #[rstest]
     #[case(boxes_tiff())]
     fn test_slide_no_limit_bounds_arc(#[case] filename: &Path) {
-        let slide = OpenSlide::new(filename).unwrap();
-        let dz = DeepZoomGenerator::new(&slide, 254, 1, false).unwrap();
+        let slide = Arc::new(OpenSlide::new(filename).unwrap());
+        let dz: DeepZoomGenerator<OpenSlide, _> =
+            DeepZoomGenerator::new(slide.clone(), 254, 1, false).unwrap();
+
+        drop(slide);
 
         assert_eq!(dz.level_count(), 10);
         assert_eq!(dz.tile_count(), 11);
@@ -139,7 +143,8 @@ mod deepzoom {
     #[case(boxes_tiff())]
     fn test_slide_with_limit_bounds(#[case] filename: &Path) {
         let slide = OpenSlide::new(filename).unwrap();
-        let dz = DeepZoomGenerator::new(&slide, 254, 1, true).unwrap();
+        let dz: DeepZoomGenerator<OpenSlide, _> =
+            DeepZoomGenerator::new(&slide, 254, 1, true).unwrap();
 
         assert_eq!(dz.level_count(), 10);
         assert_eq!(dz.tile_count(), 11);
