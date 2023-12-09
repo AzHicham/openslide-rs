@@ -20,6 +20,7 @@ pub const OPENSLIDE_PROPERTY_NAME_BOUNDS_Y: &str = "openslide.bounds-y";
 pub const OPENSLIDE_PROPERTY_NAME_BOUNDS_WIDTH: &str = "openslide.bounds-width";
 pub const OPENSLIDE_PROPERTY_NAME_BOUNDS_HEIGHT: &str = "openslide.bounds-height";
 pub const OPENSLIDE_PROPERTY_LEVEL_COUNT: &str = "openslide.level-count";
+pub const OPENSLIDE_PROPERTY_NAME_ICC_SIZE: &str = "openslide.icc-size";
 
 const OPENSLIDE_PROPERTY_LEVEL_DOWNSAMPLE: &str = "downsample";
 const OPENSLIDE_PROPERTY_LEVEL_HEIGHT: &str = "height";
@@ -52,6 +53,7 @@ pub struct OpenSlide {
     pub bounds_y: Option<u32>,
     pub bounds_width: Option<u32>,
     pub bounds_height: Option<u32>,
+    pub icc_profile_size: Option<u32>,
     pub background_color: Option<String>,
     pub levels: Vec<LevelProperties>,
 }
@@ -81,6 +83,7 @@ impl OpenSlide {
             OPENSLIDE_PROPERTY_LEVEL_COUNT => self.level_count = value.parse().ok(),
             OPENSLIDE_PROPERTY_NAME_BOUNDS_X => self.bounds_x = value.parse().ok(),
             OPENSLIDE_PROPERTY_NAME_BOUNDS_Y => self.bounds_y = value.parse().ok(),
+            OPENSLIDE_PROPERTY_NAME_ICC_SIZE => self.icc_profile_size = value.parse().ok(),
             OPENSLIDE_PROPERTY_NAME_BOUNDS_WIDTH => self.bounds_width = value.parse().ok(),
             OPENSLIDE_PROPERTY_NAME_BOUNDS_HEIGHT => self.bounds_height = value.parse().ok(),
             OPENSLIDE_PROPERTY_NAME_BACKGROUND_COLOR => {

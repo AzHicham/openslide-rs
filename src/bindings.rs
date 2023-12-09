@@ -11,7 +11,7 @@ use openslide_sys::sys;
 
 /// wrapper around OpenSlideT, this is usefull for implementing Send and Sync
 #[derive(Debug)]
-pub(crate) struct OpenSlideWrapper(pub *mut sys::openslide_t);
+pub(crate) struct OpenSlideWrapper(pub(crate) *mut sys::openslide_t);
 
 impl Deref for OpenSlideWrapper {
     type Target = *mut sys::openslide_t;
@@ -23,6 +23,22 @@ impl Deref for OpenSlideWrapper {
 
 unsafe impl Send for OpenSlideWrapper {}
 unsafe impl Sync for OpenSlideWrapper {}
+
+#[cfg(feature = "openslide4")]
+#[derive(Debug)]
+pub(crate) struct CacheWrapper(pub(crate) *mut sys::openslide_cache_t);
+
+#[cfg(feature = "openslide4")]
+impl Deref for CacheWrapper {
+    type Target = *mut sys::openslide_cache_t;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[cfg(feature = "openslide4")]
+unsafe impl Send for CacheWrapper {}
 
 pub fn get_version() -> Result<String> {
     let version = unsafe { sys::openslide_get_version() };
@@ -255,4 +271,85 @@ pub fn get_error(osr: *mut sys::openslide_t) -> Result<()> {
         }
     };
     value
+}
+
+#[cfg(feature = "openslide4")]
+pub fn get_icc_profile_size(osr: *mut sys::openslide_t) -> Result<i64> {
+    let size = unsafe { sys::openslide_get_icc_profile_size(osr) };
+    // TODO: check if size == 0 => no ICC profile
+    if size == -1 {
+        get_error(osr)?;
+        return Err(OpenSlideError::CoreError(
+            "Cannot get ICC profile size".to_string(),
+        ));
+    }
+    Ok(size)
+}
+
+#[cfg(feature = "openslide4")]
+pub fn read_icc_profile(osr: *mut sys::openslide_t) -> Result<Vec<u8>> {
+    let size = get_icc_profile_size(osr)?;
+    let mut buffer: Vec<u8> = Vec::with_capacity(size as usize);
+    let p_buffer = buffer.as_mut_ptr() as *mut std::os::raw::c_void;
+    unsafe {
+        sys::openslide_read_icc_profile(osr, p_buffer);
+        get_error(osr)?;
+        buffer.set_len(size as usize);
+    }
+    Ok(buffer)
+}
+
+#[cfg(feature = "openslide4")]
+pub fn get_associated_image_icc_profile_size(
+    osr: *mut sys::openslide_t,
+    name: &str,
+) -> Result<i64> {
+    let c_name = ffi::CString::new(name)?;
+    let size =
+        unsafe { sys::openslide_get_associated_image_icc_profile_size(osr, c_name.as_ptr()) };
+    // TODO: check if size == 0 => no ICC profile
+    if size == -1 {
+        get_error(osr)?;
+        return Err(OpenSlideError::CoreError(
+            "Cannot get ICC profile size".to_string(),
+        ));
+    }
+    Ok(size)
+}
+
+#[cfg(feature = "openslide4")]
+pub fn read_associated_image_icc_profile(
+    osr: *mut sys::openslide_t,
+    name: &str,
+) -> Result<Vec<u8>> {
+    let c_name = ffi::CString::new(name)?;
+    let size = get_associated_image_icc_profile_size(osr, name)?;
+    let mut buffer: Vec<u8> = Vec::with_capacity(size as usize);
+    let p_buffer = buffer.as_mut_ptr() as *mut std::os::raw::c_void;
+    unsafe {
+        sys::openslide_read_associated_image_icc_profile(osr, c_name.as_ptr(), p_buffer);
+        get_error(osr)?;
+        buffer.set_len(size as usize);
+    }
+    Ok(buffer)
+}
+
+#[cfg(feature = "openslide4")]
+pub fn cache_create(capacity: usize) -> Result<*mut sys::openslide_cache_t> {
+    let cache = unsafe { sys::openslide_cache_create(capacity) };
+    if cache.is_null() {
+        Err(OpenSlideError::CoreError("Cannot create cache".to_string()))
+    } else {
+        Ok(cache)
+    }
+}
+
+#[cfg(feature = "openslide4")]
+pub fn set_cache(osr: *mut sys::openslide_t, cache: *mut sys::openslide_cache_t) {
+    unsafe { sys::openslide_set_cache(osr, cache) };
+}
+
+#[cfg(feature = "openslide4")]
+pub fn cache_release(cache: *mut sys::openslide_cache_t) {
+    unsafe { sys::openslide_cache_release(cache) };
 }

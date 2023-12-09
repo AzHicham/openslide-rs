@@ -10,6 +10,9 @@ use {
     image::{RgbImage, RgbaImage},
 };
 
+#[cfg(feature = "openslide4")]
+use crate::cache::Cache;
+
 impl Drop for OpenSlide {
     fn drop(&mut self) {
         bindings::close(*self.osr)
@@ -27,7 +30,8 @@ impl OpenSlide {
     /// This function can be expensive; avoid calling it unnecessarily. For example, a tile server
     /// should not create a new object on every tile request. Instead, it should maintain a cache
     /// of OpenSlide objects and reuse them when possible.
-    pub fn new(path: &Path) -> Result<OpenSlide> {
+    pub fn new<T: AsRef<Path>>(path: T) -> Result<OpenSlide> {
+        let path = path.as_ref();
         if !path.exists() {
             return Err(OpenSlideError::MissingFile(path.display().to_string()));
         }
@@ -51,6 +55,18 @@ impl OpenSlide {
             osr: bindings::OpenSlideWrapper(osr),
             properties,
         })
+    }
+
+    #[cfg(feature = "openslide4")]
+    pub fn new_with_cache<T: AsRef<Path>>(path: T, capacity: usize) -> Result<OpenSlide> {
+        let osr = OpenSlide::new(path)?;
+        osr.set_cache(Cache::new(capacity)?);
+        Ok(osr)
+    }
+
+    #[cfg(feature = "openslide4")]
+    fn set_cache(&self, cache: Cache) {
+        bindings::set_cache(*self.osr, *cache.0)
     }
 
     /// Quickly determine whether a whole slide image is recognized.
@@ -297,6 +313,16 @@ impl OpenSlide {
         let image = resize_rgb_image(image, size)?;
 
         Ok(image)
+    }
+
+    #[cfg(feature = "openslide4")]
+    pub fn icc_profile(&self) -> Result<Vec<u8>> {
+        bindings::read_icc_profile(*self.osr)
+    }
+
+    #[cfg(feature = "openslide4")]
+    pub fn associated_image_icc_profile(&self, name: &str) -> Result<Vec<u8>> {
+        bindings::read_associated_image_icc_profile(*self.osr, name)
     }
 }
 

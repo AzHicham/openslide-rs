@@ -15,6 +15,7 @@ license = "MIT/Apache-2.0"
 default = ["deepzoom"]
 deepzoom = ["image"]
 image = ["dep:image", "dep:fast_image_resize"]
+openslide4 = []
 
 [dependencies]
 libc = "0.2"
