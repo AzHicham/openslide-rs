@@ -29,6 +29,7 @@ fast_image_resize = { version = "2.7", optional = true}
 rstest = "0.18"
 assert_approx_eq = "1.1"
 bencher = "0.1"
+version-compare = "0.1"
 
 [[bench]]
 name = "bench_read"

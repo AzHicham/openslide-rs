@@ -1,9 +1,6 @@
 use crate::{bindings, errors::OpenSlideError, OpenSlide, Properties, Region, Result, Size};
 use std::path::Path;
 
-use crate::traits::Slide;
-
-use crate::deepzoom::Bounds;
 #[cfg(feature = "image")]
 use {
     crate::{
@@ -20,6 +17,11 @@ impl Drop for OpenSlide {
 }
 
 impl OpenSlide {
+    /// Get the version of the OpenSlide library.
+    pub fn get_version() -> Result<String> {
+        bindings::get_version()
+    }
+
     /// This method tries to open the slide at the given filename location.
     ///
     /// This function can be expensive; avoid calling it unnecessarily. For example, a tile server
@@ -298,6 +300,10 @@ impl OpenSlide {
     }
 }
 
+#[cfg(feature = "deepzoom")]
+use {crate::deepzoom::Bounds, crate::traits::Slide};
+
+#[cfg(feature = "deepzoom")]
 impl Slide for OpenSlide {
     fn get_bounds(&self) -> Bounds {
         let properties = &self.properties().openslide_properties;

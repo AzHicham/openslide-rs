@@ -2,16 +2,19 @@
 extern crate lazy_static;
 
 use crate::properties::Properties;
-use std::{borrow::Borrow, marker::PhantomData};
 
 #[cfg(feature = "deepzoom")]
-use crate::traits::Slide;
+use {
+    crate::traits::Slide,
+    std::{borrow::Borrow, marker::PhantomData},
+};
 
 mod bindings;
 #[cfg(feature = "deepzoom")]
 pub mod deepzoom;
 pub mod errors;
 pub mod properties;
+#[cfg(feature = "deepzoom")]
 pub mod traits;
 mod utils;
 mod wrapper;

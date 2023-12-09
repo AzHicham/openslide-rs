@@ -24,6 +24,16 @@ impl Deref for OpenSlideWrapper {
 unsafe impl Send for OpenSlideWrapper {}
 unsafe impl Sync for OpenSlideWrapper {}
 
+pub fn get_version() -> Result<String> {
+    let version = unsafe { sys::openslide_get_version() };
+    if !version.is_null() {
+        let vendor = unsafe { ffi::CStr::from_ptr(version).to_string_lossy().into_owned() };
+        Ok(vendor)
+    } else {
+        Err(OpenSlideError::CoreError("Cannot get version".to_string()))
+    }
+}
+
 pub fn detect_vendor(filename: &str) -> Result<String> {
     let c_filename = ffi::CString::new(filename)?;
     unsafe {
