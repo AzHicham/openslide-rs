@@ -20,9 +20,9 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
         let nb_level = slide.get_level_count()?;
 
         let (slide_level_dimensions, l0_offset) = if limit_bounds {
-            let os_property = &slide.properties().openslide_properties;
-            let bounds_x = os_property.bounds_x.unwrap_or(0);
-            let bounds_y = os_property.bounds_y.unwrap_or(0);
+            let bounds = slide.get_bounds();
+            let bounds_x = bounds.x.unwrap_or(0);
+            let bounds_y = bounds.y.unwrap_or(0);
 
             // Level 0 coordinate offset
 
@@ -35,8 +35,8 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
             let slide_dimensions = slide.get_level_dimensions(0)?;
             let slide_dimensions = &slide_dimensions;
 
-            let bounds_width = os_property.bounds_width.unwrap_or(slide_dimensions.w);
-            let bounds_height = os_property.bounds_height.unwrap_or(slide_dimensions.h);
+            let bounds_width = bounds.width.unwrap_or(slide_dimensions.w);
+            let bounds_height = bounds.height.unwrap_or(slide_dimensions.h);
 
             let size_scale = (
                 bounds_width as f32 / slide_dimensions.w as f32,
@@ -266,4 +266,11 @@ impl<'a, T: Slide> DeepZoomGenerator<'a, T> {
 
         Ok((region, z_size))
     }
+}
+
+pub struct Bounds {
+    pub x: Option<u32>,
+    pub y: Option<u32>,
+    pub width: Option<u32>,
+    pub height: Option<u32>,
 }

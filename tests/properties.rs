@@ -1,10 +1,9 @@
-use openslide_rs::{traits::Slide, OpenSlide};
+use fixture::{boxes_tiff, default, hamamatsu, leica, mirax, trestle};
+use openslide_rs::{properties::VendorProperties, OpenSlide};
 use rstest::rstest;
 use std::path::Path;
 
 mod fixture;
-use fixture::{boxes_tiff, default, hamamatsu, leica, mirax, trestle};
-use openslide_rs::properties::VendorProperties;
 
 #[rstest]
 #[case(boxes_tiff())]
