@@ -10,6 +10,8 @@ use {
 };
 
 mod bindings;
+#[cfg(feature = "openslide4")]
+mod cache;
 #[cfg(feature = "deepzoom")]
 pub mod deepzoom;
 pub mod errors;

@@ -3,8 +3,15 @@ use fixture::{boxes_tiff, missing_file, small_svs, unopenable_tiff, unsupported_
 use openslide_rs::{Address, OpenSlide, Region, Size};
 use rstest::rstest;
 use std::path::Path;
+use version_compare::Version;
 
 mod fixture;
+
+#[rstest]
+fn test_version() {
+    let version = OpenSlide::get_version().expect("Failed to get version");
+    Version::from(&version).expect("Failed to parse version");
+}
 
 #[rstest]
 #[should_panic(expected = "MissingFile(\"missing_file\")")]
@@ -258,4 +265,24 @@ fn test_error_thumbnail(#[case] filename: &Path) {
 
     let size = Size { w: 100, h: 0 };
     slide.thumbnail_rgb(&size).unwrap();
+}
+
+#[rstest]
+#[cfg(feature = "openslide4")]
+#[case(small_svs())]
+fn test_icc_profile(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+
+    let icc_profile = slide.icc_profile().unwrap();
+    assert_eq!(icc_profile.len(), 0);
+}
+
+#[rstest]
+#[cfg(feature = "openslide4")]
+#[case(small_svs())]
+fn test_associated_image_icc_profile(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+
+    let icc_profile = slide.associated_image_icc_profile("thumbnail").unwrap();
+    assert_eq!(icc_profile.len(), 0);
 }
