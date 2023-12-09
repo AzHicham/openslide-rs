@@ -1,68 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1702122666092,
+  "lastUpdate": 1702122814852,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "49699333+dependabot[bot]@users.noreply.github.com",
-            "name": "dependabot[bot]",
-            "username": "dependabot[bot]"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "1862b4131eabd11280ee1d7265fe1604cc81c790",
-          "message": "build(deps): bump thiserror from 1.0.44 to 1.0.45 (#91)\n\nBumps [thiserror](https://github.com/dtolnay/thiserror) from 1.0.44 to 1.0.45.\r\n- [Release notes](https://github.com/dtolnay/thiserror/releases)\r\n- [Commits](https://github.com/dtolnay/thiserror/compare/1.0.44...1.0.45)\r\n\r\n---\r\nupdated-dependencies:\r\n- dependency-name: thiserror\r\n  dependency-type: direct:production\r\n  update-type: version-update:semver-patch\r\n...\r\n\r\nSigned-off-by: dependabot[bot] <support@github.com>\r\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
-          "timestamp": "2023-08-15T12:53:31+02:00",
-          "tree_id": "27ebba54c2d42d457fe09bb84b292fbced748859",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/1862b4131eabd11280ee1d7265fe1604cc81c790"
-        },
-        "date": 1692098980785,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2536094,
-            "range": "± 429358",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 10250516,
-            "range": "± 841559",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2504753,
-            "range": "± 236985",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 10359046,
-            "range": "± 1099071",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 2363173,
-            "range": "± 452823",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 10050385,
-            "range": "± 1233307",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1815,6 +1755,74 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 4509799,
             "range": "± 66607",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "id": "803f6e544e8ebd2a9a5d5dead0dfd4de6c155963",
+          "message": "feat: Add support for Openslide 4.x",
+          "timestamp": "2023-12-09T11:48:30Z",
+          "url": "https://github.com/AzHicham/openslide-rs/pull/118/commits/803f6e544e8ebd2a9a5d5dead0dfd4de6c155963"
+        },
+        "date": 1702122813896,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1173545,
+            "range": "± 6896",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1172990,
+            "range": "± 50788",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 4701604,
+            "range": "± 40618",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 4717565,
+            "range": "± 392903",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1137509,
+            "range": "± 15691",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 4726024,
+            "range": "± 269493",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1084990,
+            "range": "± 11702",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 4510669,
+            "range": "± 23880",
             "unit": "ns/iter"
           }
         ]
