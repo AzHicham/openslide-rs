@@ -1,64 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1702120642291,
+  "lastUpdate": 1702121201013,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "id": "7a6d6e7b805d99cfa23ba13e776eb951e622d311",
-          "message": "chore(deps): update dependency ubuntu to v22",
-          "timestamp": "2023-07-19T14:01:57Z",
-          "url": "https://github.com/AzHicham/openslide-rs/pull/89/commits/7a6d6e7b805d99cfa23ba13e776eb951e622d311"
-        },
-        "date": 1691587665065,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2661725,
-            "range": "± 19084",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 10955450,
-            "range": "± 147900",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2557381,
-            "range": "± 16968",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 10993652,
-            "range": "± 250231",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 2458917,
-            "range": "± 14176",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 10653950,
-            "range": "± 96547",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -1767,6 +1711,74 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 5207967,
             "range": "± 135487",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "id": "8c7de76f7e4eff56ed87750af75198c14c584eef",
+          "message": "refactor!: Improve API",
+          "timestamp": "2023-11-06T22:28:46Z",
+          "url": "https://github.com/AzHicham/openslide-rs/pull/117/commits/8c7de76f7e4eff56ed87750af75198c14c584eef"
+        },
+        "date": 1702121200605,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1172497,
+            "range": "± 9281",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1171020,
+            "range": "± 8397",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 4697392,
+            "range": "± 29797",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 4698101,
+            "range": "± 35261",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1134966,
+            "range": "± 6216",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 4712579,
+            "range": "± 28780",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1086740,
+            "range": "± 13028",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 4506031,
+            "range": "± 22329",
             "unit": "ns/iter"
           }
         ]
