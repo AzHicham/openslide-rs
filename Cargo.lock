@@ -368,9 +368,9 @@ dependencies = [
 
 [[package]]
 name = "openslide-sys"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd6ac90da60c1f8e1c5e41b220d77edd27489b88ee48b1cf3b4586515e54699e"
+checksum = "f320ffb5fa1b6f5f1c73fe4921355d0515126b1779ebaeb1bb53477e42d10994"
 dependencies = [
  "bindgen",
  "pkg-config",
