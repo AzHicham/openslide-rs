@@ -20,8 +20,11 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-          os: [ "ubuntu-22.04", "ubuntu-20.04", "macos-12" ]
-          feature: [ "--no-default-features", "--features deepzoom", "--features image" ]
+          os: [ "ubuntu-22.04", "macos-12" ]
+          feature: [ "--no-default-features", "--features deepzoom", "--features openslide4" ]
+
+    env:
+      INSTALL_DEPS_CMD: install-deps-${{ contains(matrix.os, 'ubuntu') && 'ubuntu' || 'macos' }}-${{ contains(matrix.feature, 'openslide4') && 'openslide4' || 'openslide3' }}
 
     steps:
     - uses: actions/checkout@v4
@@ -41,12 +44,8 @@ jobs:
     - uses: Swatinem/rust-cache@v2
       with:
         key: ${{ matrix.os }}-${{ matrix.feature }}
-    - name: Install dependencies ubuntu
-      if: ${{ matrix.os == 'ubuntu-20.04' || matrix.os == 'ubuntu-22.04' }}
-      run: make install-deps-apt
-    - name: Install dependencies macos
-      if: ${{ matrix.os == 'macos-12' }}
-      run: make install-deps-brew
+    - name: Install dependencies
+      run: make ${{ env.INSTALL_DEPS_CMD }}
     - name: Build & Test (Debug)
       run: cargo test --workspace ${{ matrix.feature }}
     - name: Build & Test (Release)
@@ -61,7 +60,7 @@ jobs:
         toolchain: ${{ env.RUST_VERSION }}
         components: clippy, rustfmt
     - name: Install dependencies ubuntu
-      run: make install-deps-apt
+      run: make install-deps-ubuntu-openslide3
     - name: Generate Doc
       env:
         DOCS_RS: 1

@@ -13,11 +13,11 @@ env:
 
 jobs:
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: make install-deps-apt
+        run: make install-deps-ubuntu-openslide4
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ env.RUST_VERSION }}
@@ -35,7 +35,7 @@ jobs:
           rustup component add llvm-tools-preview
           cargo install cargo-llvm-cov
           cargo llvm-cov clean --workspace # remove artifacts that may affect the coverage results
-          cargo llvm-cov --no-report --workspace --features deepzoom
+          cargo llvm-cov --no-report --workspace --features deepzoom,openslide4
           cargo llvm-cov --no-run --workspace --lcov --output-path lcov.info
       - uses: codecov/codecov-action@v3
         with:
