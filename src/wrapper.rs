@@ -42,11 +42,9 @@ impl OpenSlide {
         let property_names = bindings::get_property_names(osr)?;
 
         let property_iter = property_names.into_iter().filter_map(|name| {
-            if let Ok(value) = bindings::get_property_value(osr, &name) {
-                Some((name, value))
-            } else {
-                None
-            }
+            bindings::get_property_value(osr, &name)
+                .map(|value| (name, value))
+                .ok()
         });
 
         let properties = Properties::new(property_iter);

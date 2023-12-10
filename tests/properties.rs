@@ -89,6 +89,10 @@ fn test_tiff_properties(#[case] filename: &Path) {
         Some("generic-tiff".to_string())
     );
     assert_eq!(
+        slide.get_property_value("openslide.vendor").unwrap(),
+        "generic-tiff"
+    );
+    assert_eq!(
         properties.openslide_properties.quickhash_1,
         Some("c08b056490bac8bcb329d9b8fb175888083d4097952a55fee99997758c728c36".to_string())
     );

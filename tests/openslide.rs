@@ -156,6 +156,9 @@ fn test_associated_images_rgb(#[case] filename: &Path) {
         vec!["thumbnail".to_string()]
     );
 
+    let size = slide.get_associated_image_dimensions("thumbnail").unwrap();
+    assert_eq!(size, Size { w: 16, h: 16 });
+
     let (size, _) = slide.read_associated_buffer("thumbnail").unwrap();
     assert_eq!(size, Size { w: 16, h: 16 });
 
@@ -265,6 +268,27 @@ fn test_error_thumbnail(#[case] filename: &Path) {
 
     let size = Size { w: 100, h: 0 };
     slide.thumbnail_rgb(&size).unwrap();
+}
+
+#[rstest]
+#[cfg(feature = "openslide4")]
+#[case(boxes_tiff())]
+fn test_open_with_cache_size(
+    #[case] filename: &Path,
+    #[values(0, 10, 100, 10_000)] cache_size: usize,
+) {
+    let slide = OpenSlide::new_with_cache(filename, cache_size).unwrap();
+
+    assert_eq!(slide.get_level_count().unwrap(), 4);
+
+    let region = Region {
+        size: slide.get_level_dimensions(0).unwrap(),
+        level: 0,
+        address: Address { x: 0, y: 0 },
+    };
+
+    let buffer = slide.read_region(&region).unwrap();
+    assert_eq!(buffer.len(), (region.size.h * region.size.w * 4) as usize);
 }
 
 #[rstest]
