@@ -1,64 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1702228567218,
+  "lastUpdate": 1702228621294,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "id": "2d653e77191eb2a03b91e024e82740f75897fa31",
-          "message": "release: 1.2.1",
-          "timestamp": "2023-07-19T14:01:57Z",
-          "url": "https://github.com/AzHicham/openslide-rs/pull/102/commits/2d653e77191eb2a03b91e024e82740f75897fa31"
-        },
-        "date": 1695294714324,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2232101,
-            "range": "± 21924",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 9098011,
-            "range": "± 106396",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2145653,
-            "range": "± 168113",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 9104274,
-            "range": "± 154253",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 2049788,
-            "range": "± 18200",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 8728595,
-            "range": "± 149685",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2087,6 +2031,86 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 4539831,
             "range": "± 22897",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "id": "07090097edc5ef62379e553dd33c9549bacf5bcf",
+          "message": "chore(deps): update pre-commit",
+          "timestamp": "2023-12-09T11:48:30Z",
+          "url": "https://github.com/AzHicham/openslide-rs/pull/124/commits/07090097edc5ef62379e553dd33c9549bacf5bcf"
+        },
+        "date": 1702228620164,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1175165,
+            "range": "± 11674",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1174013,
+            "range": "± 8965",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_recreate_dz",
+            "value": 1174823,
+            "range": "± 7277",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 4725413,
+            "range": "± 26955",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 4719636,
+            "range": "± 81068",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_recreate_dz",
+            "value": 4707980,
+            "range": "± 170702",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1136991,
+            "range": "± 7728",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 4719611,
+            "range": "± 51237",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1086607,
+            "range": "± 6670",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 4514389,
+            "range": "± 317308",
             "unit": "ns/iter"
           }
         ]
