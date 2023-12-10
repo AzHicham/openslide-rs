@@ -24,12 +24,12 @@ mod wrapper;
 /// The corresponding result type used by the crate.
 pub type Result<T, E = errors::OpenSlideError> = std::result::Result<T, E>;
 
-/// Openslide object is a simple wrapper around openslide_t "C" type.
+/// Openslide object is a simple wrapper around `openslide_t` "C" type.
 /// Implementation provides all functions available in the "C" API
 /// It contains also openslide and vendor specific properties found in WSI.
 ///
-/// Note : As stated by the OpenSlide documentation, all function are thread-safe except close()
-/// For this reason OpenSlide implement the Drop trait which call close() automatically
+/// Note : As stated by the `OpenSlide` documentation, all function are thread-safe except close()
+/// For this reason `OpenSlide` implement the Drop trait which call close() automatically
 #[derive(Debug)]
 pub struct OpenSlide {
     osr: bindings::OpenSlideWrapper,

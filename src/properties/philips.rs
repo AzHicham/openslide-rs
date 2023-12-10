@@ -65,13 +65,13 @@ impl Philips {
             PHILIPS_PROPERTY_HIGH_BIT => self.high_bit = value.parse().ok(),
             PHILIPS_PROPERTY_DESCRIPTION => self.description = value.parse().ok(),
             PHILIPS_PROPERTY_LOSSY_IMAGE_COMPRESSION => {
-                self.lossy_image_compression = value.parse().ok()
+                self.lossy_image_compression = value.parse().ok();
             }
             PHILIPS_PROPERTY_COMPRESSION_METHOD => self.compression_methode = value.parse().ok(),
             PHILIPS_PROPERTY_COMPRESSION_RATIO => self.compression_ratio = value.parse().ok(),
             PHILIPS_PROPERTY_MANUFACTURER => self.manufacturer = value.parse().ok(),
             PHILIPS_PROPERTY_PHOTOMETRIC_INTERPRETATION => {
-                self.photometric_interpretation = value.parse().ok()
+                self.photometric_interpretation = value.parse().ok();
             }
             PHILIPS_PROPERTY_PIXEL_REPRESENTATION => self.pixel_representation = value.parse().ok(),
             PHILIPS_PROPERTY_PIXEL_SPACING => self.pixel_spacing = value.parse().ok(),
@@ -83,10 +83,10 @@ impl Philips {
             PHILIPS_PROPERTY_IMAGE_TYPE => self.image_type = value.parse().ok(),
             PHILIPS_PROPERTY_SOURCE_FILE => self.source_file = value.parse().ok(),
             PHILIPS_PROPERTY_UFS_INTERFACE_VERSION => {
-                self.ufs_interface_version = value.parse().ok()
+                self.ufs_interface_version = value.parse().ok();
             }
             PHILIPS_PROPERTY_UFS_PIXEL_TRANSFORMATION_METHOD => {
-                self.ufs_pixel_transform_method = value.parse().ok()
+                self.ufs_pixel_transform_method = value.parse().ok();
             }
             _ => {}
         }

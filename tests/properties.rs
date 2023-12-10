@@ -89,6 +89,10 @@ fn test_tiff_properties(#[case] filename: &Path) {
         Some("generic-tiff".to_string())
     );
     assert_eq!(
+        slide.get_property_value("openslide.vendor").unwrap(),
+        "generic-tiff"
+    );
+    assert_eq!(
         properties.openslide_properties.quickhash_1,
         Some("c08b056490bac8bcb329d9b8fb175888083d4097952a55fee99997758c728c36".to_string())
     );
@@ -116,18 +120,18 @@ fn test_tiff_properties(#[case] filename: &Path) {
     );
     assert_eq!(
         properties.openslide_properties.levels[2].downsample,
-        Some(4.016129)
+        Some(4.016_129)
     );
     assert_eq!(
         properties.openslide_properties.levels[3].downsample,
-        Some(8.086312)
+        Some(8.086_312)
     );
     assert_eq!(properties.openslide_properties.levels[0].height, Some(250));
     assert_eq!(properties.openslide_properties.levels[0].width, Some(300));
 
     assert_eq!(
         properties.openslide_properties.levels[3].downsample,
-        Some(8.086312)
+        Some(8.086_312)
     );
     assert_eq!(properties.openslide_properties.levels[3].height, Some(31));
     assert_eq!(properties.openslide_properties.levels[3].width, Some(37));
@@ -141,9 +145,7 @@ fn test_aperio_properties(#[case] filename: &Path) {
     let properties = slide.properties();
 
     println!("{properties:?}");
-    let prop = if let VendorProperties::Aperio(prop) = &properties.vendor_properties {
-        prop
-    } else {
+    let VendorProperties::Aperio(prop) = &properties.vendor_properties else {
         panic!("Not Aperio")
     };
 
@@ -181,12 +183,12 @@ fn test_aperio_properties(#[case] filename: &Path) {
     assert_eq!(prop.parmset, Some("USM Filter".to_string()));
     assert_eq!(prop.original_height, Some(32914));
     assert_eq!(prop.original_width, Some(46000));
-    assert_eq!(prop.top, Some(23.449873));
-    assert_eq!(prop.left, Some(25.691574));
+    assert_eq!(prop.top, Some(23.449_873));
+    assert_eq!(prop.left, Some(25.691_574));
     assert_eq!(prop.mpp, Some(0.499));
-    assert_eq!(prop.line_camera_skew, Some(-0.000424));
-    assert_eq!(prop.line_area_x_offset, Some(0.019265));
-    assert_eq!(prop.line_area_y_offset, Some(-0.000313));
+    assert_eq!(prop.line_camera_skew, Some(-0.000_424));
+    assert_eq!(prop.line_area_x_offset, Some(0.019_265));
+    assert_eq!(prop.line_area_y_offset, Some(-0.000_313));
     assert_eq!(prop.focus_offset, Some(0.0));
     assert_eq!(prop.app_mag, Some(20));
     assert_eq!(prop.stripe_width, Some(2040));
@@ -206,9 +208,7 @@ fn test_leica_properties(#[case] filename: &Path) {
 
     println!("{properties:?}");
 
-    let prop = if let VendorProperties::Leica(prop) = &properties.vendor_properties {
-        prop
-    } else {
+    let VendorProperties::Leica(prop) = &properties.vendor_properties else {
         panic!("Not Leica")
     };
 
@@ -233,7 +233,7 @@ fn test_leica_properties(#[case] filename: &Path) {
     );
     assert_eq!(
         properties.openslide_properties.levels[0].height,
-        Some(153470)
+        Some(153_470)
     );
     assert_eq!(properties.openslide_properties.levels[0].width, Some(53130));
     assert_eq!(properties.openslide_properties.levels[4].height, Some(601));
@@ -321,9 +321,7 @@ fn test_trestle_properties(#[case] filename: &Path) {
 
     println!("{properties:?}");
 
-    let prop = if let VendorProperties::Trestle(prop) = &properties.vendor_properties {
-        prop
-    } else {
+    let VendorProperties::Trestle(prop) = &properties.vendor_properties else {
         panic!("Not Trestle")
     };
 
@@ -335,8 +333,8 @@ fn test_trestle_properties(#[case] filename: &Path) {
         properties.openslide_properties.quickhash_1,
         Some("de8cb6d7ee9741ed76b08b11b68c20583d34e6e135d3586cf3000e2c7572b641".to_string())
     );
-    assert_eq!(properties.openslide_properties.mpp_x, Some(0.5746919));
-    assert_eq!(properties.openslide_properties.mpp_y, Some(0.57506245));
+    assert_eq!(properties.openslide_properties.mpp_x, Some(0.574_691_9));
+    assert_eq!(properties.openslide_properties.mpp_y, Some(0.575_062_45));
     assert_eq!(properties.openslide_properties.level_count, Some(7));
     assert_eq!(
         properties.openslide_properties.levels[0].downsample,
@@ -370,9 +368,7 @@ fn test_mirax_properties(#[case] filename: &Path) {
 
     println!("{properties:?}");
 
-    let prop = if let VendorProperties::Mirax(prop) = &properties.vendor_properties {
-        prop
-    } else {
+    let VendorProperties::Mirax(prop) = &properties.vendor_properties else {
         panic!("Not Leica")
     };
 
@@ -384,8 +380,8 @@ fn test_mirax_properties(#[case] filename: &Path) {
         properties.openslide_properties.quickhash_1,
         Some("7fa0eea07df29f449e5aa0ad5df56c5f411f6029d5293f9d68335d6add3fb00e".to_string())
     );
-    assert_eq!(properties.openslide_properties.mpp_x, Some(3.7172363));
-    assert_eq!(properties.openslide_properties.mpp_y, Some(3.716317));
+    assert_eq!(properties.openslide_properties.mpp_x, Some(3.717_236_3));
+    assert_eq!(properties.openslide_properties.mpp_y, Some(3.716_317));
     assert_eq!(properties.openslide_properties.level_count, Some(6));
     assert_eq!(
         properties.openslide_properties.levels[0].downsample,
@@ -444,9 +440,7 @@ fn test_hamamatsu_properties(#[case] filename: &Path) {
 
     println!("{properties:?}");
 
-    let prop = if let VendorProperties::Hamamatsu(prop) = &properties.vendor_properties {
-        prop
-    } else {
+    let VendorProperties::Hamamatsu(prop) = &properties.vendor_properties else {
         panic!("Not Hamamatsu")
     };
 
@@ -458,8 +452,8 @@ fn test_hamamatsu_properties(#[case] filename: &Path) {
         properties.openslide_properties.quickhash_1,
         Some("e744b59188a26025e2b7a0414435e33679dd96e81452fae4ce2da361ef0e46c9".to_string())
     );
-    assert_eq!(properties.openslide_properties.mpp_x, Some(0.22819825));
-    assert_eq!(properties.openslide_properties.mpp_y, Some(0.22753125));
+    assert_eq!(properties.openslide_properties.mpp_x, Some(0.228_198_25));
+    assert_eq!(properties.openslide_properties.mpp_y, Some(0.227_531_25));
     assert_eq!(properties.openslide_properties.level_count, Some(7));
     assert_eq!(
         properties.openslide_properties.levels[0].downsample,
@@ -471,21 +465,21 @@ fn test_hamamatsu_properties(#[case] filename: &Path) {
     );
     assert_eq!(
         properties.openslide_properties.levels[0].height,
-        Some(101888)
+        Some(101_888)
     );
     assert_eq!(
         properties.openslide_properties.levels[0].width,
-        Some(143360)
+        Some(143_360)
     );
     assert_eq!(properties.openslide_properties.levels[4].height, Some(6368));
     assert_eq!(properties.openslide_properties.levels[4].width, Some(8960));
 
-    assert_eq!(prop.auth_code, Some(-2137798033));
+    assert_eq!(prop.auth_code, Some(-2_137_798_033));
     assert_eq!(
         prop.image_file,
         Some("CMU-3-40x - 2010-01-12 13.57.09.jpg".to_string())
     );
-    assert_eq!(prop.layer_spacing, Some(2032236150));
+    assert_eq!(prop.layer_spacing, Some(2_032_236_150));
     assert_eq!(
         prop.macro_image,
         Some("CMU-3-40x - 2010-01-12 13.57.09_macro.jpg".to_string())
@@ -501,12 +495,12 @@ fn test_hamamatsu_properties(#[case] filename: &Path) {
         prop.optimisation_file,
         Some("CMU-3-40x - 2010-01-12 13.57.09.opt".to_string())
     );
-    assert_eq!(prop.physical_height, Some(23182704));
-    assert_eq!(prop.physical_width, Some(32714500));
-    assert_eq!(prop.physical_macro_height, Some(26000000));
-    assert_eq!(prop.physical_macro_width, Some(76000000));
+    assert_eq!(prop.physical_height, Some(23_182_704));
+    assert_eq!(prop.physical_width, Some(32_714_500));
+    assert_eq!(prop.physical_macro_height, Some(26_000_000));
+    assert_eq!(prop.physical_macro_width, Some(76_000_000));
     assert_eq!(prop.reference, Some("CMU-3-40x".to_string()));
     assert_eq!(prop.source_lens, Some("40.000000".to_string()));
-    assert_eq!(prop.x_offset_from_slide_center, Some(6903333.));
-    assert_eq!(prop.y_offset_from_slide_center, Some(-195000.));
+    assert_eq!(prop.x_offset_from_slide_center, Some(6_903_333.));
+    assert_eq!(prop.y_offset_from_slide_center, Some(-195_000.));
 }

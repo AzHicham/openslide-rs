@@ -73,17 +73,17 @@ impl Mirax {
             MIRAX_PROPERTY_IMAGE_NUMBER_X => self.image_number_x = value.parse().ok(),
             MIRAX_PROPERTY_IMAGE_NUMBER_Y => self.image_number_y = value.parse().ok(),
             MIRAX_PROPERTY_IMAGE_OVERLAP_MICROMETERS_X => {
-                self.overlap_micrometers_x = value.parse().ok()
+                self.overlap_micrometers_x = value.parse().ok();
             }
             MIRAX_PROPERTY_IMAGE_OVERLAP_MICROMETERS_Y => {
-                self.overlap_micrometers_y = value.parse().ok()
+                self.overlap_micrometers_y = value.parse().ok();
             }
             MIRAX_PROPERTY_INDIVIDUALLY_EXP_TIMES => {
-                self.individually_exp_times = value.parse().ok()
+                self.individually_exp_times = value.parse().ok();
             }
             MIRAX_PROPERTY_MAXIMUM_EXPOSURE_TIME => self.max_exp_time = value.parse().ok(),
             MIRAX_PROPERTY_OBJECTIVE_MAGNIFICATION => {
-                self.objective_magnification = value.parse().ok()
+                self.objective_magnification = value.parse().ok();
             }
             MIRAX_PROPERTY_OBJECTIVE_NAME => self.objective_name = value.parse().ok(),
             MIRAX_PROPERTY_OPTOVAR_SIZE => self.optovar_size = value.parse().ok(),
@@ -91,10 +91,10 @@ impl Mirax {
             MIRAX_PROPERTY_SCANNING_ALGORITM => self.scanning_algorithm = value.parse().ok(),
             MIRAX_PROPERTY_SLIDE_CONTENT => self.slide_content = value.parse().ok(),
             MIRAX_PROPERTY_SLIDE_CREATION_DATETIME => {
-                self.slide_creation_datetime = value.parse().ok()
+                self.slide_creation_datetime = value.parse().ok();
             }
             MIRAX_PROPERTY_SLIDE_CREATION_FINISHED => {
-                self.slide_creation_finished = value.parse().ok()
+                self.slide_creation_finished = value.parse().ok();
             }
             MIRAX_PROPERTY_SLIDE_ID => self.slide_id = value.parse().ok(),
             MIRAX_PROPERTY_SLIDE_NAME => self.slide_name = value.parse().ok(),

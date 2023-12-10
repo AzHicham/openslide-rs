@@ -16,7 +16,7 @@ jobs:
         with:
           toolchain: ${{ env.RUST_VERSION }}
       - name: Install dependencies ubuntu
-        run: make install-deps-apt
+        run: make install-deps-ubuntu-openslide3
       - uses: katyo/publish-crates@v2
         with:
           dry-run: ${{ github.event_name != 'release' }}

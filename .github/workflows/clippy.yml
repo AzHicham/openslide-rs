@@ -15,7 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install dependencies
-      run: make install-deps-apt
+      run: make install-deps-ubuntu-openslide3
     - name: Install latest nightly
       uses: dtolnay/rust-toolchain@stable
       with:

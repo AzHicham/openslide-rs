@@ -15,12 +15,12 @@ use crate::cache::Cache;
 
 impl Drop for OpenSlide {
     fn drop(&mut self) {
-        bindings::close(*self.osr)
+        bindings::close(*self.osr);
     }
 }
 
 impl OpenSlide {
-    /// Get the version of the OpenSlide library.
+    /// Get the version of the `OpenSlide` library.
     pub fn get_version() -> Result<String> {
         bindings::get_version()
     }
@@ -29,7 +29,7 @@ impl OpenSlide {
     ///
     /// This function can be expensive; avoid calling it unnecessarily. For example, a tile server
     /// should not create a new object on every tile request. Instead, it should maintain a cache
-    /// of OpenSlide objects and reuse them when possible.
+    /// of `OpenSlide` objects and reuse them when possible.
     pub fn new<T: AsRef<Path>>(path: T) -> Result<OpenSlide> {
         let path = path.as_ref();
         if !path.exists() {
@@ -42,11 +42,9 @@ impl OpenSlide {
         let property_names = bindings::get_property_names(osr)?;
 
         let property_iter = property_names.into_iter().filter_map(|name| {
-            if let Ok(value) = bindings::get_property_value(osr, &name) {
-                Some((name, value))
-            } else {
-                None
-            }
+            bindings::get_property_value(osr, &name)
+                .map(|value| (name, value))
+                .ok()
         });
 
         let properties = Properties::new(property_iter);
@@ -78,6 +76,7 @@ impl OpenSlide {
         bindings::detect_vendor(&filename)
     }
 
+    #[must_use]
     pub fn properties(&self) -> &Properties {
         &self.properties
     }
@@ -140,6 +139,7 @@ impl OpenSlide {
     }
 
     /// Get the list of all available properties.
+    #[must_use]
     pub fn get_property_names(&self) -> Vec<String> {
         bindings::get_property_names(*self.osr).unwrap_or_else(|_| vec![])
     }
@@ -162,11 +162,11 @@ impl OpenSlide {
     pub fn read_region(&self, region: &Region) -> Result<Vec<u8>> {
         bindings::read_region(
             *self.osr,
-            region.address.x as i64,
-            region.address.y as i64,
+            i64::from(region.address.x),
+            i64::from(region.address.y),
             region.level.try_into()?,
-            region.size.w as i64,
-            region.size.h as i64,
+            i64::from(region.size.w),
+            i64::from(region.size.h),
         )
     }
 
@@ -203,7 +203,7 @@ impl OpenSlide {
 
     /// Copy pre-multiplied ARGB data from a whole slide image.
     ///
-    /// This function reads and decompresses a region of a whole slide image into an RgbImage
+    /// This function reads and decompresses a region of a whole slide image into an `RgbImage`
     ///
     /// Args:
     ///     offset: (x, y) coordinate (increasing downwards/to the right) of top left pixel position
@@ -220,7 +220,7 @@ impl OpenSlide {
 
     /// Copy pre-multiplied ARGB data from from an associated image..
     ///
-    /// This function reads and decompresses a region of a whole slide image into an RgbaImage
+    /// This function reads and decompresses a region of a whole slide image into an `RgbaImage`
     ///
     /// Args:
     ///     offset: (x, y) coordinate (increasing downwards/to the right) of top left pixel position
@@ -236,7 +236,7 @@ impl OpenSlide {
 
     /// Copy pre-multiplied ARGB data from an associated image.
     ///
-    /// This function reads and decompresses an associated image into an RgbaImage
+    /// This function reads and decompresses an associated image into an `RgbaImage`
     ///
     /// Args:
     ///     name: name of the associated image we want to read
@@ -250,7 +250,7 @@ impl OpenSlide {
 
     /// Copy pre-multiplied ARGB data from an associated image.
     ///
-    /// This function reads and decompresses an associated image into an RgbaImage
+    /// This function reads and decompresses an associated image into an `RgbaImage`
     ///
     /// Args:
     ///     name: name of the associated image we want to read
@@ -269,8 +269,8 @@ impl OpenSlide {
         let dimension_level0 = self.get_level_dimensions(0)?;
 
         let downsample = (
-            dimension_level0.w as f64 / size.w as f64,
-            dimension_level0.h as f64 / size.h as f64,
+            f64::from(dimension_level0.w) / f64::from(size.w),
+            f64::from(dimension_level0.h) / f64::from(size.h),
         );
         let downsample = f64::max(downsample.0, downsample.1);
 
@@ -296,8 +296,8 @@ impl OpenSlide {
         let dimension_level0 = self.get_level_dimensions(0)?;
 
         let downsample = (
-            dimension_level0.w as f64 / size.w as f64,
-            dimension_level0.h as f64 / size.h as f64,
+            f64::from(dimension_level0.w) / f64::from(size.w),
+            f64::from(dimension_level0.h) / f64::from(size.h),
         );
         let downsample = f64::max(downsample.0, downsample.1);
 

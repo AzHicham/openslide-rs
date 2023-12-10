@@ -44,10 +44,10 @@ impl Sakura {
             SAKURA_PROPERTY_FOCUSSING_METHOD => self.focussing_method = value.parse().ok(),
             SAKURA_PROPERTY_KEYWORDS => self.keywords = value.parse().ok(),
             SAKURA_PROPERTY_NOMINAL_LENS_MAGNIFICATION => {
-                self.nominal_lens_magnification = value.parse().ok()
+                self.nominal_lens_magnification = value.parse().ok();
             }
             SAKURA_PROPERTY_RESOLUTION_MM_PER_PIX => {
-                self.resolution_mm_per_pix = value.parse().ok()
+                self.resolution_mm_per_pix = value.parse().ok();
             }
             SAKURA_PROPERTY_SCAN_ID => self.scan_id = value.parse().ok(),
             SAKURA_PROPERTY_SLIDE_ID => self.slide_id = value.parse().ok(),

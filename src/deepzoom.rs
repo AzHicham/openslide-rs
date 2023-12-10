@@ -1,6 +1,6 @@
 //! Support for Deep Zoom images.
-//! This module provides functionality for generating Deep Zoom images from OpenSlide objects.
-//! This is a simple translation of python DeepZoomGenerator implementation
+//! This module provides functionality for generating Deep Zoom images from `OpenSlide` objects.
+//! This is a simple translation of python `DeepZoomGenerator` implementation
 
 use crate::{
     errors::OpenSlideError,
@@ -236,23 +236,23 @@ impl<S: Slide, B: Borrow<S>> DeepZoomGenerator<S, B> {
         };
 
         let l_location = (
-            self.l_z_downsamples[level as usize] * (z_location.x - z_overlap_topleft.x) as f64,
-            self.l_z_downsamples[level as usize] * (z_location.y - z_overlap_topleft.y) as f64,
+            self.l_z_downsamples[level as usize] * f64::from(z_location.x - z_overlap_topleft.x),
+            self.l_z_downsamples[level as usize] * f64::from(z_location.y - z_overlap_topleft.y),
         );
 
         // Round location down and size up, and add offset of active area
         let l0_location = Address {
             x: (self.l0_l_downsamples[slide_level as usize] * l_location.0
-                + self.l0_offset.x as f64) as _,
+                + f64::from(self.l0_offset.x)) as _,
             y: (self.l0_l_downsamples[slide_level as usize] * l_location.1
-                + self.l0_offset.y as f64) as _,
+                + f64::from(self.l0_offset.y)) as _,
         };
 
         let l_size = Size {
             w: (slide_level_dimensions.w - l_location.0.ceil() as u32)
-                .min((self.l_z_downsamples[level as usize] * z_size.w as f64).ceil() as _),
+                .min((self.l_z_downsamples[level as usize] * f64::from(z_size.w)).ceil() as _),
             h: (slide_level_dimensions.h - l_location.1.ceil() as u32)
-                .min((self.l_z_downsamples[level as usize] * z_size.h as f64).ceil() as _),
+                .min((self.l_z_downsamples[level as usize] * f64::from(z_size.h)).ceil() as _),
         };
 
         let region = Region {
