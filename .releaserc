@@ -7,6 +7,10 @@
       "prerelease": true
     },
     {
+      "name": "develop",
+      "prerelease": "dev"
+    },
+    {
       "name": "experimental",
       "prerelease": "exp"
     },
@@ -19,8 +23,8 @@
         "preset": "conventionalcommits",
         "releaseRules": [
           { "type": "perf", "scope": "*", "release": "patch" },
-          { "type": "refactor", "scope": "*", "release": "patch" },
-          { "type": "chore", "scope": "*", "release": "patch" }
+          { "type": "chore", "scope": "*", "release": "patch" },
+          { "type": "refactor", "scope": "*", "release": "patch" }
         ]
       }
     ],
@@ -68,6 +72,13 @@
         "message": "chore(release): ${nextRelease.version}\n\n[skip ci]"
       }
     ],
-    "@semantic-release/github"
+    "@semantic-release/github",
+    [
+      "@saithodev/semantic-release-backmerge",
+      {
+        "backmergeBranches": [{"from": "main", "to": "develop"}],
+        "fastForwardMode": "ff"
+      }
+    ]
   ]
 }
