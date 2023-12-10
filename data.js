@@ -1,64 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1702238274188,
+  "lastUpdate": 1702238675093,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "id": "60d60addd7b0754788e0b988419d18af55692ba0",
-          "message": "fix(deps): update rust crate regex to 1.10",
-          "timestamp": "2023-07-19T14:01:57Z",
-          "url": "https://github.com/AzHicham/openslide-rs/pull/107/commits/60d60addd7b0754788e0b988419d18af55692ba0"
-        },
-        "date": 1696887297887,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 2326867,
-            "range": "± 430355",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 9618830,
-            "range": "± 1769090",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 2131345,
-            "range": "± 354714",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 9578085,
-            "range": "± 1164470",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 2140206,
-            "range": "± 301943",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 9071295,
-            "range": "± 1074102",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2247,6 +2191,86 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 4507733,
             "range": "± 26799",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "name": "AzHicham",
+            "username": "AzHicham"
+          },
+          "id": "b276c05fb767bfbe69d7e96d57223445ec176f34",
+          "message": "ci: Run tests for feature openslide4",
+          "timestamp": "2023-12-09T11:48:30Z",
+          "url": "https://github.com/AzHicham/openslide-rs/pull/126/commits/b276c05fb767bfbe69d7e96d57223445ec176f34"
+        },
+        "date": 1702238674696,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1170541,
+            "range": "± 61238",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1170208,
+            "range": "± 22817",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_recreate_dz",
+            "value": 1171279,
+            "range": "± 59259",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 4680207,
+            "range": "± 242044",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 4694761,
+            "range": "± 288910",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_recreate_dz",
+            "value": 4699309,
+            "range": "± 493803",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1133765,
+            "range": "± 34472",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 4712097,
+            "range": "± 24957",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1085007,
+            "range": "± 6424",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 4507552,
+            "range": "± 17520",
             "unit": "ns/iter"
           }
         ]
