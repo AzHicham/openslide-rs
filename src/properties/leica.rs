@@ -37,7 +37,7 @@ impl Leica {
             LEICA_PROPERTY_DEVICE_MODEL => self.device_model = Some(value.to_string()),
             LEICA_PROPERTY_DEVICE_VERSION => self.device_version = Some(value.to_string()),
             LEICA_PROPERTY_ILLUMINATION_SOURCE => {
-                self.illumination_source = Some(value.to_string())
+                self.illumination_source = Some(value.to_string());
             }
             LEICA_PROPERTY_OBJECTIVE => self.objective = value.parse().ok(),
             _ => {}

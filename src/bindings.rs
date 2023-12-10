@@ -1,4 +1,4 @@
-//! This module contains the bindings of the OpenSlide library and its rust wrappers.
+//! This module contains the bindings of the `OpenSlide` library and its rust wrappers.
 //!
 //! `https://openslide.org/api/openslide_8h.html`.
 //!
@@ -9,7 +9,7 @@ use std::{ffi, ops::Deref};
 
 use openslide_sys::sys;
 
-/// wrapper around OpenSlideT, this is usefull for implementing Send and Sync
+/// wrapper around `OpenSlideT`, this is usefull for implementing Send and Sync
 #[derive(Debug)]
 pub(crate) struct OpenSlideWrapper(pub(crate) *mut sys::openslide_t);
 
@@ -138,7 +138,7 @@ pub fn read_region(
     let mut buffer: Vec<u8> = Vec::with_capacity(size);
     let p_buffer = buffer.as_mut_ptr();
     unsafe {
-        let p_buffer = p_buffer as *mut u32;
+        let p_buffer = p_buffer.cast::<u32>();
         sys::openslide_read_region(osr, p_buffer, x, y, level, w, h);
         get_error(osr)?;
         buffer.set_len(size);
@@ -166,9 +166,9 @@ pub fn get_property_names(osr: *mut sys::openslide_t) -> Result<Vec<String>> {
         values
             .iter()
             .map(|&p| ffi::CStr::from_ptr(p)) // iterator of &CStr
-            .map(|cs| cs.to_bytes()) // iterator of &[u8]
+            .map(std::ffi::CStr::to_bytes) // iterator of &[u8]
             .filter_map(|bs| std::str::from_utf8(bs).ok()) // iterator of &str
-            .map(|ss| ss.to_owned())
+            .map(std::borrow::ToOwned::to_owned)
             .collect()
     };
     Ok(string_values)
@@ -210,9 +210,9 @@ pub fn get_associated_image_names(osr: *mut sys::openslide_t) -> Result<Vec<Stri
         values
             .iter()
             .map(|&p| ffi::CStr::from_ptr(p)) // iterator of &CStr
-            .map(|cs| cs.to_bytes()) // iterator of &[u8]
+            .map(std::ffi::CStr::to_bytes) // iterator of &[u8]
             .filter_map(|bs| std::str::from_utf8(bs).ok()) // iterator of &str
-            .map(|ss| ss.to_owned())
+            .map(std::borrow::ToOwned::to_owned)
             .collect()
     };
     Ok(string_values)
@@ -252,7 +252,7 @@ pub fn read_associated_image(
     let mut buffer: Vec<u8> = Vec::with_capacity(size);
     let p_buffer = buffer.as_mut_ptr();
     unsafe {
-        let p_buffer = p_buffer as *mut u32;
+        let p_buffer = p_buffer.cast::<u32>();
         sys::openslide_read_associated_image(osr, c_name.as_ptr(), p_buffer);
         get_error(osr)?;
         buffer.set_len(size);

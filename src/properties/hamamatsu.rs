@@ -66,23 +66,23 @@ impl Hamamatsu {
             HAMAMATSU_PROPERTY_NO_JPEG_ROWS => self.no_jpeg_rows = value.parse().ok(),
             HAMAMATSU_PROPERTY_NO_LAYERS => self.no_layers = value.parse().ok(),
             HAMAMATSU_PROPERTY_OPTIMISATION_FILE => {
-                self.optimisation_file = Some(value.to_string())
+                self.optimisation_file = Some(value.to_string());
             }
             HAMAMATSU_PROPERTY_PHYSICAL_HEIGHT => self.physical_height = value.parse().ok(),
             HAMAMATSU_PROPERTY_PHYSICAL_WIDTH => self.physical_width = value.parse().ok(),
             HAMAMATSU_PROPERTY_PHYSICAL_MACRO_HEIGHT => {
-                self.physical_macro_height = value.parse().ok()
+                self.physical_macro_height = value.parse().ok();
             }
             HAMAMATSU_PROPERTY_PHYSICAL_MACRO_WIDTH => {
-                self.physical_macro_width = value.parse().ok()
+                self.physical_macro_width = value.parse().ok();
             }
             HAMAMATSU_PROPERTY_REFERENCE => self.reference = Some(value.to_string()),
             HAMAMATSU_PROPERTY_SOURCE_LENS => self.source_lens = Some(value.to_string()),
             HAMAMATSU_PROPERTY_X_OFFSET_FROM_SLIDE_CENTER => {
-                self.x_offset_from_slide_center = value.parse().ok()
+                self.x_offset_from_slide_center = value.parse().ok();
             }
             HAMAMATSU_PROPERTY_Y_OFFSET_FROM_SLIDE_CENTER => {
-                self.y_offset_from_slide_center = value.parse().ok()
+                self.y_offset_from_slide_center = value.parse().ok();
             }
             HAMAMATSU_PROPERTY_CREATOR => self.creator = value.parse().ok(),
             HAMAMATSU_PROPERTY_HARDWARE_MODEL => self.hardware_model = value.parse().ok(),

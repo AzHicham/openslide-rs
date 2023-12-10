@@ -53,7 +53,7 @@ fn test_detect_format_unsupported(#[case] filename: &Path) {
 #[case(small_svs(), "aperio")]
 fn test_detect_vendor(#[case] filename: &Path, #[case] expected_vendor: String) {
     let vendor = OpenSlide::detect_vendor(filename).unwrap();
-    assert_eq!(vendor, expected_vendor)
+    assert_eq!(vendor, expected_vendor);
 }
 
 #[rstest]
@@ -100,11 +100,17 @@ fn test_slide_info(#[case] filename: &Path) {
     // Level downsample
     assert_approx_eq!(slide.get_level_downsample(0).unwrap(), 1.0);
     assert_approx_eq!(slide.get_level_downsample(1).unwrap(), 2.0);
-    assert_approx_eq!(slide.get_level_downsample(2).unwrap(), 4.016129032258064);
-    assert_approx_eq!(slide.get_level_downsample(3).unwrap(), 8.086312118570184);
+    assert_approx_eq!(
+        slide.get_level_downsample(2).unwrap(),
+        4.016_129_032_258_064
+    );
+    assert_approx_eq!(
+        slide.get_level_downsample(3).unwrap(),
+        8.086_312_118_570_184
+    );
 
     let level_downsamples = slide.get_all_level_downsample().unwrap();
-    let expect_level_downsamples = [1.0, 2.0, 4.016129032258064, 8.086312118570184];
+    let expect_level_downsamples = [1.0, 2.0, 4.016_129_032_258_064, 8.086_312_118_570_184];
     for index in 0..expect_level_downsamples.len() {
         assert_approx_eq!(level_downsamples[index], expect_level_downsamples[index]);
     }

@@ -38,7 +38,7 @@ pub struct LevelProperties {
     pub tile_width: Option<u32>,
 }
 
-/// Common properties that are available under the name `openslide.<property>` in the HashMap
+/// Common properties that are available under the name `openslide.<property>` in the `HashMap`
 /// returned from the `OpenSlide::get_properties()` method.
 #[derive(Clone, Debug, Default)]
 pub struct OpenSlide {
@@ -59,7 +59,7 @@ pub struct OpenSlide {
 }
 
 impl OpenSlide {
-    /// Initialises the OpenSlide properties.
+    /// Initialises the `OpenSlide` properties.
     ///
     /// This needs a property map in order to compute the number of levels. This is needed because
     /// of the properties that are listed as `openslide.level[<level>].<property>`.
@@ -87,14 +87,14 @@ impl OpenSlide {
             OPENSLIDE_PROPERTY_NAME_BOUNDS_WIDTH => self.bounds_width = value.parse().ok(),
             OPENSLIDE_PROPERTY_NAME_BOUNDS_HEIGHT => self.bounds_height = value.parse().ok(),
             OPENSLIDE_PROPERTY_NAME_BACKGROUND_COLOR => {
-                self.background_color = Some(value.to_string())
+                self.background_color = Some(value.to_string());
             }
             _ => {
                 if let Some(cap) = REGEX_LEVEL_PROPERTIES.captures(name) {
                     let level: usize = cap[1].parse().unwrap(); // safe unwrap because of Regex matching
                     let property = &cap[2]; // safe unwrap because of Regex matching
 
-                    self.parse_property_levels(level, property, value)
+                    self.parse_property_levels(level, property, value);
                 }
             }
         }

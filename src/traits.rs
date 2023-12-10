@@ -23,7 +23,7 @@ pub trait Slide {
 
     /// Copy pre-multiplied ARGB data from a whole slide image.
     ///
-    /// This function reads and decompresses a region of a whole slide image into an RgbImage
+    /// This function reads and decompresses a region of a whole slide image into an `RgbImage`
     ///
     /// Args:
     ///     offset: (x, y) coordinate (increasing downwards/to the right) of top left pixel position
@@ -34,7 +34,7 @@ pub trait Slide {
 
     /// Copy pre-multiplied ARGB data from an associated image.
     ///
-    /// This function reads and decompresses a region of a whole slide image into an RgbaImage
+    /// This function reads and decompresses a region of a whole slide image into an `RgbaImage`
     ///
     /// Args:
     ///     offset: (x, y) coordinate (increasing downwards/to the right) of top left pixel position
