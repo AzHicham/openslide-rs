@@ -3,6 +3,10 @@
   "extends": [
     "config:base"
   ],
+  "timezone": "Europe/Paris",
+  "schedule": [
+    "after 8am and before 9am every monday"
+  ],
   "labels": ["dependencies"],
   "pre-commit": {
     "enabled": true
