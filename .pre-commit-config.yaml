@@ -21,6 +21,6 @@ repos:
     hooks:
     -   id: fmt
 -   repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 37.89.6
+    rev: 37.104.0
     hooks:
         - id: renovate-config-validator
