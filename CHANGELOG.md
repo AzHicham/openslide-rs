@@ -1,3 +1,29 @@
+## [2.0.2](https://github.com/AzHicham/openslide-rs/compare/2.0.1...2.0.2) (2024-04-11)
+
+
+### Bug Fixes
+
+* **deps:** update cargo ([#142](https://github.com/AzHicham/openslide-rs/issues/142)) ([bb9a738](https://github.com/AzHicham/openslide-rs/commit/bb9a738689f229750fef6b0de805d546d20ac9e6))
+* **deps:** update rust crate fast_image_resize to v3 ([#138](https://github.com/AzHicham/openslide-rs/issues/138)) ([730f2a3](https://github.com/AzHicham/openslide-rs/commit/730f2a3a29f7f7b30d44dc42d6a3877fc31ba4a7))
+
+
+### CI/CD
+
+* Fix macos build ([#141](https://github.com/AzHicham/openslide-rs/issues/141)) ([de3509b](https://github.com/AzHicham/openslide-rs/commit/de3509b1c9ea5b782b09b77b8e52ebd23413c7d9))
+
+
+### Miscellaneous Chores
+
+* Create CODE_OF_CONDUCT.md ([0b19216](https://github.com/AzHicham/openslide-rs/commit/0b19216962213d222393a61795533b0061147850))
+* **deps:** update codecov/codecov-action action to v4 ([#136](https://github.com/AzHicham/openslide-rs/issues/136)) ([8f02378](https://github.com/AzHicham/openslide-rs/commit/8f02378def20dad79b7d20aed8d2f0f8b1a10929))
+* **deps:** update peter-evans/create-pull-request action to v6 ([#137](https://github.com/AzHicham/openslide-rs/issues/137)) ([48a2ff5](https://github.com/AzHicham/openslide-rs/commit/48a2ff5ac2d392efeed76422de23c21f5b9f3cf1))
+* **deps:** update pre-commit ([#135](https://github.com/AzHicham/openslide-rs/issues/135)) ([d8905c5](https://github.com/AzHicham/openslide-rs/commit/d8905c5077daad96e302acab414fe95fb1860f6f))
+* **deps:** update pre-commit ([#143](https://github.com/AzHicham/openslide-rs/issues/143)) ([2e4494e](https://github.com/AzHicham/openslide-rs/commit/2e4494ed9432bdc93acc6ecef824d8cd73530005))
+* **deps:** update pre-commit ([#144](https://github.com/AzHicham/openslide-rs/issues/144)) ([be2357c](https://github.com/AzHicham/openslide-rs/commit/be2357c007da61a721b122d1dab274d28e839754))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v37.214.0 ([#139](https://github.com/AzHicham/openslide-rs/issues/139)) ([34bdd82](https://github.com/AzHicham/openslide-rs/commit/34bdd82572dbb9f69e8cf94d98cda031cb2910e8))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v37.227.1 ([#140](https://github.com/AzHicham/openslide-rs/issues/140)) ([bb15185](https://github.com/AzHicham/openslide-rs/commit/bb15185d4c12a7756c6aca935495d4d34eb7bae6))
+* **deps:** update rust crate rstest to 0.19 ([#145](https://github.com/AzHicham/openslide-rs/issues/145)) ([aa98ab3](https://github.com/AzHicham/openslide-rs/commit/aa98ab37122b783457d2eb817164b2131a0bf9f0))
+
 ## [2.0.1](https://github.com/AzHicham/openslide-rs/compare/2.0.0...2.0.1) (2024-01-24)
 
 
