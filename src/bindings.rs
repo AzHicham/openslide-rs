@@ -290,7 +290,7 @@ pub fn get_icc_profile_size(osr: *mut sys::openslide_t) -> Result<i64> {
 pub fn read_icc_profile(osr: *mut sys::openslide_t) -> Result<Vec<u8>> {
     let size = get_icc_profile_size(osr)?;
     let mut buffer: Vec<u8> = Vec::with_capacity(size as usize);
-    let p_buffer = buffer.as_mut_ptr() as *mut std::os::raw::c_void;
+    let p_buffer = buffer.as_mut_ptr().cast::<std::ffi::c_void>();
     unsafe {
         sys::openslide_read_icc_profile(osr, p_buffer);
         get_error(osr)?;
@@ -325,7 +325,7 @@ pub fn read_associated_image_icc_profile(
     let c_name = ffi::CString::new(name)?;
     let size = get_associated_image_icc_profile_size(osr, name)?;
     let mut buffer: Vec<u8> = Vec::with_capacity(size as usize);
-    let p_buffer = buffer.as_mut_ptr() as *mut std::os::raw::c_void;
+    let p_buffer = buffer.as_mut_ptr().cast::<std::ffi::c_void>();
     unsafe {
         sys::openslide_read_associated_image_icc_profile(osr, c_name.as_ptr(), p_buffer);
         get_error(osr)?;
