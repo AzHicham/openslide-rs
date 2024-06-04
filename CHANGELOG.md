@@ -1,3 +1,21 @@
+## [2.1.0](https://github.com/AzHicham/openslide-rs/compare/2.0.2...2.1.0) (2024-06-04)
+
+
+### Features
+
+* add dicom properties ([#150](https://github.com/AzHicham/openslide-rs/issues/150)) ([1229a2e](https://github.com/AzHicham/openslide-rs/commit/1229a2e197cb24dbb26f701e8d6d8707d4f8dede))
+
+
+### Bug Fixes
+
+* **deps:** update cargo ([#148](https://github.com/AzHicham/openslide-rs/issues/148)) ([962340c](https://github.com/AzHicham/openslide-rs/commit/962340c3f5eb331d085635b5b3a77c5b500fbe52))
+
+
+### Miscellaneous Chores
+
+* **deps:** update pre-commit ([#147](https://github.com/AzHicham/openslide-rs/issues/147)) ([6271386](https://github.com/AzHicham/openslide-rs/commit/6271386463ffa9bbab38e192a6d9c60cbc4939fd))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v37.333.0 ([#146](https://github.com/AzHicham/openslide-rs/issues/146)) ([102e773](https://github.com/AzHicham/openslide-rs/commit/102e7735c2d01c0231fe097c274129df26ff1f52))
+
 ## [2.0.2](https://github.com/AzHicham/openslide-rs/compare/2.0.1...2.0.2) (2024-04-11)
 
 
