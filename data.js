@@ -1,92 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1717500434688,
+  "lastUpdate": 1717500540349,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hicham.azimani@owkin.com",
-            "name": "Hicham Azimani",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "de3509b1c9ea5b782b09b77b8e52ebd23413c7d9",
-          "message": "ci: Fix macos build (#141)",
-          "timestamp": "2024-03-18T09:30:05+01:00",
-          "tree_id": "c6892b014a582ad337e1d7324f0dbe73216a7f57",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/de3509b1c9ea5b782b09b77b8e52ebd23413c7d9"
-        },
-        "date": 1710750748639,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1161369,
-            "range": "± 9442",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_arc",
-            "value": 1161086,
-            "range": "± 19059",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_recreate_dz",
-            "value": 1160411,
-            "range": "± 13135",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 4685115,
-            "range": "± 103633",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_arc",
-            "value": 4657584,
-            "range": "± 123175",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_recreate_dz",
-            "value": 4670059,
-            "range": "± 112112",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1116673,
-            "range": "± 6443",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 4607612,
-            "range": "± 98666",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1064096,
-            "range": "± 5928",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 4378277,
-            "range": "± 35350",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2439,6 +2355,90 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 4363176,
             "range": "± 59801",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hicham.azimani@owkin.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": false,
+          "id": "1229a2e197cb24dbb26f701e8d6d8707d4f8dede",
+          "message": "feat: add dicom properties (#150)",
+          "timestamp": "2024-06-04T13:25:00+02:00",
+          "tree_id": "a63ce0b778a95c5cc0d4481867f0ee28906898b6",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/1229a2e197cb24dbb26f701e8d6d8707d4f8dede"
+        },
+        "date": 1717500539712,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1148716,
+            "range": "± 5899",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1149818,
+            "range": "± 10518",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_recreate_dz",
+            "value": 1149312,
+            "range": "± 7776",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 4588024,
+            "range": "± 384978",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 4581747,
+            "range": "± 108718",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_recreate_dz",
+            "value": 4584221,
+            "range": "± 693099",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1115313,
+            "range": "± 4303",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 4599489,
+            "range": "± 89560",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1062966,
+            "range": "± 5445",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 4367056,
+            "range": "± 51446",
             "unit": "ns/iter"
           }
         ]
