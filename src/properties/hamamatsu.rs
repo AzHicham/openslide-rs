@@ -21,6 +21,7 @@ pub const HAMAMATSU_PROPERTY_Y_OFFSET_FROM_SLIDE_CENTER: &str = "hamamatsu.YOffs
 pub const HAMAMATSU_PROPERTY_CREATOR: &str = "hamamatsu.Creator";
 pub const HAMAMATSU_PROPERTY_HARDWARE_MODEL: &str = "hamamatsu.HardwareModel";
 pub const HAMAMATSU_PROPERTY_HARDWARE_SERIAL: &str = "hamamatsu.HardwareSerial";
+pub const HAMAMATSU_PROPERTY_NDP_SERIAL: &str = "hamamatsu.NDP.S/N";
 
 #[derive(Clone, Debug, Default)]
 pub struct Hamamatsu {
@@ -44,6 +45,7 @@ pub struct Hamamatsu {
     pub creator: Option<String>,
     pub hardware_model: Option<String>,
     pub hardware_serial: Option<String>,
+    pub ndp_serial: Option<String>,
 }
 
 impl Hamamatsu {
@@ -58,16 +60,15 @@ impl Hamamatsu {
     fn parse_property_name(&mut self, name: &str, value: &str) {
         match name {
             HAMAMATSU_PROPERTY_AUTHCODE => self.auth_code = value.parse().ok(),
-            HAMAMATSU_PROPERTY_IMAGE_FILE => self.image_file = Some(value.to_string()),
+            HAMAMATSU_PROPERTY_IMAGE_FILE => self.image_file = value.parse().ok(),
             HAMAMATSU_PROPERTY_LAYER_SPACING => self.layer_spacing = value.parse().ok(),
-            HAMAMATSU_PROPERTY_MACRO_IMAGE => self.macro_image = Some(value.to_string()),
-            HAMAMATSU_PROPERTY_MAP_FILE => self.map_file = Some(value.to_string()),
+            HAMAMATSU_PROPERTY_MACRO_IMAGE => self.macro_image = value.parse().ok(),
+            HAMAMATSU_PROPERTY_MAP_FILE => self.map_file = value.parse().ok(),
             HAMAMATSU_PROPERTY_NO_JPEG_COLUMNS => self.no_jpeg_columns = value.parse().ok(),
             HAMAMATSU_PROPERTY_NO_JPEG_ROWS => self.no_jpeg_rows = value.parse().ok(),
             HAMAMATSU_PROPERTY_NO_LAYERS => self.no_layers = value.parse().ok(),
-            HAMAMATSU_PROPERTY_OPTIMISATION_FILE => {
-                self.optimisation_file = Some(value.to_string());
-            }
+            HAMAMATSU_PROPERTY_OPTIMISATION_FILE => self.optimisation_file = value.parse().ok(),
+
             HAMAMATSU_PROPERTY_PHYSICAL_HEIGHT => self.physical_height = value.parse().ok(),
             HAMAMATSU_PROPERTY_PHYSICAL_WIDTH => self.physical_width = value.parse().ok(),
             HAMAMATSU_PROPERTY_PHYSICAL_MACRO_HEIGHT => {
@@ -76,8 +77,8 @@ impl Hamamatsu {
             HAMAMATSU_PROPERTY_PHYSICAL_MACRO_WIDTH => {
                 self.physical_macro_width = value.parse().ok();
             }
-            HAMAMATSU_PROPERTY_REFERENCE => self.reference = Some(value.to_string()),
-            HAMAMATSU_PROPERTY_SOURCE_LENS => self.source_lens = Some(value.to_string()),
+            HAMAMATSU_PROPERTY_REFERENCE => self.reference = value.parse().ok(),
+            HAMAMATSU_PROPERTY_SOURCE_LENS => self.source_lens = value.parse().ok(),
             HAMAMATSU_PROPERTY_X_OFFSET_FROM_SLIDE_CENTER => {
                 self.x_offset_from_slide_center = value.parse().ok();
             }
@@ -87,6 +88,7 @@ impl Hamamatsu {
             HAMAMATSU_PROPERTY_CREATOR => self.creator = value.parse().ok(),
             HAMAMATSU_PROPERTY_HARDWARE_MODEL => self.hardware_model = value.parse().ok(),
             HAMAMATSU_PROPERTY_HARDWARE_SERIAL => self.hardware_serial = value.parse().ok(),
+            HAMAMATSU_PROPERTY_NDP_SERIAL => self.ndp_serial = value.parse().ok(),
             _ => {}
         }
     }

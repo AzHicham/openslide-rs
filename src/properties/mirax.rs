@@ -27,6 +27,8 @@ pub const MIRAX_PROPERTY_SLIDE_POSITION_X: &str = "mirax.GENERAL.SLIDE_POSITION_
 pub const MIRAX_PROPERTY_SLIDE_POSITION_Y: &str = "mirax.GENERAL.SLIDE_POSITION_Y";
 pub const MIRAX_PROPERTY_SLIDE_TYPE: &str = "mirax.GENERAL.SLIDE_TYPE";
 pub const MIRAX_PROPERTY_SLIDE_VERSION: &str = "mirax.GENERAL.SLIDE_VERSION";
+pub const MIRAX_PROPERTY_SCANNER_HARDWARE_ID: &str =
+    "mirax.NONHIERLAYER_0_SECTION.SCANNER_HARDWARE_ID";
 
 #[derive(Clone, Debug, Default)]
 pub struct Mirax {
@@ -54,6 +56,7 @@ pub struct Mirax {
     pub position_y: Option<u32>,
     pub slide_type: Option<String>,
     pub slide_version: Option<String>,
+    pub scanner_hardware_id: Option<String>,
 }
 
 impl Mirax {
@@ -103,6 +106,7 @@ impl Mirax {
             MIRAX_PROPERTY_SLIDE_POSITION_Y => self.position_y = value.parse().ok(),
             MIRAX_PROPERTY_SLIDE_TYPE => self.slide_type = value.parse().ok(),
             MIRAX_PROPERTY_SLIDE_VERSION => self.slide_version = value.parse().ok(),
+            MIRAX_PROPERTY_SCANNER_HARDWARE_ID => self.scanner_hardware_id = value.parse().ok(),
             _ => {}
         }
     }
