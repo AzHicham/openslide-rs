@@ -242,27 +242,35 @@ fn test_slide_read_image_rgba(#[case] filename: &Path) {
 }
 
 #[rstest]
-#[case(boxes_tiff())]
+#[case((boxes_tiff(), &Size { w: 96, h: 80 }))]
 #[cfg(feature = "image")]
-fn test_thumbnail_rgba(#[case] filename: &Path) {
+fn test_thumbnail_rgba(#[case] filename_and_size: (&Path, &Size)) {
+    let (filename, expected_size) = filename_and_size;
     let slide = OpenSlide::new(filename).unwrap();
 
     let size = Size { w: 100, h: 80 };
     let thumbnail = slide.thumbnail_rgba(&size).unwrap();
-    assert_eq!(thumbnail.dimensions(), (size.w, size.h));
-    assert_eq!(thumbnail.len(), (size.h * size.w * 4) as usize);
+    assert_eq!(thumbnail.dimensions(), (expected_size.w, expected_size.h));
+    assert_eq!(
+        thumbnail.len(),
+        (expected_size.h * expected_size.w * 4) as usize
+    );
 }
 
 #[rstest]
-#[case(boxes_tiff())]
+#[case((boxes_tiff(), &Size { w: 96, h: 80 }))]
 #[cfg(feature = "image")]
-fn test_thumbnail_rgb(#[case] filename: &Path) {
+fn test_thumbnail_rgb(#[case] filename_and_size: (&Path, &Size)) {
+    let (filename, expected_size) = filename_and_size;
     let slide = OpenSlide::new(filename).unwrap();
 
     let size = Size { w: 100, h: 80 };
     let thumbnail = slide.thumbnail_rgb(&size).unwrap();
-    assert_eq!(thumbnail.dimensions(), (size.w, size.h));
-    assert_eq!(thumbnail.len(), (size.h * size.w * 3) as usize);
+    assert_eq!(thumbnail.dimensions(), (expected_size.w, expected_size.h));
+    assert_eq!(
+        thumbnail.len(),
+        (expected_size.h * expected_size.w * 3) as usize
+    );
 }
 
 #[rstest]
