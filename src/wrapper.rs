@@ -67,7 +67,7 @@ impl OpenSlide {
 
     #[cfg(feature = "openslide4")]
     fn set_cache(&self, cache: Cache) {
-        bindings::set_cache(*self.osr, *cache.0)
+        bindings::set_cache(*self.osr, *cache.0);
     }
 
     /// Quickly determine whether a whole slide image is recognized.
@@ -285,7 +285,7 @@ impl OpenSlide {
             address: Address { x: 0, y: 0 },
         };
         let image = self.read_image_rgba(&region)?;
-        let size = preserve_aspect_ratio(&size, &dimension_level0);
+        let size = preserve_aspect_ratio(size, &dimension_level0);
         let image = resize_rgba_image(image, &size)?;
 
         Ok(image)
@@ -313,7 +313,7 @@ impl OpenSlide {
         };
 
         let image = self.read_image_rgb(&region)?;
-        let size = preserve_aspect_ratio(&size, &dimension_level0);
+        let size = preserve_aspect_ratio(size, &dimension_level0);
         let image = resize_rgb_image(image, &size)?;
 
         Ok(image)

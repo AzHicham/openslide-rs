@@ -50,7 +50,7 @@ jobs:
           Clippy suggests the following changes
         labels: not_in_changelog
         branch: auto/clippy
-        base: main
+        base: develop
     - name: Check outputs
       if: ${{ success() }}
       run: |
