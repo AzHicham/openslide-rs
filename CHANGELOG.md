@@ -1,3 +1,29 @@
+## [2.1.1](https://github.com/AzHicham/openslide-rs/compare/2.1.0...2.1.1) (2024-07-18)
+
+
+### Bug Fixes
+
+* **deps:** update cargo ([#151](https://github.com/AzHicham/openslide-rs/issues/151)) ([ee065c4](https://github.com/AzHicham/openslide-rs/commit/ee065c4129737a1c7d0c806ddacbfbf3a3b7abe2))
+* **deps:** update rust crate lazy_static to v1.5.0 ([#154](https://github.com/AzHicham/openslide-rs/issues/154)) ([e598851](https://github.com/AzHicham/openslide-rs/commit/e5988518f212519a6b6cf87aa48ba866195bb0b9))
+* **deps:** update rust crate thiserror to v1.0.62 ([#155](https://github.com/AzHicham/openslide-rs/issues/155)) ([b8f2190](https://github.com/AzHicham/openslide-rs/commit/b8f21904452a07388784c205f0b2ba7bec5265e1))
+* preserve aspect ratio in thumbnail ([#157](https://github.com/AzHicham/openslide-rs/issues/157)) ([24192c1](https://github.com/AzHicham/openslide-rs/commit/24192c1fab22e38a1abd57e65d6be701ed5cd9ef))
+
+
+### CI/CD
+
+* fix benchmark push ([#158](https://github.com/AzHicham/openslide-rs/issues/158)) ([b5173ea](https://github.com/AzHicham/openslide-rs/commit/b5173ead442741334695fd9eab1cc02f9e578003))
+* fix benchmark workflow ([3aabafe](https://github.com/AzHicham/openslide-rs/commit/3aabafed01ac10c93139d34e773eda995bf6ce09))
+* fix permission in benchmark workflow ([#159](https://github.com/AzHicham/openslide-rs/issues/159)) ([1b2a977](https://github.com/AzHicham/openslide-rs/commit/1b2a977ffd0cbb5c61545710d6f425b84dbbe6e0))
+
+
+### Miscellaneous Chores
+
+* clippy maintenance ([#162](https://github.com/AzHicham/openslide-rs/issues/162)) ([3b2699b](https://github.com/AzHicham/openslide-rs/commit/3b2699bd2a4dfdc8987aec8ca65dbf039f03ce37))
+* **deps:** cargo update ([#160](https://github.com/AzHicham/openslide-rs/issues/160)) ([7ab8c8f](https://github.com/AzHicham/openslide-rs/commit/7ab8c8f97a54c08d6237b603b720ecd6c21a7c3c))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v37.412.1 ([#152](https://github.com/AzHicham/openslide-rs/issues/152)) ([ff237f7](https://github.com/AzHicham/openslide-rs/commit/ff237f77f160481e3fc4c7054334bb0c8c13fac2))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v37.425.1 ([#153](https://github.com/AzHicham/openslide-rs/issues/153)) ([4aaba06](https://github.com/AzHicham/openslide-rs/commit/4aaba0655f67bdc36ae11a02b4846980d1d816ec))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v37.432.0 ([#156](https://github.com/AzHicham/openslide-rs/issues/156)) ([4819403](https://github.com/AzHicham/openslide-rs/commit/4819403c7aef6a450563c11a381d5ac4d6f38df0))
+
 ## [2.1.0](https://github.com/AzHicham/openslide-rs/compare/2.0.2...2.1.0) (2024-06-04)
 
 
