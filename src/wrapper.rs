@@ -4,7 +4,10 @@ use std::path::Path;
 #[cfg(feature = "image")]
 use {
     crate::{
-        utils::{_bgra_to_rgb, _bgra_to_rgba_inplace, resize_rgb_image, resize_rgba_image},
+        utils::{
+            _bgra_to_rgb, _bgra_to_rgba_inplace, preserve_aspect_ratio, resize_rgb_image,
+            resize_rgba_image,
+        },
         Address,
     },
     image::{RgbImage, RgbaImage},
@@ -281,9 +284,9 @@ impl OpenSlide {
             level,
             address: Address { x: 0, y: 0 },
         };
-
         let image = self.read_image_rgba(&region)?;
-        let image = resize_rgba_image(image, size)?;
+        let size = preserve_aspect_ratio(&size, &dimension_level0);
+        let image = resize_rgba_image(image, &size)?;
 
         Ok(image)
     }
@@ -310,7 +313,8 @@ impl OpenSlide {
         };
 
         let image = self.read_image_rgb(&region)?;
-        let image = resize_rgb_image(image, size)?;
+        let size = preserve_aspect_ratio(&size, &dimension_level0);
+        let image = resize_rgb_image(image, &size)?;
 
         Ok(image)
     }

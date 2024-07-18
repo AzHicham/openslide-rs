@@ -3,8 +3,41 @@ use {
     crate::{errors::OpenSlideError, Result, Size},
     fast_image_resize as fr,
     image::{RgbImage, RgbaImage},
-    std::{iter::zip, num::NonZeroU32},
+    std::{cmp, iter::zip, num::NonZeroU32},
 };
+
+#[cfg(feature = "image")]
+pub fn preserve_aspect_ratio(size: &Size, dimension: &Size) -> Size {
+    // Code adapted from https://pillow.readthedocs.io/en/latest/_modules/PIL/Image.html#Image.thumbnail
+    fn round_aspect<F: FnMut(f32) -> f32>(number: f32, mut key: F) -> u32 {
+        cmp::max(
+            cmp::min_by_key(number.floor() as u32, number.ceil() as u32, |n| {
+                key(*n as f32).round() as u32
+            }),
+            1,
+        )
+    }
+    let w = size.w as f32;
+    let h = size.h as f32;
+    let aspect: f32 = dimension.w as f32 / dimension.h as f32;
+    if { w / h } >= aspect {
+        Size {
+            w: round_aspect(h * aspect, |n| (aspect - n / h).abs()),
+            h: h as u32,
+        }
+    } else {
+        Size {
+            w: w as u32,
+            h: round_aspect(w / aspect, |n| {
+                if n == 0. {
+                    0.
+                } else {
+                    (aspect - w / n).abs()
+                }
+            }),
+        }
+    }
+}
 
 #[cfg(feature = "image")]
 pub(crate) fn resize_rgb_image(image: RgbImage, new_size: &Size) -> Result<RgbImage> {
@@ -80,4 +113,46 @@ pub fn _bgra_to_rgb(image: &RgbaImage) -> RgbImage {
         rgb_pixel.0 = [r, g, b];
     }
     rgb_image
+}
+
+#[cfg(test)]
+#[cfg(feature = "image")]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_preserve_aspect_ratio() {
+        assert_eq!(
+            preserve_aspect_ratio(&Size { w: 100, h: 100 }, &Size { w: 50, h: 50 }),
+            Size { w: 100, h: 100 }
+        );
+        assert_eq!(
+            preserve_aspect_ratio(&Size { w: 100, h: 100 }, &Size { w: 25, h: 50 }),
+            Size { w: 50, h: 100 }
+        );
+        assert_eq!(
+            // Edge case
+            preserve_aspect_ratio(&Size { w: 1, h: 1 }, &Size { w: 25, h: 50 }),
+            Size { w: 1, h: 1 }
+        );
+        assert_eq!(
+            // Edge case
+            preserve_aspect_ratio(&Size { w: 100, h: 200 }, &Size { w: 1, h: 1 }),
+            Size { w: 100, h: 100 }
+        );
+        assert_eq!(
+            // Edge case
+            preserve_aspect_ratio(&Size { w: 0, h: 5 }, &Size { w: 1, h: 10 }),
+            Size { w: 0, h: 1 }
+        );
+        assert_eq!(
+            // Not round ratio
+            preserve_aspect_ratio(&Size { w: 33, h: 100 }, &Size { w: 12, h: 13 }),
+            Size { w: 33, h: 35 }
+        );
+        assert_eq!(
+            // Not round ratio
+            preserve_aspect_ratio(&Size { w: 33, h: 15 }, &Size { w: 12, h: 13 }),
+            Size { w: 13, h: 15 }
+        );
+    }
 }
