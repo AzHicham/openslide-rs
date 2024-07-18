@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - develop
-  pull_request:
+  pull_request_target:
     branches:
       - main
       - develop
+    paths:
+      - '**.rs'
 
 env:
   CARGO_TERM_COLOR: always
