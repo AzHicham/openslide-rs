@@ -20,7 +20,7 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-          os: [ "ubuntu-22.04", "macos-12" ]
+          os: [ "ubuntu-22.04", "macos-14" ]
           feature: [ "--no-default-features", "--features deepzoom", "--features openslide4" ]
 
     env:
