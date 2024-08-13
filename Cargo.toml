@@ -10,6 +10,7 @@ readme = "README.md"
 keywords = ["openslide", "histopathology", "microscopy"]
 categories = ["science"]
 license = "MIT/Apache-2.0"
+rust-version = "1.75.0"
 
 [features]
 default = ["deepzoom"]
@@ -21,10 +22,10 @@ openslide4 = []
 libc = "0.2"
 thiserror = "1.0"
 regex = "1.10"
-lazy_static = "1.4"
-openslide-sys = { version = "1.0.5" }
+lazy_static = "1.5"
+openslide-sys = { version = "1.0.6" }
 image = { version = "0.25", optional = true, default-features = false}
-fast_image_resize = { version = "3.0", optional = true}
+fast_image_resize = { version = "4.2", features = ["image"], optional = true}
 
 [dev-dependencies]
 rstest = "0.22"
