@@ -38,7 +38,7 @@ jobs:
         args: --workspace --verbose
     - name: Commit and push changes
       continue-on-error: true
-      uses: peter-evans/create-pull-request@v6
+      uses: peter-evans/create-pull-request@v7
       with:
         token: ${{ secrets.SCOPED_GITHUB_TOKEN }}
         commit-message: Run clippy on the code base
