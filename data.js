@@ -1,88 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1724312643491,
+  "lastUpdate": 1725866297640,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "id": "e6aaa3021c6658a0afeb211f8728ba48e0836bd0",
-          "message": "feat: add dicom properties",
-          "timestamp": "2024-05-28T13:31:24Z",
-          "url": "https://github.com/AzHicham/openslide-rs/pull/150/commits/e6aaa3021c6658a0afeb211f8728ba48e0836bd0"
-        },
-        "date": 1717500192343,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1151971,
-            "range": "± 9630",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_arc",
-            "value": 1155284,
-            "range": "± 14031",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_recreate_dz",
-            "value": 1161038,
-            "range": "± 161614",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 4594198,
-            "range": "± 66898",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_arc",
-            "value": 4584176,
-            "range": "± 45987",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_recreate_dz",
-            "value": 4593981,
-            "range": "± 27481",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1114857,
-            "range": "± 5559",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 4595265,
-            "range": "± 22693",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1063300,
-            "range": "± 5669",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 4361108,
-            "range": "± 23621",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2467,6 +2387,90 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 4401642,
             "range": "± 144284",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "d395e46a217f470423ee49ff8b0e3fcbf96f7fb6",
+          "message": "chore(deps): update peter-evans/create-pull-request action to v7 (#171)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>\r\nCo-authored-by: Hicham Azimani <hicham.azimani@owkin.com>",
+          "timestamp": "2024-09-09T09:15:52+02:00",
+          "tree_id": "8cb3ef4072f5167601444ca8e56cae68fa71cf3f",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/d395e46a217f470423ee49ff8b0e3fcbf96f7fb6"
+        },
+        "date": 1725866296501,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1150836,
+            "range": "± 7066",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1153751,
+            "range": "± 10291",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_recreate_dz",
+            "value": 1150639,
+            "range": "± 5414",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 4529936,
+            "range": "± 75809",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 4552736,
+            "range": "± 90628",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_recreate_dz",
+            "value": 4583449,
+            "range": "± 87795",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1116496,
+            "range": "± 11028",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 4607070,
+            "range": "± 52540",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1064629,
+            "range": "± 6295",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 4373278,
+            "range": "± 28708",
             "unit": "ns/iter"
           }
         ]
