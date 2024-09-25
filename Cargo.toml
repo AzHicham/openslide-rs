@@ -10,7 +10,7 @@ readme = "README.md"
 keywords = ["openslide", "histopathology", "microscopy"]
 categories = ["science"]
 license = "MIT/Apache-2.0"
-rust-version = "1.75.0"
+rust-version = "1.77.0"
 
 [features]
 default = ["deepzoom"]
