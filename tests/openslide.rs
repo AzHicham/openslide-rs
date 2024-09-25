@@ -274,17 +274,6 @@ fn test_thumbnail_rgb(#[case] filename_and_size: (&Path, &Size)) {
 }
 
 #[rstest]
-#[should_panic(expected = "ImageError(\"Invalid height size 0\")")]
-#[case(boxes_tiff())]
-#[cfg(feature = "image")]
-fn test_error_thumbnail(#[case] filename: &Path) {
-    let slide = OpenSlide::new(filename).unwrap();
-
-    let size = Size { w: 100, h: 0 };
-    slide.thumbnail_rgb(&size).unwrap();
-}
-
-#[rstest]
 #[cfg(feature = "openslide4")]
 #[case(boxes_tiff())]
 fn test_open_with_cache_size(

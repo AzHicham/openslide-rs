@@ -2,8 +2,9 @@
 use {
     crate::{errors::OpenSlideError, Result, Size},
     fast_image_resize as fr,
+    fast_image_resize::images::Image,
     image::{RgbImage, RgbaImage},
-    std::{cmp, iter::zip, num::NonZeroU32},
+    std::{cmp, iter::zip},
 };
 
 #[cfg(feature = "image")]
@@ -41,28 +42,23 @@ pub fn preserve_aspect_ratio(size: &Size, dimension: &Size) -> Size {
 
 #[cfg(feature = "image")]
 pub(crate) fn resize_rgb_image(image: RgbImage, new_size: &Size) -> Result<RgbImage> {
-    let src_image = fr::Image::from_vec_u8(
-        NonZeroU32::new(image.width())
-            .ok_or_else(|| OpenSlideError::ImageError("Invalid width size 0".to_string()))?,
-        NonZeroU32::new(image.height())
-            .ok_or_else(|| OpenSlideError::ImageError("Invalid height size 0".to_string()))?,
+    let src_image = Image::from_vec_u8(
+        image.width(),
+        image.height(),
         image.into_raw(),
         fr::PixelType::U8x3,
     )
     .map_err(|err| OpenSlideError::ImageError(err.to_string()))?;
 
-    let mut dst_image = fr::Image::new(
-        NonZeroU32::new(new_size.w)
-            .ok_or_else(|| OpenSlideError::ImageError("Invalid width size 0".to_string()))?,
-        NonZeroU32::new(new_size.h)
-            .ok_or_else(|| OpenSlideError::ImageError("Invalid height size 0".to_string()))?,
-        fr::PixelType::U8x3,
-    );
-    let mut resizer = fr::Resizer::new(fr::ResizeAlg::Convolution(fr::FilterType::Lanczos3));
+    let mut dst_image = Image::new(new_size.w, new_size.h, fr::PixelType::U8x3);
+    let mut resizer = fr::Resizer::new();
+    let option = fr::ResizeOptions {
+        algorithm: fr::ResizeAlg::Convolution(fr::FilterType::Lanczos3),
+        cropping: fr::SrcCropping::None,
+        mul_div_alpha: false,
+    };
 
-    resizer
-        .resize(&src_image.view(), &mut dst_image.view_mut())
-        .unwrap(); // safe because src_image & dst_image are both RgbImage
+    resizer.resize(&src_image, &mut dst_image, &option).unwrap(); // safe because src_image & dst_image are both RgbImage
 
     let image = RgbImage::from_vec(new_size.w, new_size.h, dst_image.into_vec()).unwrap(); // safe because dst_image buffer is big enough
 
@@ -71,26 +67,23 @@ pub(crate) fn resize_rgb_image(image: RgbImage, new_size: &Size) -> Result<RgbIm
 
 #[cfg(feature = "image")]
 pub(crate) fn resize_rgba_image(image: RgbaImage, new_size: &Size) -> Result<RgbaImage> {
-    let src_image = fr::Image::from_vec_u8(
-        NonZeroU32::new(image.width())
-            .ok_or_else(|| OpenSlideError::ImageError("Invalid width size 0".to_string()))?,
-        NonZeroU32::new(image.height())
-            .ok_or_else(|| OpenSlideError::ImageError("Invalid height size 0".to_string()))?,
+    let src_image = Image::from_vec_u8(
+        image.width(),
+        image.height(),
         image.into_raw(),
         fr::PixelType::U8x4,
     )
     .map_err(|err| OpenSlideError::ImageError(err.to_string()))?;
 
-    let mut dst_image = fr::Image::new(
-        NonZeroU32::new(new_size.w).unwrap(),
-        NonZeroU32::new(new_size.h).unwrap(),
-        fr::PixelType::U8x4,
-    );
-    let mut resizer = fr::Resizer::new(fr::ResizeAlg::Convolution(fr::FilterType::Lanczos3));
+    let mut dst_image = Image::new(new_size.w, new_size.h, fr::PixelType::U8x4);
+    let mut resizer = fr::Resizer::new();
+    let option = fr::ResizeOptions {
+        algorithm: fr::ResizeAlg::Convolution(fr::FilterType::Lanczos3),
+        cropping: fr::SrcCropping::None,
+        mul_div_alpha: false,
+    };
 
-    resizer
-        .resize(&src_image.view(), &mut dst_image.view_mut())
-        .unwrap(); // safe because src_image & dst_image are both RgbaImage
+    resizer.resize(&src_image, &mut dst_image, &option).unwrap(); // safe because src_image & dst_image are both RgbaImage
 
     let image = RgbaImage::from_vec(new_size.w, new_size.h, dst_image.into_vec()).unwrap(); // safe because dst_image buffer is big enough
 
