@@ -51,7 +51,7 @@ OpenSlide can read virtual slides in several formats:
 ## Requirements
 
 * Rust &ge; 1.56
-* OpenSlide build dependencies (required because of openslide-sys dependency)
+* OpenSlide build dependencies, required because of [openslide-sys](https://github.com/AzHicham/openslide-sys) dependency
 
 ## Installation
 
