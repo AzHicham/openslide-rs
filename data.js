@@ -1,92 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1729106996070,
+  "lastUpdate": 1729668119433,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "29139614+renovate[bot]@users.noreply.github.com",
-            "name": "renovate[bot]",
-            "username": "renovate[bot]"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "4aaba0655f67bdc36ae11a02b4846980d1d816ec",
-          "message": "chore(deps): update pre-commit hook renovatebot/pre-commit-hooks to v37.425.1 (#153)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
-          "timestamp": "2024-07-08T08:59:27+02:00",
-          "tree_id": "c2189f107da6097c5e13a9ff0171ecf002a80436",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/4aaba0655f67bdc36ae11a02b4846980d1d816ec"
-        },
-        "date": 1720422108506,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1150486,
-            "range": "± 9973",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_arc",
-            "value": 1150519,
-            "range": "± 7040",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_recreate_dz",
-            "value": 1151170,
-            "range": "± 7446",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 4582765,
-            "range": "± 87009",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_arc",
-            "value": 4586587,
-            "range": "± 154451",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_recreate_dz",
-            "value": 4587383,
-            "range": "± 99123",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1117118,
-            "range": "± 13193",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 4596119,
-            "range": "± 72027",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1063521,
-            "range": "± 3879",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 4375952,
-            "range": "± 40699",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2495,6 +2411,90 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 4361389,
             "range": "± 21518",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "51f8aa33cc81b940757b85be677f5b01796294af",
+          "message": "chore(deps): update pre-commit hook renovatebot/pre-commit-hooks to v38.130.0 (#181)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
+          "timestamp": "2024-10-23T09:19:58+02:00",
+          "tree_id": "42071604a027e2d87a8f965856eeaf4dcef0c96c",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/51f8aa33cc81b940757b85be677f5b01796294af"
+        },
+        "date": 1729668119119,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1151363,
+            "range": "± 6818",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1152770,
+            "range": "± 292630",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_recreate_dz",
+            "value": 1153702,
+            "range": "± 100872",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 4593153,
+            "range": "± 96146",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 4555563,
+            "range": "± 96015",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_recreate_dz",
+            "value": 4604323,
+            "range": "± 136357",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1117833,
+            "range": "± 7595",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 4620426,
+            "range": "± 88415",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1065210,
+            "range": "± 5699",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 4378552,
+            "range": "± 85049",
             "unit": "ns/iter"
           }
         ]
