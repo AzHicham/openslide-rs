@@ -1,92 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1729668119433,
+  "lastUpdate": 1729668141587,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "29139614+renovate[bot]@users.noreply.github.com",
-            "name": "renovate[bot]",
-            "username": "renovate[bot]"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "e5988518f212519a6b6cf87aa48ba866195bb0b9",
-          "message": "fix(deps): update rust crate lazy_static to v1.5.0 (#154)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
-          "timestamp": "2024-07-08T09:07:38+02:00",
-          "tree_id": "b67f082e206118be07b4d19d69d140d5510a07fc",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/e5988518f212519a6b6cf87aa48ba866195bb0b9"
-        },
-        "date": 1720422560364,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1149078,
-            "range": "± 4536",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_arc",
-            "value": 1147242,
-            "range": "± 71148",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_recreate_dz",
-            "value": 1110186,
-            "range": "± 72382",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 4530578,
-            "range": "± 308852",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_arc",
-            "value": 4495742,
-            "range": "± 323561",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_recreate_dz",
-            "value": 4535756,
-            "range": "± 277521",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1111704,
-            "range": "± 74860",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 4543354,
-            "range": "± 280661",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1021610,
-            "range": "± 69832",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 4238982,
-            "range": "± 272670",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2495,6 +2411,90 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 4378552,
             "range": "± 85049",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8c9e21114cf78ab29d67f16367c499dd38e94ace",
+          "message": "fix(deps): update cargo (#180)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
+          "timestamp": "2024-10-23T09:20:07+02:00",
+          "tree_id": "7435339fb4832b16a057dc0fec0dd63b721026e0",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/8c9e21114cf78ab29d67f16367c499dd38e94ace"
+        },
+        "date": 1729668141013,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1151560,
+            "range": "± 7136",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1151787,
+            "range": "± 7186",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_recreate_dz",
+            "value": 1151164,
+            "range": "± 6602",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 4592723,
+            "range": "± 61862",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 4599312,
+            "range": "± 119888",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_recreate_dz",
+            "value": 4616671,
+            "range": "± 70459",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1119346,
+            "range": "± 6346",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 4620446,
+            "range": "± 177036",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1071031,
+            "range": "± 8172",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 4423065,
+            "range": "± 151990",
             "unit": "ns/iter"
           }
         ]
