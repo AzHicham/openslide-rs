@@ -3,7 +3,7 @@
 
 ### Features
 
-* MSRV 1.77.0 ([2cf9417](https://github.com/AzHicham/openslide-rs/commit/2cf941703440d41799f56c05bc0496d8afeee96f))
+* MSRV 1.81.0 ([2cf9417](https://github.com/AzHicham/openslide-rs/commit/2cf941703440d41799f56c05bc0496d8afeee96f))
 * update fast image resize ([#167](https://github.com/AzHicham/openslide-rs/issues/167)) ([f8a8889](https://github.com/AzHicham/openslide-rs/commit/f8a8889df0696a81240c70b4878f7d20752e2460))
 
 
