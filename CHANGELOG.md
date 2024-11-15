@@ -1,3 +1,28 @@
+## [2.3.0](https://github.com/AzHicham/openslide-rs/compare/2.2.0...2.3.0) (2024-11-15)
+
+
+### Features
+
+* major update thiserror & fast_image_resize ([#191](https://github.com/AzHicham/openslide-rs/issues/191)) ([aa99af6](https://github.com/AzHicham/openslide-rs/commit/aa99af66a2940910cddca6eaad78ec46657a65f5))
+
+
+### Bug Fixes
+
+* **deps:** update cargo ([#180](https://github.com/AzHicham/openslide-rs/issues/180)) ([8c9e211](https://github.com/AzHicham/openslide-rs/commit/8c9e21114cf78ab29d67f16367c499dd38e94ace))
+* **deps:** update cargo ([#187](https://github.com/AzHicham/openslide-rs/issues/187)) ([ba41816](https://github.com/AzHicham/openslide-rs/commit/ba4181674ecba2ed2b34ccf0c3f1f7844fdbe3f3))
+* **deps:** update rust crate regex to v1.11.0 ([3c0eddd](https://github.com/AzHicham/openslide-rs/commit/3c0edddda8f22edf3ce9184620ac172c6249be55))
+
+
+### Miscellaneous Chores
+
+* **config:** migrate renovate config ([#182](https://github.com/AzHicham/openslide-rs/issues/182)) ([88bf547](https://github.com/AzHicham/openslide-rs/commit/88bf5477622b98370deb04610a9ed3898a027330))
+* **deps:** update pre-commit hook pre-commit/pre-commit to v4 ([#190](https://github.com/AzHicham/openslide-rs/issues/190)) ([646fa08](https://github.com/AzHicham/openslide-rs/commit/646fa0826e580ad6ee8237049b8255cd1d90401a))
+* **deps:** update pre-commit hook pre-commit/pre-commit-hooks to v5 ([#183](https://github.com/AzHicham/openslide-rs/issues/183)) ([c4263bc](https://github.com/AzHicham/openslide-rs/commit/c4263bc06dbd313756f6b6c76cf3ab5757143075))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v38.120.1 ([5a4cc4f](https://github.com/AzHicham/openslide-rs/commit/5a4cc4f8689cd99b277b6edc495bca0918b5f36c))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v38.130.0 ([#181](https://github.com/AzHicham/openslide-rs/issues/181)) ([51f8aa3](https://github.com/AzHicham/openslide-rs/commit/51f8aa33cc81b940757b85be677f5b01796294af))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v39 ([#184](https://github.com/AzHicham/openslide-rs/issues/184)) ([22a2c55](https://github.com/AzHicham/openslide-rs/commit/22a2c5575d7ad3901f802006aaf6bece92c1215d))
+* **deps:** update rust crate rstest to 0.23 ([83b8a18](https://github.com/AzHicham/openslide-rs/commit/83b8a1833439ad6887ab60741973aead1368fe39))
+
 ## [2.2.0](https://github.com/AzHicham/openslide-rs/compare/2.1.1...2.2.0) (2024-09-25)
 
 
