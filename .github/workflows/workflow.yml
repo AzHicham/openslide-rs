@@ -52,7 +52,7 @@ jobs:
       run: cargo test --release --workspace ${{ matrix.feature }}
 
   doc-rs:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@stable
@@ -67,7 +67,7 @@ jobs:
       run: cargo doc -v
 
   pre-commit:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - uses: actions-rs/toolchain@v1
