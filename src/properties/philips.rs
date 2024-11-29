@@ -17,6 +17,7 @@ pub const PHILIPS_PROPERTY_PIXEL_SPACING: &str = "philips.DICOM_PIXEL_SPACING";
 pub const PHILIPS_PROPERTY_PLANAR_CONFIGURATION: &str = "philips.DICOM_PLANAR_CONFIGURATION";
 pub const PHILIPS_PROPERTY_SAMPLES_PER_PIXELE: &str = "philips.DICOM_SAMPLES_PER_PIXEL";
 pub const PHILIPS_PROPERTY_SOFTWARE_VERSIONS: &str = "philips.DICOM_SOFTWARE_VERSIONS";
+pub const PHILIPS_PROPERTY_DEVICE_SERIAL_NUMBER: &str = "philips.DICOM_DEVICE_SERIAL_NUMBER";
 pub const PHILIPS_PROPERTY_IMAGE_COLUMNS: &str = "philips.PIM_DP_IMAGE_COLUMNS";
 pub const PHILIPS_PROPERTY_IMAGE_ROWS: &str = "philips.PIM_DP_IMAGE_ROWS";
 pub const PHILIPS_PROPERTY_IMAGE_TYPE: &str = "philips.PIM_DP_IMAGE_TYPE";
@@ -41,6 +42,7 @@ pub struct Philips {
     pub planar_configuration: Option<u32>,
     pub sample_per_pixel: Option<u32>,
     pub software_version: Option<String>,
+    pub device_serial_number: Option<String>,
     pub image_columns: Option<u32>,
     pub image_rows: Option<u32>,
     pub image_type: Option<String>,
@@ -78,6 +80,7 @@ impl Philips {
             PHILIPS_PROPERTY_PLANAR_CONFIGURATION => self.planar_configuration = value.parse().ok(),
             PHILIPS_PROPERTY_SAMPLES_PER_PIXELE => self.sample_per_pixel = value.parse().ok(),
             PHILIPS_PROPERTY_SOFTWARE_VERSIONS => self.software_version = value.parse().ok(),
+            PHILIPS_PROPERTY_DEVICE_SERIAL_NUMBER => self.device_serial_number = value.parse().ok(),
             PHILIPS_PROPERTY_IMAGE_COLUMNS => self.image_columns = value.parse().ok(),
             PHILIPS_PROPERTY_IMAGE_ROWS => self.image_rows = value.parse().ok(),
             PHILIPS_PROPERTY_IMAGE_TYPE => self.image_type = value.parse().ok(),
