@@ -1,92 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1732564357381,
+  "lastUpdate": 1732879683475,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hicham.azimani1@gmail.com",
-            "name": "Hicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "email": "hicham.azimani1@gmail.com",
-            "name": "Hicham",
-            "username": "AzHicham"
-          },
-          "distinct": true,
-          "id": "3aabafed01ac10c93139d34e773eda995bf6ce09",
-          "message": "ci: fix benchmark workflow",
-          "timestamp": "2024-07-18T14:02:40+02:00",
-          "tree_id": "3b1441a34f5468bc92f41add41ac14ca25be1095",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/3aabafed01ac10c93139d34e773eda995bf6ce09"
-        },
-        "date": 1721304298045,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1160210,
-            "range": "± 13753",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_arc",
-            "value": 1156325,
-            "range": "± 17459",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_recreate_dz",
-            "value": 1155900,
-            "range": "± 6734",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 4597294,
-            "range": "± 97112",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_arc",
-            "value": 4586390,
-            "range": "± 78453",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_recreate_dz",
-            "value": 4595553,
-            "range": "± 123140",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1117878,
-            "range": "± 6218",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 4626891,
-            "range": "± 101275",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1064103,
-            "range": "± 5535",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 4373740,
-            "range": "± 29645",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2519,6 +2435,90 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 4383324,
             "range": "± 72266",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hicham.azimani@owkin.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "cb76db2de37da29e4bb0deeda4dfe63f399d6ae9",
+          "message": "fix: return SN in properties for philips WSI (#194)",
+          "timestamp": "2024-11-29T12:26:10+01:00",
+          "tree_id": "75b6102af9aed0c846c06e9b4ac16552b66f313e",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/cb76db2de37da29e4bb0deeda4dfe63f399d6ae9"
+        },
+        "date": 1732879683059,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1153277,
+            "range": "± 149723",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1158307,
+            "range": "± 405756",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_recreate_dz",
+            "value": 1152876,
+            "range": "± 27335",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 4588750,
+            "range": "± 95537",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 4586240,
+            "range": "± 78639",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_recreate_dz",
+            "value": 4589614,
+            "range": "± 99730",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1114572,
+            "range": "± 5490",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 4597919,
+            "range": "± 70803",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1063363,
+            "range": "± 4876",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 4378365,
+            "range": "± 85767",
             "unit": "ns/iter"
           }
         ]
