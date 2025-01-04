@@ -5,7 +5,7 @@ use regex::Regex;
 
 lazy_static! {
     static ref REGEX_LEVEL_PROPERTIES: Regex =
-        Regex::new(r"level\[([0-9]+)]\.([a-zA-Z]+)").unwrap();
+        Regex::new(r"level\[([0-9]+)]\.([a-zA-Z]+(?:-[a-zA-Z]+)?)").unwrap();
 }
 
 pub const OPENSLIDE_PROPERTY_NAME_COMMENT: &str = "openslide.comment";
