@@ -135,6 +135,42 @@ fn test_tiff_properties(#[case] filename: &Path) {
     );
     assert_eq!(properties.openslide_properties.levels[3].height, Some(31));
     assert_eq!(properties.openslide_properties.levels[3].width, Some(37));
+
+    assert_eq!(
+        properties.openslide_properties.levels[0].tile_height,
+        Some(64)
+    );
+    assert_eq!(
+        properties.openslide_properties.levels[0].tile_height,
+        Some(64)
+    );
+
+    assert_eq!(
+        properties.openslide_properties.levels[1].tile_height,
+        Some(64)
+    );
+    assert_eq!(
+        properties.openslide_properties.levels[1].tile_height,
+        Some(64)
+    );
+
+    assert_eq!(
+        properties.openslide_properties.levels[2].tile_height,
+        Some(64)
+    );
+    assert_eq!(
+        properties.openslide_properties.levels[2].tile_height,
+        Some(64)
+    );
+
+    assert_eq!(
+        properties.openslide_properties.levels[3].tile_height,
+        Some(64)
+    );
+    assert_eq!(
+        properties.openslide_properties.levels[3].tile_height,
+        Some(64)
+    );
 }
 
 #[rstest]
