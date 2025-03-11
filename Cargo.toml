@@ -28,7 +28,7 @@ image = { version = "0.25", optional = true, default-features = false}
 fast_image_resize = { version = "5", features = ["image"], optional = true}
 
 [dev-dependencies]
-rstest = "0.24"
+rstest = "0.25"
 assert_approx_eq = "1"
 bencher = "0.1"
 version-compare = "0.2"
