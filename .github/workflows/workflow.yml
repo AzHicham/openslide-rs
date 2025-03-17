@@ -77,7 +77,7 @@ jobs:
         components: rustfmt, clippy
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.13'
     - name: Install pre-commit
       run: pip install pre-commit
     - name: Pre-commit
