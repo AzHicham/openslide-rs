@@ -261,7 +261,7 @@ pub fn read_associated_image(
 }
 
 pub fn get_error(osr: *mut sys::openslide_t) -> Result<()> {
-    let value = unsafe {
+    unsafe {
         let c_value = sys::openslide_get_error(osr);
         if c_value.is_null() {
             Ok(())
@@ -269,8 +269,7 @@ pub fn get_error(osr: *mut sys::openslide_t) -> Result<()> {
             let error = ffi::CStr::from_ptr(c_value).to_string_lossy().into_owned();
             Err(OpenSlideError::CoreError(error))
         }
-    };
-    value
+    }
 }
 
 #[cfg(feature = "openslide4")]
