@@ -19,7 +19,6 @@ image = ["dep:image", "dep:fast_image_resize"]
 openslide4 = []
 
 [dependencies]
-libc = "0.2"
 thiserror = "2"
 regex = "1"
 lazy_static = "1"
@@ -28,7 +27,7 @@ image = { version = "0.25", optional = true, default-features = false}
 fast_image_resize = { version = "5", features = ["image"], optional = true}
 
 [dev-dependencies]
-rstest = "0.25"
+rstest = "0.26"
 assert_approx_eq = "1"
 bencher = "0.1"
 version-compare = "0.2"
