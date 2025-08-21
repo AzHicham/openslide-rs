@@ -1,6 +1,6 @@
 #[cfg(feature = "image")]
 use {
-    crate::{errors::OpenSlideError, Result, Size},
+    crate::{Result, Size, errors::OpenSlideError},
     fast_image_resize as fr,
     fast_image_resize::images::Image,
     image::{RgbImage, RgbaImage},
@@ -30,11 +30,7 @@ pub fn preserve_aspect_ratio(size: &Size, dimension: &Size) -> Size {
         Size {
             w: w as u32,
             h: round_aspect(w / aspect, |n| {
-                if n == 0. {
-                    0.
-                } else {
-                    (aspect - w / n).abs()
-                }
+                if n == 0. { 0. } else { (aspect - w / n).abs() }
             }),
         }
     }

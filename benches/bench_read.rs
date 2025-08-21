@@ -1,4 +1,4 @@
-use bencher::{benchmark_group, benchmark_main, Bencher};
+use bencher::{Bencher, benchmark_group, benchmark_main};
 use openslide_rs::{Address, DeepZoomGenerator, OpenSlide, Region, Size};
 use std::{path::Path, sync::Arc};
 

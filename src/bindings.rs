@@ -3,7 +3,7 @@
 //! `https://openslide.org/api/openslide_8h.html`.
 //!
 
-use crate::{errors::OpenSlideError, Result};
+use crate::{Result, errors::OpenSlideError};
 
 use std::{ffi, ops::Deref};
 

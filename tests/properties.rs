@@ -1,5 +1,5 @@
 use fixture::{boxes_tiff, default, hamamatsu, leica, mirax, trestle};
-use openslide_rs::{properties::VendorProperties, OpenSlide};
+use openslide_rs::{OpenSlide, properties::VendorProperties};
 use rstest::rstest;
 use std::path::Path;
 use version_compare::Version;
