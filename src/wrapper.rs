@@ -1,14 +1,14 @@
-use crate::{bindings, errors::OpenSlideError, OpenSlide, Properties, Region, Result, Size};
+use crate::{OpenSlide, Properties, Region, Result, Size, bindings, errors::OpenSlideError};
 use std::path::Path;
 
 #[cfg(feature = "image")]
 use {
     crate::{
+        Address,
         utils::{
             _bgra_to_rgb, _bgra_to_rgba_inplace, preserve_aspect_ratio, resize_rgb_image,
             resize_rgba_image,
         },
-        Address,
     },
     image::{RgbImage, RgbaImage},
 };

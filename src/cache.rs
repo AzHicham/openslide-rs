@@ -1,4 +1,4 @@
-use crate::{bindings, Result};
+use crate::{Result, bindings};
 
 #[derive(Debug)]
 pub(crate) struct Cache(pub(crate) bindings::CacheWrapper);

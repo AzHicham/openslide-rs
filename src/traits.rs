@@ -1,4 +1,4 @@
-use crate::{deepzoom::Bounds, Region, Result, Size};
+use crate::{Region, Result, Size, deepzoom::Bounds};
 #[cfg(feature = "image")]
 use image::{RgbImage, RgbaImage};
 

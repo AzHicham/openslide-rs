@@ -3,10 +3,10 @@
 //! This is a simple translation of python `DeepZoomGenerator` implementation
 
 use crate::{
+    Address, DeepZoomGenerator, Region, Result, Size,
     errors::OpenSlideError,
     traits::Slide,
     utils::{resize_rgb_image, resize_rgba_image},
-    Address, DeepZoomGenerator, Region, Result, Size,
 };
 use image::{RgbImage, RgbaImage};
 use std::borrow::Borrow;
