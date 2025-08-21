@@ -3,14 +3,13 @@
 install-deps-macos-openslide3:
 	brew update
 	curl https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e41a54ec4d05000c1b95e515c85adb6f8f35af/Formula/o/openslide.rb > openslide.rb
-	brew install --overwrite python@3.12
-	HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install --overwrite --formula openslide.rb
+	brew tap-new AzHicham/openslide
+	cp openslide.rb /opt/homebrew/Library/Taps/azhicham/homebrew-openslide/Formula/
+	HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install AzHicham/openslide/openslide
 
 install-deps-macos-openslide4:
 	brew update
-	curl https://raw.githubusercontent.com/Homebrew/homebrew-core/f92e0a24754ed265ff7a032b89b336dd612e5559/Formula/o/openslide.rb > openslide.rb
-	brew install --overwrite python@3.12
-	HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install --overwrite --formula openslide.rb
+	brew install openslide
 
 install-deps-ubuntu-openslide3:
 	sudo apt-get update
