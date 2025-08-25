@@ -27,7 +27,7 @@ jobs:
       INSTALL_DEPS_CMD: install-deps-${{ contains(matrix.os, 'ubuntu') && 'ubuntu' || 'macos' }}-${{ contains(matrix.feature, 'openslide4') && 'openslide4' || 'openslide3' }}
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: ${{ env.RUST_VERSION }}
@@ -54,7 +54,7 @@ jobs:
   doc-rs:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: ${{ env.RUST_VERSION }}
@@ -69,7 +69,7 @@ jobs:
   pre-commit:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: ${{ env.RUST_VERSION }}
