@@ -46,7 +46,7 @@ features = []
 optional = true
 
 [dependencies.fast_image_resize]
-version = "5"
+version = "6"
 default-features = false
 features = ["image"]
 optional = true
