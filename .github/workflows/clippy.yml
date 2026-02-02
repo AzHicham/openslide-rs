@@ -39,7 +39,7 @@ jobs:
     - name: Commit and push changes
       id: cpr
       continue-on-error: true
-      uses: peter-evans/create-pull-request@v7
+      uses: peter-evans/create-pull-request@v8
       with:
         token: ${{ secrets.SCOPED_GITHUB_TOKEN }}
         commit-message: Run clippy on the code base
