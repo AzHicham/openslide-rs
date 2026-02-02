@@ -23,7 +23,7 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
       - name: Cache sample slide
         id: cache-slide
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: tests/assets/
           key: slides-test
