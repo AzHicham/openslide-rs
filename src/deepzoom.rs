@@ -129,6 +129,10 @@ impl<S: Slide, B: Borrow<S>> DeepZoomGenerator<S, B> {
         })
     }
 
+    pub fn slide_zoom_levels(&self) -> &[u32] {
+        self.slide_from_dz_level.iter().collect()
+    }
+
     pub fn level_count(&self) -> usize {
         self.level_count
     }
