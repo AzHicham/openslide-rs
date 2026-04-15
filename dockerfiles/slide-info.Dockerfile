@@ -24,7 +24,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     clang \
     build-essential \
     libopenslide-dev && \
-    curl -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.87.0 --profile minimal
+    curl -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.88.0 --profile minimal
 
 
 ##
