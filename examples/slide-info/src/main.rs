@@ -25,7 +25,9 @@ fn init_logger(verbose: u8) {
     };
 
     let env = Env::default().default_filter_or(default_level);
-    env_logger::Builder::from_env(env).format_timestamp_secs().init();
+    env_logger::Builder::from_env(env)
+        .format_timestamp_secs()
+        .init();
 }
 
 fn run(cli: &Cli) -> Result<(), Box<dyn Error>> {
