@@ -80,6 +80,11 @@ apt-get update
 apt-get install -y --no-install-recommends libopenslide-dev
 ```
 
+## Docker
+
+Container build and usage instructions for the `slide-info` CLI are available in [`dockerfiles/README.md`](dockerfiles/README.md).
+Use Docker Buildx bake to build the image and run the binary against mounted slide files.
+
 ## More Information
 
 - [API documentation](https://docs.rs/openslide_rs/latest/openslide/)
