@@ -1,0 +1,9 @@
+.git
+.github
+.cursor
+target
+**/target
+**/.DS_Store
+**/*.log
+tests
+benches
