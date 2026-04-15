@@ -80,6 +80,86 @@ apt-get update
 apt-get install -y --no-install-recommends libopenslide-dev
 ```
 
+## Docker 
+
+For containerized deployments, see the Dockerfile example below. It illustrates how to package a Rust service that uses openslide-rs.
+
+```sh
+# Stage 1: Build the Rust service
+FROM rust:1.82 as builder
+
+# Install build dependencies, including GTK and OpenSlide dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libssl-dev \
+    pkg-config \
+    cmake \
+    curl \
+    libclang-dev \
+    libglib2.0-dev \
+    libxml2-dev \
+    zlib1g-dev \
+    libgtk-3-dev \
+    libsoup2.4-dev \
+    libjavascriptcoregtk-4.0-dev \
+    libwebkit2gtk-4.0-dev \
+    libgdk-pixbuf2.0-dev \  
+    libpango1.0-dev \    
+    libcairo2-dev \       
+    libx11-dev \          
+    libxkbcommon-dev \  
+    libwayland-dev
+
+# Set PKG_CONFIG_PATH for GTK and other libraries
+ENV PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH"
+
+# Set the working directory inside the container
+WORKDIR /usr/src/app
+
+# Copy the entire source code into the container
+COPY . .
+
+# Install OpenSlide via Make command 
+RUN make install-all-deps-linux
+
+# Ensure pkg-config is set up for GTK and related libraries
+RUN pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0
+
+# Build dependencies (this is the caching Docker layer)
+#RUN cargo chef cook --release --recipe-path recipe.json
+# Build the Rust project
+RUN cargo build --release
+
+# Run all tests to confirm nothing was broken
+RUN cargo test
+
+# Stage 2: Create a smaller final image
+FROM debian:bookworm-slim
+
+# # Install runtime dependencies, including GTK and WebKit2GTK runtime libraries
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    libjpeg62-turbo \
+    libglib2.0-0 \
+    libgtk-3-0 \
+    libsoup2.4-1 \
+    libwebkit2gtk-4.0 \
+    libgdk-pixbuf2.0 \  
+    libpango-1.0-0 \    
+    libcairo2 \         
+    libx11-6 \          
+    libssl-dev \
+    libopenslide-dev
+
+# Set the working directory inside the container
+WORKDIR /usr/local/bin
+
+# Copy the compiled binary from the builder stage
+COPY --from=builder /usr/src/app/target/release/your_service_name .
+
+CMD ["./your_service_name"]
+```
+
 ## More Information
 
 - [API documentation](https://docs.rs/openslide_rs/latest/openslide/)
