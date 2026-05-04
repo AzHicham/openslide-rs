@@ -5,7 +5,7 @@
 ## - Uses Ubuntu repositories
 ## - Installs OpenSlide development package
 ##
-FROM ubuntu:24.04 AS dev
+FROM ubuntu:26.04 AS dev
 
 WORKDIR /workspace
 
@@ -50,7 +50,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry,sharing=locked \
 ## Production image:
 ## - Keep only the final binary + openslide library
 ##-
-FROM ubuntu:24.04 AS production
+FROM ubuntu:26.04 AS production
 
 WORKDIR /opt/openslide/
 
