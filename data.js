@@ -1,92 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1776259035067,
+  "lastUpdate": 1780438944391,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "29139614+renovate[bot]@users.noreply.github.com",
-            "name": "renovate[bot]",
-            "username": "renovate[bot]"
-          },
-          "committer": {
-            "email": "noreply@github.com",
-            "name": "GitHub",
-            "username": "web-flow"
-          },
-          "distinct": true,
-          "id": "4e8d20e5f777e2318828af5a3ab97dbb2db74b18",
-          "message": "chore(deps): update pre-commit hook renovatebot/pre-commit-hooks to v40.21.1 (#210)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
-          "timestamp": "2025-05-21T10:14:02+02:00",
-          "tree_id": "668c9f59e232df2650e052ecf1156bf419b2c675",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/4e8d20e5f777e2318828af5a3ab97dbb2db74b18"
-        },
-        "date": 1747815373735,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1155642,
-            "range": "± 9084",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_arc",
-            "value": 1155873,
-            "range": "± 5367",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_recreate_dz",
-            "value": 1157052,
-            "range": "± 7025",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 4619463,
-            "range": "± 96519",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_arc",
-            "value": 4627226,
-            "range": "± 116283",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_recreate_dz",
-            "value": 4620856,
-            "range": "± 99077",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1121135,
-            "range": "± 5301",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 4622776,
-            "range": "± 82487",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1068158,
-            "range": "± 7288",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 4396462,
-            "range": "± 42982",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2519,6 +2435,90 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 4384497,
             "range": "± 45763",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "hicham.azimani@wearewaiv.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "distinct": true,
+          "id": "1a818e9119dd1b10827c58a4fa510559d7eafac5",
+          "message": "chore(deps): update pre-commit",
+          "timestamp": "2026-06-02T23:19:33+01:00",
+          "tree_id": "f73ce2dc4edcaa1cf989746fdbc268ddde5e0e50",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/1a818e9119dd1b10827c58a4fa510559d7eafac5"
+        },
+        "date": 1780438943364,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1161629,
+            "range": "± 11363",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1161329,
+            "range": "± 13889",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_recreate_dz",
+            "value": 1162771,
+            "range": "± 6703",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 4643228,
+            "range": "± 92325",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 4646476,
+            "range": "± 115428",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_recreate_dz",
+            "value": 4642547,
+            "range": "± 100632",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1122498,
+            "range": "± 18872",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 4662279,
+            "range": "± 80363",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1070536,
+            "range": "± 7049",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 4421057,
+            "range": "± 45782",
             "unit": "ns/iter"
           }
         ]
