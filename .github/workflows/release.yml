@@ -35,7 +35,7 @@ jobs:
           targets: semantic-release-cargo/semantic-release-cargo@v2.2.30
 
       - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@v6.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.SCOPED_GITHUB_TOKEN }}
         with:
