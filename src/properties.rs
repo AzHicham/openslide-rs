@@ -5,6 +5,8 @@ pub mod aperio;
 pub mod dicom;
 pub mod hamamatsu;
 pub mod leica;
+mod macros;
+pub(crate) use macros::vendor_properties;
 pub mod mirax;
 pub mod openslide;
 pub mod philips;
