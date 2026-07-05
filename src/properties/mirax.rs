@@ -4,6 +4,7 @@
 use crate::properties::vendor_properties;
 
 vendor_properties! {
+    /// 3DHistech Mirax (`.mrxs`) vendor-specific properties.
     pub struct Mirax {
         adapter_size: u32 => "mirax.GENERAL.ADAPTER_SIZE",
         camera_type: String => "mirax.GENERAL.CAMERA_TYPE",

@@ -4,6 +4,7 @@
 use crate::properties::vendor_properties;
 
 vendor_properties! {
+    /// Leica (`.scn`) vendor-specific properties.
     pub struct Leica {
         aperture: f32 => "leica.aperture",
         barcode: String => "leica.barcode",

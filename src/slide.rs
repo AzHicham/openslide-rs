@@ -33,6 +33,7 @@ use crate::cache::Cache;
 #[derive(Debug)]
 pub struct OpenSlide {
     osr: bindings::OpenSlideWrapper,
+    /// Openslide and vendor-specific properties found in the slide.
     pub properties: Properties,
 }
 
@@ -92,6 +93,8 @@ impl OpenSlide {
         })
     }
 
+    /// Opens the slide at `path`, like [`OpenSlide::new`], and installs a tile cache of
+    /// `capacity` bytes so repeated reads of the same region avoid redecoding it.
     #[cfg(feature = "openslide4")]
     pub fn new_with_cache<T: AsRef<Path>>(path: T, capacity: usize) -> Result<OpenSlide> {
         let osr = OpenSlide::new(path)?;
@@ -115,6 +118,7 @@ impl OpenSlide {
         bindings::detect_vendor(&filename)
     }
 
+    /// Get the openslide and vendor-specific properties found in the slide.
     #[must_use]
     pub fn properties(&self) -> &Properties {
         &self.properties
@@ -339,11 +343,16 @@ impl OpenSlide {
         Ok((region, preserve_aspect_ratio(size, &dimension_level0)))
     }
 
+    /// Get the ICC color profile of the whole slide image, if it has one.
     #[cfg(feature = "openslide4")]
     pub fn icc_profile(&self) -> Result<Vec<u8>> {
         bindings::read_icc_profile(*self.osr)
     }
 
+    /// Get the ICC color profile of an associated image, if it has one.
+    ///
+    /// Args:
+    ///     name: name of the associated image we want the ICC profile of
     #[cfg(feature = "openslide4")]
     pub fn associated_image_icc_profile(&self, name: &str) -> Result<Vec<u8>> {
         bindings::read_associated_image_icc_profile(*self.osr, name)
