@@ -52,11 +52,12 @@ pub struct Philips {
 }
 
 impl Philips {
-    pub(crate) fn new(property_iter: impl Iterator<Item = (String, String)>) -> Self {
+    pub(crate) fn new(properties: &[(String, String)]) -> Self {
         let mut philips_property = Philips::default();
-        property_iter
+        properties
+            .iter()
             .filter(|(name, _)| name.starts_with("philips."))
-            .for_each(|(name, value)| philips_property.parse_property_name(&name, &value));
+            .for_each(|(name, value)| philips_property.parse_property_name(name, value));
         philips_property
     }
 
