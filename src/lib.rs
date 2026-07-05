@@ -1,3 +1,13 @@
+//! Safe Rust bindings for the [`OpenSlide`](https://openslide.org) C library, for
+//! reading whole-slide images (WSI) used in digital pathology.
+//!
+//! The main entry point is [`OpenSlide`], which opens a slide file and exposes its
+//! levels, regions, associated images, and vendor-specific [`properties`]. With the
+//! `deepzoom` feature (enabled by default), [`DeepZoomGenerator`] generates Deep Zoom
+//! tiles from a slide.
+
+#![warn(missing_docs)]
+
 mod bindings;
 #[cfg(feature = "openslide4")]
 mod cache;

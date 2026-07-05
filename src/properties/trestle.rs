@@ -4,6 +4,7 @@
 use crate::properties::vendor_properties;
 
 vendor_properties! {
+    /// Trestle (`.tif`) vendor-specific properties.
     pub struct Trestle {
         background_color: String => "trestle.Background Color",
         jpeg_quality: u32 => "trestle.JPEG Quality",
