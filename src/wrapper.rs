@@ -44,13 +44,16 @@ impl OpenSlide {
 
         let property_names = bindings::get_property_names(osr)?;
 
-        let property_iter = property_names.into_iter().filter_map(|name| {
-            bindings::get_property_value(osr, &name)
-                .map(|value| (name, value))
-                .ok()
-        });
+        let property_pairs: Vec<(String, String)> = property_names
+            .into_iter()
+            .filter_map(|name| {
+                bindings::get_property_value(osr, &name)
+                    .map(|value| (name, value))
+                    .ok()
+            })
+            .collect();
 
-        let properties = Properties::new(property_iter);
+        let properties = Properties::new(&property_pairs);
 
         Ok(OpenSlide {
             osr: bindings::OpenSlideWrapper(osr),
@@ -328,44 +331,17 @@ impl OpenSlide {
     pub fn associated_image_icc_profile(&self, name: &str) -> Result<Vec<u8>> {
         bindings::read_associated_image_icc_profile(*self.osr, name)
     }
-}
 
-#[cfg(feature = "deepzoom")]
-use {crate::deepzoom::Bounds, crate::traits::Slide};
-
-#[cfg(feature = "deepzoom")]
-impl Slide for OpenSlide {
-    fn get_bounds(&self) -> Bounds {
+    /// Get properties of the whole slide image through Properties struct.
+    #[cfg(feature = "deepzoom")]
+    #[must_use]
+    pub fn get_bounds(&self) -> crate::deepzoom::Bounds {
         let properties = &self.properties().openslide_properties;
-        Bounds {
+        crate::deepzoom::Bounds {
             x: properties.bounds_x,
             y: properties.bounds_y,
             width: properties.bounds_width,
             height: properties.bounds_height,
         }
-    }
-
-    fn get_level_count(&self) -> Result<u32> {
-        self.get_level_count()
-    }
-
-    fn get_level_dimensions(&self, level: u32) -> Result<Size> {
-        self.get_level_dimensions(level)
-    }
-
-    fn get_level_downsample(&self, level: u32) -> Result<f64> {
-        self.get_level_downsample(level)
-    }
-
-    fn get_best_level_for_downsample(&self, downsample: f64) -> Result<u32> {
-        self.get_best_level_for_downsample(downsample)
-    }
-
-    fn read_image_rgba(&self, region: &Region) -> Result<RgbaImage> {
-        self.read_image_rgba(region)
-    }
-
-    fn read_image_rgb(&self, region: &Region) -> Result<RgbImage> {
-        self.read_image_rgb(region)
     }
 }

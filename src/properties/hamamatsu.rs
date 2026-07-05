@@ -49,11 +49,12 @@ pub struct Hamamatsu {
 }
 
 impl Hamamatsu {
-    pub(crate) fn new(property_iter: impl Iterator<Item = (String, String)>) -> Self {
+    pub(crate) fn new(properties: &[(String, String)]) -> Self {
         let mut hamamatsu_property = Hamamatsu::default();
-        property_iter
+        properties
+            .iter()
             .filter(|(name, _)| name.starts_with("hamamatsu."))
-            .for_each(|(name, value)| hamamatsu_property.parse_property_name(&name, &value));
+            .for_each(|(name, value)| hamamatsu_property.parse_property_name(name, value));
         hamamatsu_property
     }
 

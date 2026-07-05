@@ -61,11 +61,12 @@ pub struct Aperio {
 }
 
 impl Aperio {
-    pub(crate) fn new(property_iter: impl Iterator<Item = (String, String)>) -> Self {
+    pub(crate) fn new(properties: &[(String, String)]) -> Self {
         let mut aperio_property = Aperio::default();
-        property_iter
+        properties
+            .iter()
             .filter(|(name, _)| name.starts_with("aperio."))
-            .for_each(|(name, value)| aperio_property.parse_property_name(&name, &value));
+            .for_each(|(name, value)| aperio_property.parse_property_name(name, value));
         aperio_property
     }
 
