@@ -40,13 +40,55 @@ impl Deref for CacheWrapper {
 #[cfg(feature = "openslide4")]
 unsafe impl Send for CacheWrapper {}
 
+/// Collects a NULL-terminated `char**` from the C API into owned strings.
+///
+/// # Safety
+/// `ptr` must point to a NULL-terminated array of valid C string pointers.
+unsafe fn collect_string_array(ptr: *const *const ffi::c_char) -> Vec<String> {
+    let mut len = 0;
+    while !unsafe { *ptr.add(len) }.is_null() {
+        len += 1;
+    }
+    unsafe { std::slice::from_raw_parts(ptr, len) }
+        .iter()
+        .map(|&p| unsafe { ffi::CStr::from_ptr(p) })
+        .filter_map(|c_str| c_str.to_str().ok())
+        .map(str::to_owned)
+        .collect()
+}
+
+/// Allocates a `size`-byte buffer, lets `fill` write into it, then finalizes it as a `Vec<u8>`.
+///
+/// `fill` must fully initialize all `size` bytes pointed to by the pointer it receives.
+fn read_into_buffer<T>(
+    osr: *mut sys::openslide_t,
+    size: usize,
+    fill: impl FnOnce(*mut T),
+) -> Result<Vec<u8>> {
+    let mut buffer: Vec<u8> = Vec::with_capacity(size);
+    fill(buffer.as_mut_ptr().cast::<T>());
+    get_error(osr)?;
+    unsafe {
+        buffer.set_len(size);
+    }
+    Ok(buffer)
+}
+
+/// Fetches the slide's level count, for use as diagnostic context in an error.
+/// Best-effort: `None` if the count itself can't be retrieved.
+fn level_count_hint(osr: *mut sys::openslide_t) -> Option<u32> {
+    get_level_count(osr)
+        .ok()
+        .and_then(|n| u32::try_from(n).ok())
+}
+
 pub fn get_version() -> Result<String> {
     let version = unsafe { sys::openslide_get_version() };
     if !version.is_null() {
         let vendor = unsafe { ffi::CStr::from_ptr(version).to_string_lossy().into_owned() };
         Ok(vendor)
     } else {
-        Err(OpenSlideError::CoreError("Cannot get version".to_string()))
+        Err(OpenSlideError::InternalError("Cannot get version".into()))
     }
 }
 
@@ -58,7 +100,7 @@ pub fn detect_vendor(filename: &str) -> Result<String> {
             let vendor = ffi::CStr::from_ptr(c_vendor).to_string_lossy().into_owned();
             Ok(vendor)
         } else {
-            Err(OpenSlideError::UnsupportedFile(filename.to_string()))
+            Err(OpenSlideError::UnsupportedFile(filename.to_string().into()))
         }
     }
 }
@@ -70,7 +112,7 @@ pub fn open(filename: &str) -> Result<*mut sys::openslide_t> {
         get_error(slide)?;
         Ok(slide)
     } else {
-        Err(OpenSlideError::UnsupportedFile(filename.to_string()))
+        Err(OpenSlideError::UnsupportedFile(filename.to_string().into()))
     }
 }
 
@@ -84,7 +126,7 @@ pub fn get_level_count(osr: *mut sys::openslide_t) -> Result<i32> {
     let num_levels = unsafe { sys::openslide_get_level_count(osr) };
     if num_levels == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::CoreError(
+        return Err(OpenSlideError::LibraryError(
             "Cannot get level count".to_string(),
         ));
     }
@@ -99,7 +141,10 @@ pub fn get_level_dimensions(osr: *mut sys::openslide_t, level: i32) -> Result<(i
     }
     if width == -1 || height == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::CoreError(format!("Invalid level {level}")));
+        return Err(OpenSlideError::InvalidLevel {
+            level: level as u32,
+            level_count: level_count_hint(osr),
+        });
     }
     Ok((width, height))
 }
@@ -108,9 +153,10 @@ pub fn get_level_downsample(osr: *mut sys::openslide_t, level: i32) -> Result<f6
     let downsampling_factor = unsafe { sys::openslide_get_level_downsample(osr, level) };
     if downsampling_factor == -1.0 {
         get_error(osr)?;
-        return Err(OpenSlideError::CoreError(format!(
-            "Cannot compute downsample for level {level}"
-        )));
+        return Err(OpenSlideError::InvalidLevel {
+            level: level as u32,
+            level_count: level_count_hint(osr),
+        });
     }
     Ok(downsampling_factor)
 }
@@ -119,7 +165,7 @@ pub fn get_best_level_for_downsample(osr: *mut sys::openslide_t, downsample: f64
     let level = unsafe { sys::openslide_get_best_level_for_downsample(osr, downsample) };
     if level == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::CoreError(format!(
+        return Err(OpenSlideError::LibraryError(format!(
             "Cannot compute level for downsample {downsample}"
         )));
     }
@@ -135,43 +181,20 @@ pub fn read_region(
     h: i64,
 ) -> Result<Vec<u8>> {
     let size = (h * w * 4) as usize;
-    let mut buffer: Vec<u8> = Vec::with_capacity(size);
-    let p_buffer = buffer.as_mut_ptr();
-    unsafe {
-        let p_buffer = p_buffer.cast::<u32>();
-        sys::openslide_read_region(osr, p_buffer, x, y, level, w, h);
-        get_error(osr)?;
-        buffer.set_len(size);
-    }
-    Ok(buffer)
+    read_into_buffer(osr, size, |p: *mut u32| unsafe {
+        sys::openslide_read_region(osr, p, x, y, level, w, h);
+    })
 }
 
 pub fn get_property_names(osr: *mut sys::openslide_t) -> Result<Vec<String>> {
-    let string_values = unsafe {
-        let null_terminated_array_ptr = sys::openslide_get_property_names(osr);
-        if null_terminated_array_ptr.is_null() {
-            get_error(osr)?;
-            return Err(OpenSlideError::CoreError(
-                "Cannot get property names".to_string(),
-            ));
-        }
-        let mut counter = 0;
-        let mut loc = null_terminated_array_ptr;
-        while !(*loc).is_null() {
-            counter += 1;
-            loc = loc.offset(1);
-        }
-
-        let values = std::slice::from_raw_parts(null_terminated_array_ptr, counter as usize);
-        values
-            .iter()
-            .map(|&p| ffi::CStr::from_ptr(p)) // iterator of &CStr
-            .map(std::ffi::CStr::to_bytes) // iterator of &[u8]
-            .filter_map(|bs| std::str::from_utf8(bs).ok()) // iterator of &str
-            .map(std::borrow::ToOwned::to_owned)
-            .collect()
-    };
-    Ok(string_values)
+    let ptr = unsafe { sys::openslide_get_property_names(osr) };
+    if ptr.is_null() {
+        get_error(osr)?;
+        return Err(OpenSlideError::LibraryError(
+            "Cannot get property names".to_string(),
+        ));
+    }
+    Ok(unsafe { collect_string_array(ptr) })
 }
 
 pub fn get_property_value(osr: *mut sys::openslide_t, name: &str) -> Result<String> {
@@ -180,42 +203,22 @@ pub fn get_property_value(osr: *mut sys::openslide_t, name: &str) -> Result<Stri
         let c_value = sys::openslide_get_property_value(osr, c_name.as_ptr());
         if c_value.is_null() {
             get_error(osr)?;
-            return Err(OpenSlideError::CoreError(format!(
-                "Error with property named {name}"
-            )));
-        } else {
-            ffi::CStr::from_ptr(c_value).to_string_lossy().into_owned()
+            return Err(OpenSlideError::UnknownProperty(name.to_string()));
         }
+        ffi::CStr::from_ptr(c_value).to_string_lossy().into_owned()
     };
     Ok(value)
 }
 
 pub fn get_associated_image_names(osr: *mut sys::openslide_t) -> Result<Vec<String>> {
-    let string_values = unsafe {
-        let null_terminated_array_ptr = sys::openslide_get_associated_image_names(osr);
-        if null_terminated_array_ptr.is_null() {
-            get_error(osr)?;
-            return Err(OpenSlideError::CoreError(
-                "Cannot get associated image names".to_string(),
-            ));
-        }
-        let mut counter = 0;
-        let mut loc = null_terminated_array_ptr;
-        while !(*loc).is_null() {
-            counter += 1;
-            loc = loc.offset(1);
-        }
-
-        let values = std::slice::from_raw_parts(null_terminated_array_ptr, counter as usize);
-        values
-            .iter()
-            .map(|&p| ffi::CStr::from_ptr(p)) // iterator of &CStr
-            .map(std::ffi::CStr::to_bytes) // iterator of &[u8]
-            .filter_map(|bs| std::str::from_utf8(bs).ok()) // iterator of &str
-            .map(std::borrow::ToOwned::to_owned)
-            .collect()
-    };
-    Ok(string_values)
+    let ptr = unsafe { sys::openslide_get_associated_image_names(osr) };
+    if ptr.is_null() {
+        get_error(osr)?;
+        return Err(OpenSlideError::LibraryError(
+            "Cannot get associated image names".to_string(),
+        ));
+    }
+    Ok(unsafe { collect_string_array(ptr) })
 }
 
 pub fn get_associated_image_dimensions(
@@ -235,9 +238,7 @@ pub fn get_associated_image_dimensions(
     }
     if width == -1 || height == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::CoreError(
-            "Unknown associated image".to_string(),
-        ));
+        return Err(OpenSlideError::UnknownAssociatedImage(name.to_string()));
     }
     Ok((width, height))
 }
@@ -249,14 +250,9 @@ pub fn read_associated_image(
     let c_name = ffi::CString::new(name)?;
     let (width, height) = get_associated_image_dimensions(osr, name)?;
     let size = (width * height * 4) as usize;
-    let mut buffer: Vec<u8> = Vec::with_capacity(size);
-    let p_buffer = buffer.as_mut_ptr();
-    unsafe {
-        let p_buffer = p_buffer.cast::<u32>();
-        sys::openslide_read_associated_image(osr, c_name.as_ptr(), p_buffer);
-        get_error(osr)?;
-        buffer.set_len(size);
-    }
+    let buffer = read_into_buffer(osr, size, |p: *mut u32| unsafe {
+        sys::openslide_read_associated_image(osr, c_name.as_ptr(), p);
+    })?;
     Ok(((width, height), buffer))
 }
 
@@ -267,7 +263,7 @@ pub fn get_error(osr: *mut sys::openslide_t) -> Result<()> {
             Ok(())
         } else {
             let error = ffi::CStr::from_ptr(c_value).to_string_lossy().into_owned();
-            Err(OpenSlideError::CoreError(error))
+            Err(OpenSlideError::LibraryError(error))
         }
     }
 }
@@ -278,7 +274,7 @@ pub fn get_icc_profile_size(osr: *mut sys::openslide_t) -> Result<i64> {
     // TODO: check if size == 0 => no ICC profile
     if size == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::CoreError(
+        return Err(OpenSlideError::LibraryError(
             "Cannot get ICC profile size".to_string(),
         ));
     }
@@ -287,15 +283,10 @@ pub fn get_icc_profile_size(osr: *mut sys::openslide_t) -> Result<i64> {
 
 #[cfg(feature = "openslide4")]
 pub fn read_icc_profile(osr: *mut sys::openslide_t) -> Result<Vec<u8>> {
-    let size = get_icc_profile_size(osr)?;
-    let mut buffer: Vec<u8> = Vec::with_capacity(size as usize);
-    let p_buffer = buffer.as_mut_ptr().cast::<std::ffi::c_void>();
-    unsafe {
-        sys::openslide_read_icc_profile(osr, p_buffer);
-        get_error(osr)?;
-        buffer.set_len(size as usize);
-    }
-    Ok(buffer)
+    let size = get_icc_profile_size(osr)? as usize;
+    read_into_buffer(osr, size, |p: *mut std::ffi::c_void| unsafe {
+        sys::openslide_read_icc_profile(osr, p);
+    })
 }
 
 #[cfg(feature = "openslide4")]
@@ -309,7 +300,7 @@ pub fn get_associated_image_icc_profile_size(
     // TODO: check if size == 0 => no ICC profile
     if size == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::CoreError(
+        return Err(OpenSlideError::LibraryError(
             "Cannot get ICC profile size".to_string(),
         ));
     }
@@ -322,22 +313,17 @@ pub fn read_associated_image_icc_profile(
     name: &str,
 ) -> Result<Vec<u8>> {
     let c_name = ffi::CString::new(name)?;
-    let size = get_associated_image_icc_profile_size(osr, name)?;
-    let mut buffer: Vec<u8> = Vec::with_capacity(size as usize);
-    let p_buffer = buffer.as_mut_ptr().cast::<std::ffi::c_void>();
-    unsafe {
-        sys::openslide_read_associated_image_icc_profile(osr, c_name.as_ptr(), p_buffer);
-        get_error(osr)?;
-        buffer.set_len(size as usize);
-    }
-    Ok(buffer)
+    let size = get_associated_image_icc_profile_size(osr, name)? as usize;
+    read_into_buffer(osr, size, |p: *mut std::ffi::c_void| unsafe {
+        sys::openslide_read_associated_image_icc_profile(osr, c_name.as_ptr(), p);
+    })
 }
 
 #[cfg(feature = "openslide4")]
 pub fn cache_create(capacity: usize) -> Result<*mut sys::openslide_cache_t> {
     let cache = unsafe { sys::openslide_cache_create(capacity) };
     if cache.is_null() {
-        Err(OpenSlideError::CoreError("Cannot create cache".to_string()))
+        Err(OpenSlideError::InternalError("Cannot create cache".into()))
     } else {
         Ok(cache)
     }
