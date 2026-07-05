@@ -44,7 +44,7 @@ pub(crate) fn resize_rgb_image(image: RgbImage, new_size: &Size) -> Result<RgbIm
         image.into_raw(),
         fr::PixelType::U8x3,
     )
-    .map_err(|err| OpenSlideError::ImageError(err.to_string()))?;
+    .map_err(|err| OpenSlideError::ImageError(err.to_string().into()))?;
 
     let mut dst_image = Image::new(new_size.w, new_size.h, fr::PixelType::U8x3);
     let mut resizer = fr::Resizer::new();
@@ -69,7 +69,7 @@ pub(crate) fn resize_rgba_image(image: RgbaImage, new_size: &Size) -> Result<Rgb
         image.into_raw(),
         fr::PixelType::U8x4,
     )
-    .map_err(|err| OpenSlideError::ImageError(err.to_string()))?;
+    .map_err(|err| OpenSlideError::ImageError(err.to_string().into()))?;
 
     let mut dst_image = Image::new(new_size.w, new_size.h, fr::PixelType::U8x4);
     let mut resizer = fr::Resizer::new();

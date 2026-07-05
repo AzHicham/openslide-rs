@@ -50,7 +50,7 @@ fn test_slide_properties(#[case] filename: &Path) {
             "tiff.XResolution",
             "tiff.YResolution",
         ]);
-        assert_eq!(slide.get_property_names(), expected_result);
+        assert_eq!(slide.get_property_names().unwrap(), expected_result);
     } else {
         let mut expected_result = base_expected_result;
         expected_result.extend(vec![
@@ -62,7 +62,7 @@ fn test_slide_properties(#[case] filename: &Path) {
             "tiff.XResolution",
             "tiff.YResolution",
         ]);
-        assert_eq!(slide.get_property_names(), expected_result);
+        assert_eq!(slide.get_property_names().unwrap(), expected_result);
     }
 }
 

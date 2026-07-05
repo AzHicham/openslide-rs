@@ -57,7 +57,7 @@ fn test_detect_vendor(#[case] filename: &Path, #[case] expected_vendor: String) 
 }
 
 #[rstest]
-#[should_panic(expected = "CoreError(\"Unsupported TIFF compression: 52479\")")]
+#[should_panic(expected = "LibraryError(\"Unsupported TIFF compression: 52479\")")]
 #[case(unopenable_tiff())]
 fn test_open_unsupported_tiff(#[case] filename: &Path) {
     OpenSlide::new(filename).unwrap();
@@ -124,7 +124,7 @@ fn test_slide_info(#[case] filename: &Path) {
 }
 
 #[rstest]
-#[should_panic(expected = "CoreError(\"Invalid level 10\")")]
+#[should_panic(expected = "InvalidLevel { level: 10, level_count: Some(4) }")]
 #[case(boxes_tiff())]
 fn test_error_slide_level(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
@@ -174,7 +174,7 @@ fn test_associated_images_rgb(#[case] filename: &Path) {
 }
 
 #[rstest]
-#[should_panic(expected = "CoreError(\"Unknown associated image\")")]
+#[should_panic(expected = "UnknownAssociatedImage(\"missing\")")]
 #[case(small_svs())]
 fn test_error_associated_images_dimension(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
@@ -183,7 +183,7 @@ fn test_error_associated_images_dimension(#[case] filename: &Path) {
 }
 
 #[rstest]
-#[should_panic(expected = "CoreError(\"Unknown associated image\")")]
+#[should_panic(expected = "UnknownAssociatedImage(\"missing\")")]
 #[case(small_svs())]
 #[cfg(feature = "image")]
 fn test_error_read_associated_images(#[case] filename: &Path) {
