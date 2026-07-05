@@ -30,13 +30,20 @@ pub enum OpenSlideError {
     /// The requested level does not exist on this slide.
     #[error("Invalid level {level} (slide has {level_count:?} levels)")]
     InvalidLevel {
+        /// The level that was requested.
         level: u32,
+        /// The slide's actual level count, if it could be retrieved.
         level_count: Option<u32>,
     },
 
     /// The requested tile address is out of bounds for the given Deep Zoom level.
     #[error("Invalid tile address ({x}, {y})")]
-    InvalidAddress { x: u32, y: u32 },
+    InvalidAddress {
+        /// The out-of-range tile column that was requested.
+        x: u32,
+        /// The out-of-range tile row that was requested.
+        y: u32,
+    },
 
     /// The requested property name does not exist on this slide.
     #[error("Unknown property: {0}")]

@@ -4,6 +4,7 @@
 use crate::properties::vendor_properties;
 
 vendor_properties! {
+    /// Hamamatsu (`.ndpi`, `.vms`, `.vmu`) vendor-specific properties.
     pub struct Hamamatsu {
         auth_code: i32 => "hamamatsu.AuthCode",
         image_file: String => "hamamatsu.ImageFile",

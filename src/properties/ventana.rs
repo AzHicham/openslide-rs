@@ -4,6 +4,7 @@
 use crate::properties::vendor_properties;
 
 vendor_properties! {
+    /// Ventana (`.bif`, `.tif`) vendor-specific properties.
     pub struct Ventana {
         build_date: String => "ventana.BuildDate",
         build_version: String => "ventana.BuildVersion",

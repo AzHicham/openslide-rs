@@ -4,6 +4,7 @@
 use crate::properties::vendor_properties;
 
 vendor_properties! {
+    /// Philips (`.tiff`) vendor-specific properties.
     pub struct Philips {
         bits_allocated: u32 => "philips.DICOM_BITS_ALLOCATED",
         bits_stored: u32 => "philips.DICOM_BITS_STORED",

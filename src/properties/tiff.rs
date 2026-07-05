@@ -4,6 +4,7 @@
 use crate::properties::vendor_properties;
 
 vendor_properties! {
+    /// Common `tiff.*` baseline TIFF properties.
     pub struct Tiff {
         image_description: String => "tiff.ImageDescription",
         software: String => "tiff.Software",

@@ -4,6 +4,7 @@
 use crate::properties::vendor_properties;
 
 vendor_properties! {
+    /// Sakura (`.sqv`) vendor-specific properties.
     pub struct Sakura {
         creator: String => "sakura.Creator",
         date: String => "sakura.Date",

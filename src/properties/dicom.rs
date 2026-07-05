@@ -4,6 +4,7 @@
 use crate::properties::vendor_properties;
 
 vendor_properties! {
+    /// DICOM vendor-specific properties.
     pub struct Dicom {
         accession_number: String => "dicom.AccessionNumber",
         acquisition_datetime: String => "dicom.AcquisitionDateTime",

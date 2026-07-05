@@ -4,6 +4,7 @@
 use crate::properties::vendor_properties;
 
 vendor_properties! {
+    /// Aperio (`.svs`) vendor-specific properties.
     pub struct Aperio {
         filename: String => "aperio.Filename",
         title: String => "aperio.Title",
