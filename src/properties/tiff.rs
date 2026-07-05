@@ -27,11 +27,12 @@ pub struct Tiff {
 }
 
 impl Tiff {
-    pub(crate) fn new(property_iter: impl Iterator<Item = (String, String)>) -> Self {
+    pub(crate) fn new(properties: &[(String, String)]) -> Self {
         let mut tiff_property = Tiff::default();
-        property_iter
+        properties
+            .iter()
             .filter(|(name, _)| name.starts_with("tiff."))
-            .for_each(|(name, value)| tiff_property.parse_property_name(&name, &value));
+            .for_each(|(name, value)| tiff_property.parse_property_name(name, value));
         tiff_property
     }
 

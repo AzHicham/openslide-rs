@@ -43,23 +43,23 @@ pub struct Properties {
 }
 
 impl Properties {
-    pub fn new(property_iter: impl Iterator<Item = (String, String)> + Clone) -> Self {
-        let openslide_properties = OpenSlide::new(property_iter.clone());
-        let tiff_properties = Tiff::new(property_iter.clone());
+    pub fn new(properties: &[(String, String)]) -> Self {
+        let openslide_properties = OpenSlide::new(properties);
+        let tiff_properties = Tiff::new(properties);
 
         let vendor = &openslide_properties.vendor.clone().unwrap_or_default();
 
         let vendor_properties = match vendor.to_lowercase().as_str() {
             "generic-tiff" => VendorProperties::GenericTiff,
-            "aperio" => VendorProperties::Aperio(Aperio::new(property_iter)),
-            "hamamatsu" => VendorProperties::Hamamatsu(Hamamatsu::new(property_iter)),
-            "leica" => VendorProperties::Leica(Leica::new(property_iter)),
-            "mirax" => VendorProperties::Mirax(Mirax::new(property_iter)),
-            "trestle" => VendorProperties::Trestle(Trestle::new(property_iter)),
-            "ventana" => VendorProperties::Ventana(Ventana::new(property_iter)),
-            "sakura" => VendorProperties::Sakura(Sakura::new(property_iter)),
-            "philips" => VendorProperties::Philips(Philips::new(property_iter)),
-            "dicom" => VendorProperties::Dicom(Dicom::new(property_iter)),
+            "aperio" => VendorProperties::Aperio(Aperio::new(properties)),
+            "hamamatsu" => VendorProperties::Hamamatsu(Hamamatsu::new(properties)),
+            "leica" => VendorProperties::Leica(Leica::new(properties)),
+            "mirax" => VendorProperties::Mirax(Mirax::new(properties)),
+            "trestle" => VendorProperties::Trestle(Trestle::new(properties)),
+            "ventana" => VendorProperties::Ventana(Ventana::new(properties)),
+            "sakura" => VendorProperties::Sakura(Sakura::new(properties)),
+            "philips" => VendorProperties::Philips(Philips::new(properties)),
+            "dicom" => VendorProperties::Dicom(Dicom::new(properties)),
             _ => VendorProperties::None,
         };
         Properties {

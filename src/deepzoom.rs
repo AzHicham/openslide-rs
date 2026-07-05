@@ -3,15 +3,14 @@
 //! This is a simple translation of python `DeepZoomGenerator` implementation
 
 use crate::{
-    Address, DeepZoomGenerator, Region, Result, Size,
+    Address, DeepZoomGenerator, OpenSlide, Region, Result, Size,
     errors::OpenSlideError,
-    traits::Slide,
     utils::{resize_rgb_image, resize_rgba_image},
 };
 use image::{RgbImage, RgbaImage};
 use std::borrow::Borrow;
 
-impl<S: Slide, B: Borrow<S>> DeepZoomGenerator<S, B> {
+impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
     pub fn new(slide: B, tile_size: u32, overlap: u32, limit_bounds: bool) -> Result<Self> {
         let nb_level = slide.borrow().get_level_count()?;
 
@@ -115,7 +114,6 @@ impl<S: Slide, B: Borrow<S>> DeepZoomGenerator<S, B> {
 
         Ok(DeepZoomGenerator {
             slide,
-            _phantom: Default::default(),
             tile_size,
             overlap,
             l0_offset,

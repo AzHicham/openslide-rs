@@ -63,12 +63,13 @@ impl OpenSlide {
     ///
     /// This needs a property map in order to compute the number of levels. This is needed because
     /// of the properties that are listed as `openslide.level[<level>].<property>`.
-    pub(crate) fn new(property_iter: impl Iterator<Item = (String, String)>) -> Self {
+    pub(crate) fn new(properties: &[(String, String)]) -> Self {
         let mut openslide_property = OpenSlide::default();
 
-        property_iter
+        properties
+            .iter()
             .filter(|(name, _)| name.starts_with("openslide."))
-            .for_each(|(name, value)| openslide_property.parse_property_name(&name, &value));
+            .for_each(|(name, value)| openslide_property.parse_property_name(name, value));
         openslide_property
     }
 
