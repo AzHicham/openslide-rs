@@ -178,12 +178,18 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
 
     pub fn get_tile_info(&self, level: u32, address: Address) -> Result<(Region, Size)> {
         if level as usize >= self.level_count() {
-            return Err(OpenSlideError::CoreError("Invalid level".to_string()));
+            return Err(OpenSlideError::InvalidLevel {
+                level,
+                level_count: u32::try_from(self.level_count()).ok(),
+            });
         }
         if address.x >= self.level_tiles[level as usize].w
             || address.y >= self.level_tiles[level as usize].h
         {
-            return Err(OpenSlideError::CoreError("Invalid address".to_string()));
+            return Err(OpenSlideError::InvalidAddress {
+                x: address.x,
+                y: address.y,
+            });
         }
 
         let level_tiles = self.level_tiles[level as usize];

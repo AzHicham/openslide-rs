@@ -79,7 +79,7 @@ fn run(cli: &Cli) -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let mut property_names = slide.get_property_names();
+    let mut property_names = slide.get_property_names()?;
     property_names.sort_unstable();
     info!("Properties ({})", property_names.len());
     for name in property_names {
