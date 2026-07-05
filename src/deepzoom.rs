@@ -3,12 +3,33 @@
 //! This is a simple translation of python `DeepZoomGenerator` implementation
 
 use crate::{
-    Address, DeepZoomGenerator, OpenSlide, Region, Result, Size,
+    Result,
     errors::OpenSlideError,
-    utils::{resize_rgb_image, resize_rgba_image},
+    geometry::{Address, Region, Size},
+    image::{resize_rgb_image, resize_rgba_image},
+    slide::OpenSlide,
 };
 use image::{RgbImage, RgbaImage};
 use std::borrow::Borrow;
+
+/// Generates Deep Zoom tiles and metadata.
+#[derive(Debug)]
+pub struct DeepZoomGenerator<B: Borrow<OpenSlide>> {
+    slide: B,
+
+    level_count: usize,
+    level_tiles: Vec<Size>,
+    level_dimensions: Vec<Size>,
+
+    tile_size: u32,
+    overlap: u32,
+
+    l0_offset: Address,
+    slide_level_dimensions: Vec<Size>,
+    slide_from_dz_level: Vec<u32>,
+    l0_l_downsamples: Vec<f64>,
+    l_z_downsamples: Vec<f64>,
+}
 
 impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
     pub fn new(slide: B, tile_size: u32, overlap: u32, limit_bounds: bool) -> Result<Self> {
