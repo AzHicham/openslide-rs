@@ -1,11 +1,19 @@
-use crate::{OpenSlide, Properties, Region, Result, Size, bindings, errors::OpenSlideError};
+//! Safe wrapper around the raw `OpenSlide` bindings: the [`OpenSlide`] slide
+//! handle and all of its read/metadata operations.
+
+use crate::{
+    Result, bindings,
+    errors::OpenSlideError,
+    geometry::{Region, Size},
+    properties::Properties,
+};
 use std::path::Path;
 
 #[cfg(feature = "image")]
 use {
     crate::{
-        Address,
-        utils::{
+        geometry::Address,
+        image::{
             _bgra_to_rgb, _bgra_to_rgba_inplace, preserve_aspect_ratio, resize_rgb_image,
             resize_rgba_image,
         },
@@ -15,6 +23,18 @@ use {
 
 #[cfg(feature = "openslide4")]
 use crate::cache::Cache;
+
+/// `OpenSlide` object is a simple wrapper around `openslide_t` "C" type.
+/// Implementation provides all functions available in the "C" API
+/// It contains also openslide and vendor specific properties found in WSI.
+///
+/// Note : As stated by the `OpenSlide` documentation, all function are thread-safe except close()
+/// For this reason `OpenSlide` implement the Drop trait which call close() automatically
+#[derive(Debug)]
+pub struct OpenSlide {
+    osr: bindings::OpenSlideWrapper,
+    pub properties: Properties,
+}
 
 impl Drop for OpenSlide {
     fn drop(&mut self) {
