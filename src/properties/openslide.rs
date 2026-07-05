@@ -2,11 +2,10 @@
 //!
 
 use regex::Regex;
+use std::sync::LazyLock;
 
-lazy_static! {
-    static ref REGEX_LEVEL_PROPERTIES: Regex =
-        Regex::new(r"level\[([0-9]+)]\.([a-zA-Z]+(?:-[a-zA-Z]+)?)").unwrap();
-}
+static REGEX_LEVEL_PROPERTIES: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"level\[([0-9]+)]\.([a-zA-Z]+(?:-[a-zA-Z]+)?)").unwrap());
 
 pub const OPENSLIDE_PROPERTY_NAME_COMMENT: &str = "openslide.comment";
 pub const OPENSLIDE_PROPERTY_NAME_VENDOR: &str = "openslide.vendor";
