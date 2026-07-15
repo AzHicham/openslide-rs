@@ -1,11 +1,19 @@
-use crate::{OpenSlide, Properties, Region, Result, Size, bindings, errors::OpenSlideError};
+//! Safe wrapper around the raw `OpenSlide` bindings: the [`OpenSlide`] slide
+//! handle and all of its read/metadata operations.
+
+use crate::{
+    Result, bindings,
+    errors::OpenSlideError,
+    geometry::{Region, Size},
+    properties::Properties,
+};
 use std::path::Path;
 
 #[cfg(feature = "image")]
 use {
     crate::{
-        Address,
-        utils::{
+        geometry::Address,
+        image::{
             _bgra_to_rgb, _bgra_to_rgba_inplace, preserve_aspect_ratio, resize_rgb_image,
             resize_rgba_image,
         },
@@ -16,10 +24,32 @@ use {
 #[cfg(feature = "openslide4")]
 use crate::cache::Cache;
 
+/// `OpenSlide` object is a simple wrapper around `openslide_t` "C" type.
+/// Implementation provides all functions available in the "C" API
+/// It contains also openslide and vendor specific properties found in WSI.
+///
+/// Note : As stated by the `OpenSlide` documentation, all function are thread-safe except close()
+/// For this reason `OpenSlide` implement the Drop trait which call close() automatically
+#[derive(Debug)]
+pub struct OpenSlide {
+    osr: bindings::OpenSlideWrapper,
+    /// Openslide and vendor-specific properties found in the slide.
+    pub properties: Properties,
+}
+
 impl Drop for OpenSlide {
     fn drop(&mut self) {
         bindings::close(*self.osr);
     }
+}
+
+/// Builds an `RgbaImage` from a BGRA buffer returned by `OpenSlide`.
+///
+/// `buffer.len()` always equals `size.w * size.h * 4`, since that's exactly the
+/// capacity `bindings::read_region`/`read_associated_image` allocate.
+#[cfg(feature = "image")]
+fn buffer_to_rgba(size: Size, buffer: Vec<u8>) -> RgbaImage {
+    RgbaImage::from_vec(size.w, size.h, buffer).expect("buffer size matches width * height * 4")
 }
 
 impl OpenSlide {
@@ -36,7 +66,9 @@ impl OpenSlide {
     pub fn new<T: AsRef<Path>>(path: T) -> Result<OpenSlide> {
         let path = path.as_ref();
         if !path.exists() {
-            return Err(OpenSlideError::MissingFile(path.display().to_string()));
+            return Err(OpenSlideError::MissingFile(
+                path.display().to_string().into(),
+            ));
         }
 
         let filename = path.display().to_string();
@@ -44,13 +76,16 @@ impl OpenSlide {
 
         let property_names = bindings::get_property_names(osr)?;
 
-        let property_iter = property_names.into_iter().filter_map(|name| {
-            bindings::get_property_value(osr, &name)
-                .map(|value| (name, value))
-                .ok()
-        });
+        let property_pairs: Vec<(String, String)> = property_names
+            .into_iter()
+            .filter_map(|name| {
+                bindings::get_property_value(osr, &name)
+                    .map(|value| (name, value))
+                    .ok()
+            })
+            .collect();
 
-        let properties = Properties::new(property_iter);
+        let properties = Properties::new(&property_pairs);
 
         Ok(OpenSlide {
             osr: bindings::OpenSlideWrapper(osr),
@@ -58,6 +93,8 @@ impl OpenSlide {
         })
     }
 
+    /// Opens the slide at `path`, like [`OpenSlide::new`], and installs a tile cache of
+    /// `capacity` bytes so repeated reads of the same region avoid redecoding it.
     #[cfg(feature = "openslide4")]
     pub fn new_with_cache<T: AsRef<Path>>(path: T, capacity: usize) -> Result<OpenSlide> {
         let osr = OpenSlide::new(path)?;
@@ -73,12 +110,15 @@ impl OpenSlide {
     /// Quickly determine whether a whole slide image is recognized.
     pub fn detect_vendor(path: &Path) -> Result<String> {
         if !path.exists() {
-            return Err(OpenSlideError::MissingFile(path.display().to_string()));
+            return Err(OpenSlideError::MissingFile(
+                path.display().to_string().into(),
+            ));
         }
         let filename = path.display().to_string();
         bindings::detect_vendor(&filename)
     }
 
+    /// Get the openslide and vendor-specific properties found in the slide.
     #[must_use]
     pub fn properties(&self) -> &Properties {
         &self.properties
@@ -142,9 +182,8 @@ impl OpenSlide {
     }
 
     /// Get the list of all available properties.
-    #[must_use]
-    pub fn get_property_names(&self) -> Vec<String> {
-        bindings::get_property_names(*self.osr).unwrap_or_else(|_| vec![])
+    pub fn get_property_names(&self) -> Result<Vec<String>> {
+        bindings::get_property_names(*self.osr)
     }
 
     /// Get the value of a single property.
@@ -215,8 +254,7 @@ impl OpenSlide {
     #[cfg(feature = "image")]
     pub fn read_image_rgba(&self, region: &Region) -> Result<RgbaImage> {
         let buffer = self.read_region(region)?;
-        let size = region.size;
-        let mut image = RgbaImage::from_vec(size.w, size.h, buffer).unwrap(); // Should be safe because buffer is big enough
+        let mut image = buffer_to_rgba(region.size, buffer);
         _bgra_to_rgba_inplace(&mut image);
         Ok(image)
     }
@@ -232,8 +270,7 @@ impl OpenSlide {
     #[cfg(feature = "image")]
     pub fn read_image_rgb(&self, region: &Region) -> Result<RgbImage> {
         let buffer = self.read_region(region)?;
-        let size = region.size;
-        let image = RgbaImage::from_vec(size.w, size.h, buffer).unwrap(); // Should be safe because buffer is big enough
+        let image = buffer_to_rgba(region.size, buffer);
         Ok(_bgra_to_rgb(&image))
     }
 
@@ -246,7 +283,7 @@ impl OpenSlide {
     #[cfg(feature = "image")]
     pub fn read_associated_image_rgba(&self, name: &str) -> Result<RgbaImage> {
         let (size, buffer) = self.read_associated_buffer(name)?;
-        let mut image = RgbaImage::from_vec(size.w, size.h, buffer).unwrap(); // Should be safe because buffer is big enough
+        let mut image = buffer_to_rgba(size, buffer);
         _bgra_to_rgba_inplace(&mut image);
         Ok(image)
     }
@@ -260,7 +297,7 @@ impl OpenSlide {
     #[cfg(feature = "image")]
     pub fn read_associated_image_rgb(&self, name: &str) -> Result<RgbImage> {
         let (size, buffer) = self.read_associated_buffer(name)?;
-        let image = RgbaImage::from_vec(size.w, size.h, buffer).unwrap(); // Should be safe because buffer is big enough
+        let image = buffer_to_rgba(size, buffer);
         Ok(_bgra_to_rgb(&image))
     }
 
@@ -269,26 +306,9 @@ impl OpenSlide {
     ///     size: (width, height) in pixels of the thumbnail
     #[cfg(feature = "image")]
     pub fn thumbnail_rgba(&self, size: &Size) -> Result<RgbaImage> {
-        let dimension_level0 = self.get_level_dimensions(0)?;
-
-        let downsample = (
-            f64::from(dimension_level0.w) / f64::from(size.w),
-            f64::from(dimension_level0.h) / f64::from(size.h),
-        );
-        let downsample = f64::max(downsample.0, downsample.1);
-
-        let level = self.get_best_level_for_downsample(downsample)?;
-
-        let region = Region {
-            size: self.get_level_dimensions(level)?,
-            level,
-            address: Address { x: 0, y: 0 },
-        };
+        let (region, target_size) = self.thumbnail_region(size)?;
         let image = self.read_image_rgba(&region)?;
-        let size = preserve_aspect_ratio(size, &dimension_level0);
-        let image = resize_rgba_image(image, &size)?;
-
-        Ok(image)
+        resize_rgba_image(image, &target_size)
     }
 
     /// Get a RGB image thumbnail of desired size of the whole slide image.
@@ -296,13 +316,21 @@ impl OpenSlide {
     ///     size: (width, height) in pixels of the thumbnail
     #[cfg(feature = "image")]
     pub fn thumbnail_rgb(&self, size: &Size) -> Result<RgbImage> {
+        let (region, target_size) = self.thumbnail_region(size)?;
+        let image = self.read_image_rgb(&region)?;
+        resize_rgb_image(image, &target_size)
+    }
+
+    /// Computes the level-0 region covering the whole slide and the final
+    /// aspect-ratio-preserving size a thumbnail of `size` should be resized to.
+    #[cfg(feature = "image")]
+    fn thumbnail_region(&self, size: &Size) -> Result<(Region, Size)> {
         let dimension_level0 = self.get_level_dimensions(0)?;
 
-        let downsample = (
+        let downsample = f64::max(
             f64::from(dimension_level0.w) / f64::from(size.w),
             f64::from(dimension_level0.h) / f64::from(size.h),
         );
-        let downsample = f64::max(downsample.0, downsample.1);
 
         let level = self.get_best_level_for_downsample(downsample)?;
 
@@ -312,60 +340,34 @@ impl OpenSlide {
             address: Address { x: 0, y: 0 },
         };
 
-        let image = self.read_image_rgb(&region)?;
-        let size = preserve_aspect_ratio(size, &dimension_level0);
-        let image = resize_rgb_image(image, &size)?;
-
-        Ok(image)
+        Ok((region, preserve_aspect_ratio(size, &dimension_level0)))
     }
 
+    /// Get the ICC color profile of the whole slide image, if it has one.
     #[cfg(feature = "openslide4")]
     pub fn icc_profile(&self) -> Result<Vec<u8>> {
         bindings::read_icc_profile(*self.osr)
     }
 
+    /// Get the ICC color profile of an associated image, if it has one.
+    ///
+    /// Args:
+    ///     name: name of the associated image we want the ICC profile of
     #[cfg(feature = "openslide4")]
     pub fn associated_image_icc_profile(&self, name: &str) -> Result<Vec<u8>> {
         bindings::read_associated_image_icc_profile(*self.osr, name)
     }
-}
 
-#[cfg(feature = "deepzoom")]
-use {crate::deepzoom::Bounds, crate::traits::Slide};
-
-#[cfg(feature = "deepzoom")]
-impl Slide for OpenSlide {
-    fn get_bounds(&self) -> Bounds {
+    /// Get properties of the whole slide image through Properties struct.
+    #[cfg(feature = "deepzoom")]
+    #[must_use]
+    pub fn get_bounds(&self) -> crate::deepzoom::Bounds {
         let properties = &self.properties().openslide_properties;
-        Bounds {
+        crate::deepzoom::Bounds {
             x: properties.bounds_x,
             y: properties.bounds_y,
             width: properties.bounds_width,
             height: properties.bounds_height,
         }
-    }
-
-    fn get_level_count(&self) -> Result<u32> {
-        self.get_level_count()
-    }
-
-    fn get_level_dimensions(&self, level: u32) -> Result<Size> {
-        self.get_level_dimensions(level)
-    }
-
-    fn get_level_downsample(&self, level: u32) -> Result<f64> {
-        self.get_level_downsample(level)
-    }
-
-    fn get_best_level_for_downsample(&self, downsample: f64) -> Result<u32> {
-        self.get_best_level_for_downsample(downsample)
-    }
-
-    fn read_image_rgba(&self, region: &Region) -> Result<RgbaImage> {
-        self.read_image_rgba(region)
-    }
-
-    fn read_image_rgb(&self, region: &Region) -> Result<RgbImage> {
-        self.read_image_rgb(region)
     }
 }

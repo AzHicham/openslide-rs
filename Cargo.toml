@@ -32,11 +32,6 @@ version = "1"
 default-features = false
 features = []
 
-[dependencies.lazy_static]
-version = "1"
-default-features = false
-features = []
-
 [dependencies.openslide-sys]
 version = "1"
 default-features = false

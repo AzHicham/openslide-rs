@@ -8,7 +8,7 @@ use {
 };
 
 #[cfg(feature = "image")]
-pub fn preserve_aspect_ratio(size: &Size, dimension: &Size) -> Size {
+pub(crate) fn preserve_aspect_ratio(size: &Size, dimension: &Size) -> Size {
     // Code adapted from https://pillow.readthedocs.io/en/latest/_modules/PIL/Image.html#Image.thumbnail
     fn round_aspect<F: FnMut(f32) -> f32>(number: f32, mut key: F) -> u32 {
         cmp::max(
@@ -44,7 +44,7 @@ pub(crate) fn resize_rgb_image(image: RgbImage, new_size: &Size) -> Result<RgbIm
         image.into_raw(),
         fr::PixelType::U8x3,
     )
-    .map_err(|err| OpenSlideError::ImageError(err.to_string()))?;
+    .map_err(|err| OpenSlideError::ImageError(err.to_string().into()))?;
 
     let mut dst_image = Image::new(new_size.w, new_size.h, fr::PixelType::U8x3);
     let mut resizer = fr::Resizer::new();
@@ -69,7 +69,7 @@ pub(crate) fn resize_rgba_image(image: RgbaImage, new_size: &Size) -> Result<Rgb
         image.into_raw(),
         fr::PixelType::U8x4,
     )
-    .map_err(|err| OpenSlideError::ImageError(err.to_string()))?;
+    .map_err(|err| OpenSlideError::ImageError(err.to_string().into()))?;
 
     let mut dst_image = Image::new(new_size.w, new_size.h, fr::PixelType::U8x4);
     let mut resizer = fr::Resizer::new();
@@ -87,7 +87,7 @@ pub(crate) fn resize_rgba_image(image: RgbaImage, new_size: &Size) -> Result<Rgb
 }
 
 #[cfg(feature = "image")]
-pub fn _bgra_to_rgba_inplace(image: &mut RgbaImage) {
+pub(crate) fn _bgra_to_rgba_inplace(image: &mut RgbaImage) {
     for pixel in image.pixels_mut() {
         let [b, g, r, a] = pixel.0;
         pixel.0 = [r, g, b, a];
@@ -95,7 +95,7 @@ pub fn _bgra_to_rgba_inplace(image: &mut RgbaImage) {
 }
 
 #[cfg(feature = "image")]
-pub fn _bgra_to_rgb(image: &RgbaImage) -> RgbImage {
+pub(crate) fn _bgra_to_rgb(image: &RgbaImage) -> RgbImage {
     let mut rgb_image = RgbImage::new(image.width(), image.height());
     for (pixel, rgb_pixel) in zip(image.pixels(), rgb_image.pixels_mut()) {
         let [b, g, r, _] = pixel.0;

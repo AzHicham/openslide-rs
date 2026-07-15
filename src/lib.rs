@@ -1,13 +1,12 @@
-#[macro_use]
-extern crate lazy_static;
+//! Safe Rust bindings for the [`OpenSlide`](https://openslide.org) C library, for
+//! reading whole-slide images (WSI) used in digital pathology.
+//!
+//! The main entry point is [`OpenSlide`], which opens a slide file and exposes its
+//! levels, regions, associated images, and vendor-specific [`properties`]. With the
+//! `deepzoom` feature (enabled by default), [`DeepZoomGenerator`] generates Deep Zoom
+//! tiles from a slide.
 
-use crate::properties::Properties;
-
-#[cfg(feature = "deepzoom")]
-use {
-    crate::traits::Slide,
-    std::{borrow::Borrow, marker::PhantomData},
-};
+#![warn(missing_docs)]
 
 mod bindings;
 #[cfg(feature = "openslide4")]
@@ -15,67 +14,16 @@ mod cache;
 #[cfg(feature = "deepzoom")]
 pub mod deepzoom;
 pub mod errors;
+mod geometry;
+mod image;
 pub mod properties;
+mod slide;
+
+pub use geometry::{Address, Region, Size};
+pub use slide::OpenSlide;
+
 #[cfg(feature = "deepzoom")]
-pub mod traits;
-mod utils;
-mod wrapper;
+pub use deepzoom::DeepZoomGenerator;
 
 /// The corresponding result type used by the crate.
 pub type Result<T, E = errors::OpenSlideError> = std::result::Result<T, E>;
-
-/// Openslide object is a simple wrapper around `openslide_t` "C" type.
-/// Implementation provides all functions available in the "C" API
-/// It contains also openslide and vendor specific properties found in WSI.
-///
-/// Note : As stated by the `OpenSlide` documentation, all function are thread-safe except close()
-/// For this reason `OpenSlide` implement the Drop trait which call close() automatically
-#[derive(Debug)]
-pub struct OpenSlide {
-    osr: bindings::OpenSlideWrapper,
-    pub properties: Properties,
-}
-
-/// Generates Deep Zoom tiles and metadata.
-#[cfg(feature = "deepzoom")]
-#[derive(Debug)]
-pub struct DeepZoomGenerator<S: Slide, B: Borrow<S>> {
-    slide: B,
-    _phantom: PhantomData<S>,
-
-    level_count: usize,
-    level_tiles: Vec<Size>,
-    level_dimensions: Vec<Size>,
-
-    tile_size: u32,
-    overlap: u32,
-
-    l0_offset: Address,
-    slide_level_dimensions: Vec<Size>,
-    slide_from_dz_level: Vec<u32>,
-    l0_l_downsamples: Vec<f64>,
-    l_z_downsamples: Vec<f64>,
-}
-
-/// Region struct
-/// Used to retrieve a tile in a WSI
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Region {
-    pub size: Size,
-    pub level: u32,
-    pub address: Address,
-}
-
-/// Simple Size struct
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Size {
-    pub w: u32,
-    pub h: u32,
-}
-
-/// Simple Address struct
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Address {
-    pub x: u32,
-    pub y: u32,
-}
