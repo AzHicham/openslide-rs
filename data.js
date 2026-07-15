@@ -1,92 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1784108873140,
+  "lastUpdate": 1784108894485,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "AzHicham@users.noreply.github.com",
-            "name": "AzHicham",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "email": "hicham.azimani@owkin.com",
-            "name": "Hicham Azimani",
-            "username": "AzHicham"
-          },
-          "distinct": true,
-          "id": "72865b599d7dfba9746eae5005af93e3b9b0a296",
-          "message": "Run clippy on the code base",
-          "timestamp": "2025-08-21T12:26:10+02:00",
-          "tree_id": "ed1fd4bc39936ac845f104c361be361429728c13",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/72865b599d7dfba9746eae5005af93e3b9b0a296"
-        },
-        "date": 1755772093226,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1154426,
-            "range": "± 59320",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_arc",
-            "value": 1153878,
-            "range": "± 17897",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_recreate_dz",
-            "value": 1155297,
-            "range": "± 10099",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 4606158,
-            "range": "± 109757",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_arc",
-            "value": 4617025,
-            "range": "± 205457",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_recreate_dz",
-            "value": 4606350,
-            "range": "± 71403",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1121503,
-            "range": "± 28883",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 4623661,
-            "range": "± 75747",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1068193,
-            "range": "± 23040",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 4428734,
-            "range": "± 439181",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2519,6 +2435,90 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 4414679,
             "range": "± 22846",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "hicham.azimani-ext@wearewaiv.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "distinct": true,
+          "id": "c9f7649f137badf7b00148f3a66abbbaebb7991d",
+          "message": "chore(deps): update rust crate regex to v1.13.0",
+          "timestamp": "2026-07-15T10:44:54+01:00",
+          "tree_id": "ea94b31c82ac95dff3948e71fe8975516a352004",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/c9f7649f137badf7b00148f3a66abbbaebb7991d"
+        },
+        "date": 1784108893792,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1163763,
+            "range": "± 11305",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1171540,
+            "range": "± 11077",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_recreate_dz",
+            "value": 1172476,
+            "range": "± 12283",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 4689459,
+            "range": "± 220055",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 4677964,
+            "range": "± 160077",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_recreate_dz",
+            "value": 4684638,
+            "range": "± 131988",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1128464,
+            "range": "± 37578",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 4669003,
+            "range": "± 176395",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1070012,
+            "range": "± 23237",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 4447417,
+            "range": "± 952091",
             "unit": "ns/iter"
           }
         ]
