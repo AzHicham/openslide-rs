@@ -63,14 +63,6 @@ fn read_into_buffer<T>(
     Ok(buffer)
 }
 
-/// Fetches the slide's level count, for use as diagnostic context in an error.
-/// Best-effort: `None` if the count itself can't be retrieved.
-fn level_count_hint(osr: *mut sys::openslide_t) -> Option<u32> {
-    get_level_count(osr)
-        .ok()
-        .and_then(|n| u32::try_from(n).ok())
-}
-
 /// Converts `path` to the C string `OpenSlide` expects, without going through a lossy
 /// `Display`: raw bytes on Unix, UTF-8 elsewhere (`OpenSlide` takes UTF-8 paths on Windows).
 fn path_to_cstring(path: &Path) -> Result<ffi::CString> {
@@ -156,10 +148,9 @@ pub fn get_level_dimensions(osr: *mut sys::openslide_t, level: i32) -> Result<(i
     }
     if width == -1 || height == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::InvalidLevel {
-            level: level as u32,
-            level_count: level_count_hint(osr),
-        });
+        return Err(OpenSlideError::LibraryError(format!(
+            "Cannot get dimensions of level {level}"
+        )));
     }
     Ok((width, height))
 }
@@ -168,10 +159,9 @@ pub fn get_level_downsample(osr: *mut sys::openslide_t, level: i32) -> Result<f6
     let downsampling_factor = unsafe { sys::openslide_get_level_downsample(osr, level) };
     if downsampling_factor == -1.0 {
         get_error(osr)?;
-        return Err(OpenSlideError::InvalidLevel {
-            level: level as u32,
-            level_count: level_count_hint(osr),
-        });
+        return Err(OpenSlideError::LibraryError(format!(
+            "Cannot get downsample of level {level}"
+        )));
     }
     Ok(downsampling_factor)
 }

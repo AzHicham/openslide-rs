@@ -1,6 +1,6 @@
 use assert_approx_eq::assert_approx_eq;
 use fixture::{boxes_tiff, missing_file, small_svs, unopenable_tiff, unsupported_file};
-use openslide_rs::{Address, OpenSlide, Region, Size};
+use openslide_rs::{Address, OpenSlide, Region, Size, errors::OpenSlideError};
 use rstest::rstest;
 use std::path::Path;
 use version_compare::Version;
@@ -106,11 +106,19 @@ fn test_slide_info(#[case] filename: &Path) {
 }
 
 #[rstest]
-#[should_panic(expected = "InvalidLevel { level: 10, level_count: Some(4) }")]
 #[case(boxes_tiff())]
 fn test_error_slide_level(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
-    slide.level_dimensions(10).unwrap();
+    let err = slide.level_dimensions(10).unwrap_err();
+    assert!(matches!(
+        err,
+        OpenSlideError::InvalidLevel {
+            level: 10,
+            level_count: 4
+        }
+    ));
+    assert_eq!(err.to_string(), "Invalid level 10 (slide has 4 levels)");
+    assert!(slide.level_downsample(4).is_err());
 }
 
 #[rstest]

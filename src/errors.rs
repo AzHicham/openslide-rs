@@ -28,12 +28,12 @@ pub enum OpenSlideError {
     UnsupportedFile(Cow<'static, str>),
 
     /// The requested level does not exist on this slide.
-    #[error("Invalid level {level} (slide has {level_count:?} levels)")]
+    #[error("Invalid level {level} (slide has {level_count} levels)")]
     InvalidLevel {
         /// The level that was requested.
         level: u32,
-        /// The slide's actual level count, if it could be retrieved.
-        level_count: Option<u32>,
+        /// The number of levels actually available.
+        level_count: u32,
     },
 
     /// The requested tile address is out of bounds for the given Deep Zoom level.
