@@ -4,7 +4,7 @@
 
 use crate::{Result, errors::OpenSlideError};
 
-use std::{ffi, ops::Deref};
+use std::{ffi, ops::Deref, path::Path};
 
 use openslide_sys::sys;
 
@@ -71,6 +71,30 @@ fn level_count_hint(osr: *mut sys::openslide_t) -> Option<u32> {
         .and_then(|n| u32::try_from(n).ok())
 }
 
+/// Converts `path` to the C string `OpenSlide` expects, without going through a lossy
+/// `Display`: raw bytes on Unix, UTF-8 elsewhere (`OpenSlide` takes UTF-8 paths on Windows).
+fn path_to_cstring(path: &Path) -> Result<ffi::CString> {
+    #[cfg(unix)]
+    let bytes = {
+        use std::os::unix::ffi::OsStrExt;
+        path.as_os_str().as_bytes()
+    };
+    #[cfg(not(unix))]
+    let bytes = path
+        .to_str()
+        .ok_or_else(|| {
+            OpenSlideError::InternalError(
+                format!("Path is not valid UTF-8: {}", path.display()).into(),
+            )
+        })?
+        .as_bytes();
+    Ok(ffi::CString::new(bytes)?)
+}
+
+fn unsupported_file(path: &Path) -> OpenSlideError {
+    OpenSlideError::UnsupportedFile(path.display().to_string().into())
+}
+
 pub fn get_version() -> Result<String> {
     let version = unsafe { sys::openslide_get_version() };
     if !version.is_null() {
@@ -81,28 +105,30 @@ pub fn get_version() -> Result<String> {
     }
 }
 
-pub fn detect_vendor(filename: &str) -> Result<String> {
-    let c_filename = ffi::CString::new(filename)?;
+pub fn detect_vendor(path: &Path) -> Result<String> {
+    let c_filename = path_to_cstring(path)?;
     unsafe {
         let c_vendor = sys::openslide_detect_vendor(c_filename.as_ptr());
         if !c_vendor.is_null() {
             let vendor = ffi::CStr::from_ptr(c_vendor).to_string_lossy().into_owned();
             Ok(vendor)
         } else {
-            Err(OpenSlideError::UnsupportedFile(filename.to_string().into()))
+            Err(unsupported_file(path))
         }
     }
 }
 
-pub fn open(filename: &str) -> Result<*mut sys::openslide_t> {
-    let c_filename = ffi::CString::new(filename)?;
+pub fn open(path: &Path) -> Result<OpenSlideWrapper> {
+    let c_filename = path_to_cstring(path)?;
     let slide = unsafe { sys::openslide_open(c_filename.as_ptr()) };
-    if !slide.is_null() {
-        get_error(slide)?;
-        Ok(slide)
-    } else {
-        Err(OpenSlideError::UnsupportedFile(filename.to_string().into()))
+    if slide.is_null() {
+        return Err(unsupported_file(path));
     }
+    // A recognized file can still come back with an error set; wrap first so the
+    // handle is closed when we bail out.
+    let osr = OpenSlideWrapper(slide);
+    get_error(*osr)?;
+    Ok(osr)
 }
 
 pub fn close(osr: *mut sys::openslide_t) {
