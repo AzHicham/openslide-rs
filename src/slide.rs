@@ -68,12 +68,12 @@ impl OpenSlide {
         // The wrapper closes the handle if any later call fails.
         let osr = bindings::open(path)?;
 
-        let property_names = bindings::get_property_names(*osr)?;
+        let property_names = osr.get_property_names()?;
 
         let property_pairs: Vec<(String, String)> = property_names
             .into_iter()
             .filter_map(|name| {
-                bindings::get_property_value(*osr, &name)
+                osr.get_property_value(&name)
                     .map(|value| (name, value))
                     .ok()
             })
@@ -81,15 +81,15 @@ impl OpenSlide {
 
         let properties = Properties::new(&property_pairs);
 
-        let level_count = bindings::get_level_count(*osr)?;
+        let level_count = osr.get_level_count()?;
         let (level_dimensions, level_downsamples) = (0..level_count)
             .map(|level| {
-                let (width, height) = bindings::get_level_dimensions(*osr, level)?;
+                let (width, height) = osr.get_level_dimensions(level)?;
                 let size = Size {
                     w: width.try_into()?,
                     h: height.try_into()?,
                 };
-                Ok((size, bindings::get_level_downsample(*osr, level)?))
+                Ok((size, osr.get_level_downsample(level)?))
             })
             .collect::<Result<Vec<_>>>()?
             .into_iter()
@@ -114,7 +114,7 @@ impl OpenSlide {
 
     #[cfg(feature = "openslide4")]
     fn set_cache(&self, cache: Cache) {
-        bindings::set_cache(*self.osr, *cache.0);
+        self.osr.set_cache(&cache.0);
     }
 
     /// Quickly determine whether a whole slide image is recognized.
@@ -180,17 +180,17 @@ impl OpenSlide {
 
     /// Get the best level to use for displaying the given downsample factor.
     pub fn best_level_for_downsample(&self, downsample: f64) -> Result<u32> {
-        Ok(bindings::get_best_level_for_downsample(*self.osr, downsample)? as u32)
+        Ok(self.osr.get_best_level_for_downsample(downsample)? as u32)
     }
 
     /// Get the list of all available properties.
     pub fn property_names(&self) -> Result<Vec<String>> {
-        bindings::get_property_names(*self.osr)
+        self.osr.get_property_names()
     }
 
     /// Get the value of a single property.
     pub fn property_value(&self, name: &str) -> Result<String> {
-        bindings::get_property_value(*self.osr, name)
+        self.osr.get_property_value(name)
     }
 
     /// Copy pre-multiplied ARGB data from a whole slide image.
@@ -204,8 +204,7 @@ impl OpenSlide {
     ///
     /// Size of output Vec is Width * Height * 4 (RGBA pixels)
     pub fn read_region(&self, region: &Region) -> Result<Vec<u8>> {
-        bindings::read_region(
-            *self.osr,
+        self.osr.read_region(
             i64::from(region.address.x),
             i64::from(region.address.y),
             region.level.try_into()?,
@@ -216,7 +215,7 @@ impl OpenSlide {
 
     /// Get the list name of all available associated image.
     pub fn associated_image_names(&self) -> Result<Vec<String>> {
-        bindings::get_associated_image_names(*self.osr)
+        self.osr.get_associated_image_names()
     }
 
     /// Copy pre-multiplied ARGB data from a whole slide image.
@@ -228,7 +227,7 @@ impl OpenSlide {
     ///
     /// Size of output Vec is width * height * 4 (RGBA pixels)
     pub fn read_associated_buffer(&self, name: &str) -> Result<(Size, Vec<u8>)> {
-        let ((width, height), buffer) = bindings::read_associated_image(*self.osr, name)?;
+        let ((width, height), buffer) = self.osr.read_associated_image(name)?;
         let size = Size {
             w: width.try_into()?,
             h: height.try_into()?,
@@ -238,7 +237,7 @@ impl OpenSlide {
 
     /// Get the size of an associated image
     pub fn associated_image_dimensions(&self, name: &str) -> Result<Size> {
-        let (width, height) = bindings::get_associated_image_dimensions(*self.osr, name)?;
+        let (width, height) = self.osr.get_associated_image_dimensions(name)?;
         Ok(Size {
             w: width.try_into()?,
             h: height.try_into()?,
@@ -336,7 +335,7 @@ impl OpenSlide {
     /// Get the ICC color profile of the whole slide image, if it has one.
     #[cfg(feature = "openslide4")]
     pub fn icc_profile(&self) -> Result<Vec<u8>> {
-        bindings::read_icc_profile(*self.osr)
+        self.osr.read_icc_profile()
     }
 
     /// Get the ICC color profile of an associated image, if it has one.
@@ -345,7 +344,7 @@ impl OpenSlide {
     ///     name: name of the associated image we want the ICC profile of
     #[cfg(feature = "openslide4")]
     pub fn associated_image_icc_profile(&self, name: &str) -> Result<Vec<u8>> {
-        bindings::read_associated_image_icc_profile(*self.osr, name)
+        self.osr.read_associated_image_icc_profile(name)
     }
 
     /// Get the level-0 rectangle bounding the slide's non-empty region.

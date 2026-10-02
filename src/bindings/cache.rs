@@ -2,38 +2,44 @@
 
 use crate::{Result, errors::OpenSlideError};
 
-use std::ops::Deref;
+use std::ptr::NonNull;
 
 use openslide_sys::sys;
 
+use super::OpenSlideWrapper;
+
+/// Owning reference to an `openslide_cache_t`; releases it on drop.
+///
+/// Invariant: the pointer is non-null and holds one reference on the cache until `Drop`.
+/// [`CacheWrapper::create`] is the only constructor.
 #[derive(Debug)]
-pub(crate) struct CacheWrapper(pub(crate) *mut sys::openslide_cache_t);
+pub(crate) struct CacheWrapper(NonNull<sys::openslide_cache_t>);
 
-impl Deref for CacheWrapper {
-    type Target = *mut sys::openslide_cache_t;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
+impl Drop for CacheWrapper {
+    fn drop(&mut self) {
+        unsafe { sys::openslide_cache_release(self.0.as_ptr()) };
     }
 }
 
+// SAFETY: `OpenSlide` caches are reference-counted and internally synchronized.
 unsafe impl Send for CacheWrapper {}
 
-pub fn cache_create(capacity: usize) -> Result<*mut sys::openslide_cache_t> {
-    let cache = unsafe { sys::openslide_cache_create(capacity) };
-    if cache.is_null() {
-        Err(OpenSlideError::UnexpectedFailure {
-            function: "openslide_cache_create",
-        })
-    } else {
-        Ok(cache)
+impl CacheWrapper {
+    /// Creates a cache of `capacity` bytes.
+    pub fn create(capacity: usize) -> Result<Self> {
+        let cache = unsafe { sys::openslide_cache_create(capacity) };
+        NonNull::new(cache)
+            .map(CacheWrapper)
+            .ok_or(OpenSlideError::UnexpectedFailure {
+                function: "openslide_cache_create",
+            })
     }
 }
 
-pub fn set_cache(osr: *mut sys::openslide_t, cache: *mut sys::openslide_cache_t) {
-    unsafe { sys::openslide_set_cache(osr, cache) };
-}
-
-pub fn cache_release(cache: *mut sys::openslide_cache_t) {
-    unsafe { sys::openslide_cache_release(cache) };
+impl OpenSlideWrapper {
+    /// Installs `cache` on this slide. `OpenSlide` takes its own reference, so `cache`
+    /// may be dropped afterwards.
+    pub fn set_cache(&self, cache: &CacheWrapper) {
+        unsafe { sys::openslide_set_cache(self.as_ptr(), cache.0.as_ptr()) };
+    }
 }
