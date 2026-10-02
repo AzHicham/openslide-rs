@@ -51,7 +51,7 @@ optional = true
 
 [dev-dependencies]
 [dev-dependencies.rstest]
-version = "0.26"
+version = "0.27"
 default-features = false
 features = []
 
