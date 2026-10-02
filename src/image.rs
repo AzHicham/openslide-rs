@@ -3,7 +3,7 @@ use {
     crate::{Result, Size, errors::OpenSlideError},
     fast_image_resize as fr,
     fast_image_resize::images::Image,
-    image::{RgbImage, RgbaImage},
+    image::{ImageBuffer, Pixel, RgbImage, RgbaImage},
     std::{cmp, iter::zip},
 };
 
@@ -36,54 +36,55 @@ pub(crate) fn preserve_aspect_ratio(size: &Size, dimension: &Size) -> Size {
     }
 }
 
+/// Builds an image from a buffer that already holds pixels of type `P`.
 #[cfg(feature = "image")]
-pub(crate) fn resize_rgb_image(image: RgbImage, new_size: &Size) -> Result<RgbImage> {
-    let src_image = Image::from_vec_u8(
-        image.width(),
-        image.height(),
-        image.into_raw(),
-        fr::PixelType::U8x3,
-    )
-    .map_err(|err| OpenSlideError::ImageError(err.to_string().into()))?;
+pub(crate) fn image_from_vec<P: Pixel<Subpixel = u8>>(
+    size: Size,
+    buffer: Vec<u8>,
+) -> Result<ImageBuffer<P, Vec<u8>>> {
+    let expected = size.w as usize * size.h as usize * usize::from(P::CHANNEL_COUNT);
+    let actual = buffer.len();
+    ImageBuffer::from_vec(size.w, size.h, buffer)
+        .ok_or(OpenSlideError::ImageBufferTooSmall { expected, actual })
+}
 
-    let mut dst_image = Image::new(new_size.w, new_size.h, fr::PixelType::U8x3);
-    let mut resizer = fr::Resizer::new();
+#[cfg(feature = "image")]
+fn resize_image<P: Pixel<Subpixel = u8>>(
+    image: ImageBuffer<P, Vec<u8>>,
+    new_size: &Size,
+    pixel_type: fr::PixelType,
+) -> Result<ImageBuffer<P, Vec<u8>>> {
+    let (width, height) = image.dimensions();
+    let expected = width as usize * height as usize * usize::from(P::CHANNEL_COUNT);
+    let actual = image.as_raw().len();
+    let src_image = Image::from_vec_u8(width, height, image.into_raw(), pixel_type).map_err(
+        |err| match err {
+            fr::ImageBufferError::InvalidBufferSize => {
+                OpenSlideError::ImageBufferTooSmall { expected, actual }
+            }
+            fr::ImageBufferError::InvalidBufferAlignment => OpenSlideError::ImageBufferMisaligned,
+        },
+    )?;
+
+    let mut dst_image = Image::new(new_size.w, new_size.h, pixel_type);
     let option = fr::ResizeOptions {
         algorithm: fr::ResizeAlg::Convolution(fr::FilterType::Lanczos3),
         cropping: fr::SrcCropping::None,
         mul_div_alpha: false,
     };
+    fr::Resizer::new().resize(&src_image, &mut dst_image, &option)?;
 
-    resizer.resize(&src_image, &mut dst_image, &option).unwrap(); // safe because src_image & dst_image are both RgbImage
+    image_from_vec(*new_size, dst_image.into_vec())
+}
 
-    let image = RgbImage::from_vec(new_size.w, new_size.h, dst_image.into_vec()).unwrap(); // safe because dst_image buffer is big enough
-
-    Ok(image)
+#[cfg(feature = "image")]
+pub(crate) fn resize_rgb_image(image: RgbImage, new_size: &Size) -> Result<RgbImage> {
+    resize_image(image, new_size, fr::PixelType::U8x3)
 }
 
 #[cfg(feature = "image")]
 pub(crate) fn resize_rgba_image(image: RgbaImage, new_size: &Size) -> Result<RgbaImage> {
-    let src_image = Image::from_vec_u8(
-        image.width(),
-        image.height(),
-        image.into_raw(),
-        fr::PixelType::U8x4,
-    )
-    .map_err(|err| OpenSlideError::ImageError(err.to_string().into()))?;
-
-    let mut dst_image = Image::new(new_size.w, new_size.h, fr::PixelType::U8x4);
-    let mut resizer = fr::Resizer::new();
-    let option = fr::ResizeOptions {
-        algorithm: fr::ResizeAlg::Convolution(fr::FilterType::Lanczos3),
-        cropping: fr::SrcCropping::None,
-        mul_div_alpha: false,
-    };
-
-    resizer.resize(&src_image, &mut dst_image, &option).unwrap(); // safe because src_image & dst_image are both RgbaImage
-
-    let image = RgbaImage::from_vec(new_size.w, new_size.h, dst_image.into_vec()).unwrap(); // safe because dst_image buffer is big enough
-
-    Ok(image)
+    resize_image(image, new_size, fr::PixelType::U8x4)
 }
 
 /// Undoes alpha premultiplication of one channel (truncating, like openslide-python).
@@ -165,6 +166,18 @@ mod tests {
         assert_eq!(rgb.get_pixel(1, 0).0, [0, 0, 0]);
         assert_eq!(rgb.get_pixel(2, 0).0, [128, 0, 0]);
     }
+    #[test]
+    fn test_image_from_vec_too_small() {
+        let err = image_from_vec::<image::Rgb<u8>>(Size { w: 2, h: 2 }, vec![0; 11]).unwrap_err();
+        assert_eq!(
+            err,
+            OpenSlideError::ImageBufferTooSmall {
+                expected: 12,
+                actual: 11
+            }
+        );
+    }
+
     #[test]
     fn test_preserve_aspect_ratio() {
         assert_eq!(
