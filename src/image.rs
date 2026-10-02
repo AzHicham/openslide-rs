@@ -86,20 +86,51 @@ pub(crate) fn resize_rgba_image(image: RgbaImage, new_size: &Size) -> Result<Rgb
     Ok(image)
 }
 
+/// Undoes alpha premultiplication of one channel (truncating, like openslide-python).
 #[cfg(feature = "image")]
-pub(crate) fn _bgra_to_rgba_inplace(image: &mut RgbaImage) {
+fn unpremultiply(c: u8, a: u8) -> u8 {
+    // `c <= a` for valid premultiplied data; `min` guards against malformed input.
+    (u16::from(c) * 255 / u16::from(a)).min(255) as u8
+}
+
+/// Composites one premultiplied channel over an opaque background: `c + bg * (1 - a)`.
+#[cfg(feature = "image")]
+fn over_background(c: u8, a: u8, bg: u8) -> u8 {
+    let bg_part = (u16::from(bg) * u16::from(255 - a) + 127) / 255;
+    (u16::from(c) + bg_part).min(255) as u8
+}
+
+/// Converts `OpenSlide`'s premultiplied BGRA pixels to straight-alpha RGBA, in place.
+#[cfg(feature = "image")]
+pub(crate) fn bgra_to_rgba_inplace(image: &mut RgbaImage) {
     for pixel in image.pixels_mut() {
         let [b, g, r, a] = pixel.0;
-        pixel.0 = [r, g, b, a];
+        pixel.0 = match a {
+            0 => [0, 0, 0, 0],
+            255 => [r, g, b, a],
+            _ => [
+                unpremultiply(r, a),
+                unpremultiply(g, a),
+                unpremultiply(b, a),
+                a,
+            ],
+        };
     }
 }
 
+/// Converts `OpenSlide`'s premultiplied BGRA pixels to RGB by compositing them over
+/// `background` (RGB), so transparent areas take the background color instead of black.
 #[cfg(feature = "image")]
-pub(crate) fn _bgra_to_rgb(image: &RgbaImage) -> RgbImage {
+pub(crate) fn bgra_to_rgb(image: &RgbaImage, background: [u8; 3]) -> RgbImage {
+    let [bg_r, bg_g, bg_b] = background;
     let mut rgb_image = RgbImage::new(image.width(), image.height());
     for (pixel, rgb_pixel) in zip(image.pixels(), rgb_image.pixels_mut()) {
-        let [b, g, r, _] = pixel.0;
-        rgb_pixel.0 = [r, g, b];
+        let [b, g, r, a] = pixel.0;
+        rgb_pixel.0 = [
+            over_background(r, a, bg_r),
+            over_background(g, a, bg_g),
+            over_background(b, a, bg_b),
+        ];
     }
     rgb_image
 }
@@ -108,6 +139,32 @@ pub(crate) fn _bgra_to_rgb(image: &RgbaImage) -> RgbImage {
 #[cfg(feature = "image")]
 mod tests {
     use super::*;
+    use image::Rgba;
+
+    #[test]
+    fn test_bgra_to_rgba_unpremultiplies() {
+        // BGRA, premultiplied: opaque, fully transparent, half-transparent red.
+        let mut image =
+            RgbaImage::from_vec(3, 1, vec![10, 20, 30, 255, 0, 0, 0, 0, 0, 0, 128, 128]).unwrap();
+        bgra_to_rgba_inplace(&mut image);
+        assert_eq!(image.get_pixel(0, 0), &Rgba([30, 20, 10, 255]));
+        assert_eq!(image.get_pixel(1, 0), &Rgba([0, 0, 0, 0]));
+        assert_eq!(image.get_pixel(2, 0), &Rgba([255, 0, 0, 128]));
+    }
+
+    #[test]
+    fn test_bgra_to_rgb_composites_over_background() {
+        let image =
+            RgbaImage::from_vec(3, 1, vec![10, 20, 30, 255, 0, 0, 0, 0, 0, 0, 128, 128]).unwrap();
+        let rgb = bgra_to_rgb(&image, [255, 255, 255]);
+        assert_eq!(rgb.get_pixel(0, 0).0, [30, 20, 10]);
+        assert_eq!(rgb.get_pixel(1, 0).0, [255, 255, 255]);
+        assert_eq!(rgb.get_pixel(2, 0).0, [255, 127, 127]);
+
+        let rgb = bgra_to_rgb(&image, [0, 0, 0]);
+        assert_eq!(rgb.get_pixel(1, 0).0, [0, 0, 0]);
+        assert_eq!(rgb.get_pixel(2, 0).0, [128, 0, 0]);
+    }
     #[test]
     fn test_preserve_aspect_ratio() {
         assert_eq!(

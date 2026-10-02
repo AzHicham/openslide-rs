@@ -12,7 +12,7 @@ use std::path::Path;
 #[cfg(feature = "image")]
 use {
     crate::image::{
-        _bgra_to_rgb, _bgra_to_rgba_inplace, preserve_aspect_ratio, resize_rgb_image,
+        bgra_to_rgb, bgra_to_rgba_inplace, preserve_aspect_ratio, resize_rgb_image,
         resize_rgba_image,
     },
     image::{RgbImage, RgbaImage},
@@ -45,6 +45,16 @@ pub struct OpenSlide {
 #[cfg(feature = "image")]
 fn buffer_to_rgba(size: Size, buffer: Vec<u8>) -> RgbaImage {
     RgbaImage::from_vec(size.w, size.h, buffer).expect("buffer size matches width * height * 4")
+}
+
+/// Parses an `RRGGBB` hex color.
+#[cfg(feature = "image")]
+fn parse_hex_rgb(hex: &str) -> Option<[u8; 3]> {
+    if hex.len() != 6 {
+        return None;
+    }
+    let channel = |i: usize| -> Option<u8> { u8::from_str_radix(hex.get(i..i + 2)?, 16).ok() };
+    Some([channel(0)?, channel(2)?, channel(4)?])
 }
 
 impl OpenSlide {
@@ -248,62 +258,54 @@ impl OpenSlide {
         })
     }
 
-    /// Copy pre-multiplied ARGB data from a whole slide image.
+    /// Reads a region of the slide as straight (non-premultiplied) alpha RGBA.
     ///
-    /// This function reads and decompresses a region of a whole slide image into an `RgbImage`
-    ///
-    /// Args:
-    ///     offset: (x, y) coordinate (increasing downwards/to the right) of top left pixel position
-    ///     level: At which level to grab the region from
-    ///     size: (width, height) in pixels of the outputted region
+    /// Areas outside the scanned tissue come back fully transparent.
     #[cfg(feature = "image")]
     pub fn read_image_rgba(&self, region: &Region) -> Result<RgbaImage> {
         let buffer = self.read_region(region)?;
         let mut image = buffer_to_rgba(region.size, buffer);
-        _bgra_to_rgba_inplace(&mut image);
+        bgra_to_rgba_inplace(&mut image);
         Ok(image)
     }
 
-    /// Copy pre-multiplied ARGB data from from an associated image..
+    /// Reads a region of the slide as RGB.
     ///
-    /// This function reads and decompresses a region of a whole slide image into an `RgbaImage`
-    ///
-    /// Args:
-    ///     offset: (x, y) coordinate (increasing downwards/to the right) of top left pixel position
-    ///     level: At which level to grab the region from
-    ///     size: (width, height) in pixels of the outputted region
+    /// Transparent areas are composited over the slide's background color
+    /// (`openslide.background-color`, white if the slide doesn't set one).
     #[cfg(feature = "image")]
     pub fn read_image_rgb(&self, region: &Region) -> Result<RgbImage> {
         let buffer = self.read_region(region)?;
         let image = buffer_to_rgba(region.size, buffer);
-        Ok(_bgra_to_rgb(&image))
+        Ok(bgra_to_rgb(&image, self.background_rgb()))
     }
 
-    /// Copy pre-multiplied ARGB data from an associated image.
-    ///
-    /// This function reads and decompresses an associated image into an `RgbaImage`
-    ///
-    /// Args:
-    ///     name: name of the associated image we want to read
+    /// Reads associated image `name` as straight (non-premultiplied) alpha RGBA.
     #[cfg(feature = "image")]
     pub fn read_associated_image_rgba(&self, name: &str) -> Result<RgbaImage> {
         let (size, buffer) = self.read_associated_buffer(name)?;
         let mut image = buffer_to_rgba(size, buffer);
-        _bgra_to_rgba_inplace(&mut image);
+        bgra_to_rgba_inplace(&mut image);
         Ok(image)
     }
 
-    /// Copy pre-multiplied ARGB data from an associated image.
-    ///
-    /// This function reads and decompresses an associated image into an `RgbaImage`
-    ///
-    /// Args:
-    ///     name: name of the associated image we want to read
+    /// Reads associated image `name` as RGB, compositing any transparency over white.
     #[cfg(feature = "image")]
     pub fn read_associated_image_rgb(&self, name: &str) -> Result<RgbImage> {
         let (size, buffer) = self.read_associated_buffer(name)?;
         let image = buffer_to_rgba(size, buffer);
-        Ok(_bgra_to_rgb(&image))
+        Ok(bgra_to_rgb(&image, [255, 255, 255]))
+    }
+
+    /// The slide's `openslide.background-color` (`RRGGBB`) as RGB, white if absent or malformed.
+    #[cfg(feature = "image")]
+    fn background_rgb(&self) -> [u8; 3] {
+        self.properties
+            .openslide_properties
+            .background_color
+            .as_deref()
+            .and_then(parse_hex_rgb)
+            .unwrap_or([255, 255, 255])
     }
 
     /// Get a RGBA image thumbnail of desired size of the whole slide image.
@@ -385,5 +387,20 @@ impl OpenSlide {
                 h: properties.bounds_height.unwrap_or(level0.h),
             },
         }
+    }
+}
+
+#[cfg(test)]
+#[cfg(feature = "image")]
+mod tests {
+    use super::parse_hex_rgb;
+
+    #[test]
+    fn test_parse_hex_rgb() {
+        assert_eq!(parse_hex_rgb("FFFFFF"), Some([255, 255, 255]));
+        assert_eq!(parse_hex_rgb("1a2B3c"), Some([0x1a, 0x2b, 0x3c]));
+        assert_eq!(parse_hex_rgb("FFF"), None);
+        assert_eq!(parse_hex_rgb("GG0000"), None);
+        assert_eq!(parse_hex_rgb("é0000"), None);
     }
 }
