@@ -42,7 +42,9 @@ pub(crate) fn image_from_vec<P: Pixel<Subpixel = u8>>(
     size: Size,
     buffer: Vec<u8>,
 ) -> Result<ImageBuffer<P, Vec<u8>>> {
-    let expected = size.w as usize * size.h as usize * usize::from(P::CHANNEL_COUNT);
+    let expected = (size.w as usize)
+        .saturating_mul(size.h as usize)
+        .saturating_mul(usize::from(P::CHANNEL_COUNT));
     let actual = buffer.len();
     ImageBuffer::from_vec(size.w, size.h, buffer)
         .ok_or(OpenSlideError::ImageBufferTooSmall { expected, actual })
@@ -55,7 +57,9 @@ fn resize_image<P: Pixel<Subpixel = u8>>(
     pixel_type: fr::PixelType,
 ) -> Result<ImageBuffer<P, Vec<u8>>> {
     let (width, height) = image.dimensions();
-    let expected = width as usize * height as usize * usize::from(P::CHANNEL_COUNT);
+    let expected = (width as usize)
+        .saturating_mul(height as usize)
+        .saturating_mul(usize::from(P::CHANNEL_COUNT));
     let actual = image.as_raw().len();
     let src_image = Image::from_vec_u8(width, height, image.into_raw(), pixel_type).map_err(
         |err| match err {

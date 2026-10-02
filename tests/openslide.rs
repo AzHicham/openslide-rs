@@ -304,3 +304,42 @@ fn test_associated_image_icc_profile(#[case] filename: &Path) {
         None
     );
 }
+
+#[rstest]
+#[case(boxes_tiff())]
+fn test_read_region_too_large(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+    let region = Region {
+        size: Size {
+            w: u32::MAX,
+            h: u32::MAX,
+        },
+        level: 0,
+        address: Address { x: 0, y: 0 },
+    };
+    assert_eq!(
+        slide.read_region(&region).unwrap_err(),
+        OpenSlideError::ImageTooLarge {
+            width: i64::from(u32::MAX),
+            height: i64::from(u32::MAX),
+        }
+    );
+}
+
+#[rstest]
+#[case(boxes_tiff())]
+fn test_read_region_out_of_memory(#[case] filename: &Path) {
+    let slide = OpenSlide::new(filename).unwrap();
+    let region = Region {
+        size: Size {
+            w: 1 << 30,
+            h: 1 << 30,
+        },
+        level: 0,
+        address: Address { x: 0, y: 0 },
+    };
+    assert_eq!(
+        slide.read_region(&region).unwrap_err(),
+        OpenSlideError::OutOfMemory { bytes: 1 << 62 }
+    );
+}

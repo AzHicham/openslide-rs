@@ -60,6 +60,18 @@ fn path_to_cstring(path: &Path) -> Result<ffi::CString> {
     Ok(ffi::CString::new(bytes)?)
 }
 
+/// Byte length of a `width` x `height` buffer of 4-byte (ARGB) pixels.
+///
+/// Errors instead of overflowing, so a huge request can never produce a buffer
+/// smaller than what `OpenSlide` writes into it.
+fn pixel_buffer_len(width: i64, height: i64) -> Result<usize> {
+    width
+        .checked_mul(height)
+        .and_then(|pixels| pixels.checked_mul(4))
+        .and_then(|bytes| usize::try_from(bytes).ok())
+        .ok_or(OpenSlideError::ImageTooLarge { width, height })
+}
+
 /// Maps an ICC profile size reported by `OpenSlide` to a buffer length; `0` means no profile.
 #[cfg(feature = "openslide4")]
 fn icc_buffer_len(size: i64) -> Result<Option<usize>> {
@@ -119,7 +131,10 @@ impl OpenSlideWrapper {
     ///
     /// `fill` must fully initialize all `size` bytes pointed to by the pointer it receives.
     fn read_into_buffer<T>(&self, size: usize, fill: impl FnOnce(*mut T)) -> Result<Vec<u8>> {
-        let mut buffer: Vec<u8> = Vec::with_capacity(size);
+        let mut buffer: Vec<u8> = Vec::new();
+        buffer
+            .try_reserve_exact(size)
+            .map_err(|_| OpenSlideError::OutOfMemory { bytes: size })?;
         fill(buffer.as_mut_ptr().cast::<T>());
         self.get_error()?;
         unsafe {
@@ -179,7 +194,7 @@ impl OpenSlideWrapper {
     }
 
     pub fn read_region(&self, x: i64, y: i64, level: i32, w: i64, h: i64) -> Result<Vec<u8>> {
-        let size = (h * w * 4) as usize;
+        let size = pixel_buffer_len(w, h)?;
         self.read_into_buffer(size, |p: *mut u32| unsafe {
             sys::openslide_read_region(self.as_ptr(), p, x, y, level, w, h);
         })
@@ -242,7 +257,7 @@ impl OpenSlideWrapper {
     pub fn read_associated_image(&self, name: &str) -> Result<((i64, i64), Vec<u8>)> {
         let c_name = ffi::CString::new(name)?;
         let (width, height) = self.get_associated_image_dimensions(name)?;
-        let size = (width * height * 4) as usize;
+        let size = pixel_buffer_len(width, height)?;
         let buffer = self.read_into_buffer(size, |p: *mut u32| unsafe {
             sys::openslide_read_associated_image(self.as_ptr(), c_name.as_ptr(), p);
         })?;
