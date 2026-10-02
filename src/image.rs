@@ -77,7 +77,10 @@ fn resize_image<P: Pixel<Subpixel = u8>>(
     let option = fr::ResizeOptions {
         algorithm: fr::ResizeAlg::Convolution(fr::FilterType::Lanczos3),
         cropping: fr::SrcCropping::None,
-        mul_div_alpha: false,
+        // RGBA buffers hold straight alpha: weight colors by alpha while resizing so
+        // transparent pixels don't bleed their (black) color into opaque neighbors.
+        // No effect on RGB.
+        mul_div_alpha: true,
     };
     fr::Resizer::new()
         .resize(&src_image, &mut dst_image, &option)
@@ -183,6 +186,14 @@ mod tests {
                 actual: 11
             }
         );
+    }
+
+    #[test]
+    fn test_resize_rgba_does_not_bleed_transparent_pixels() {
+        // Opaque white next to fully transparent, downscaled to a single pixel.
+        let image = RgbaImage::from_vec(2, 1, vec![255, 255, 255, 255, 0, 0, 0, 0]).unwrap();
+        let resized = resize_rgba_image(image, &Size { w: 1, h: 1 }).unwrap();
+        assert_eq!(resized.get_pixel(0, 0).0, [255, 255, 255, 128]);
     }
 
     #[test]
