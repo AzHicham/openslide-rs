@@ -37,7 +37,7 @@ fn test_slide_properties(#[case] filename: &Path) {
         "openslide.level[3].width",
     ];
 
-    let raw_version = OpenSlide::get_version().unwrap();
+    let raw_version = OpenSlide::version().unwrap();
     let version = Version::from(&raw_version).unwrap();
 
     dbg!(&version);
@@ -50,7 +50,7 @@ fn test_slide_properties(#[case] filename: &Path) {
             "tiff.XResolution",
             "tiff.YResolution",
         ]);
-        assert_eq!(slide.get_property_names().unwrap(), expected_result);
+        assert_eq!(slide.property_names().unwrap(), expected_result);
     } else {
         let mut expected_result = base_expected_result;
         expected_result.extend(vec![
@@ -62,7 +62,7 @@ fn test_slide_properties(#[case] filename: &Path) {
             "tiff.XResolution",
             "tiff.YResolution",
         ]);
-        assert_eq!(slide.get_property_names().unwrap(), expected_result);
+        assert_eq!(slide.property_names().unwrap(), expected_result);
     }
 }
 
@@ -89,7 +89,7 @@ fn test_tiff_properties(#[case] filename: &Path) {
         Some("generic-tiff".to_string())
     );
     assert_eq!(
-        slide.get_property_value("openslide.vendor").unwrap(),
+        slide.property_value("openslide.vendor").unwrap(),
         "generic-tiff"
     );
     assert_eq!(
@@ -97,7 +97,7 @@ fn test_tiff_properties(#[case] filename: &Path) {
         Some("c08b056490bac8bcb329d9b8fb175888083d4097952a55fee99997758c728c36".to_string())
     );
 
-    let raw_version = OpenSlide::get_version().unwrap();
+    let raw_version = OpenSlide::version().unwrap();
     let version = Version::from(&raw_version).unwrap();
 
     dbg!(&version);
