@@ -221,9 +221,14 @@ mod deepzoom {
     }
 
     #[rstest]
-    #[case(boxes_tiff(), 0, 0)]
-    #[case(boxes_tiff(), 4, 5)]
-    fn test_invalid_options(#[case] filename: &Path, #[case] tile_size: u32, #[case] overlap: u32) {
+    #[case(boxes_tiff(), 0, 0, OpenSlideError::InvalidTileSize)]
+    #[case(boxes_tiff(), 4, 5, OpenSlideError::OverlapTooLarge { overlap: 5, tile_size: 4 })]
+    fn test_invalid_options(
+        #[case] filename: &Path,
+        #[case] tile_size: u32,
+        #[case] overlap: u32,
+        #[case] expected: OpenSlideError,
+    ) {
         let slide = OpenSlide::new(filename).unwrap();
         let options = DeepZoomOptions {
             tile_size,
@@ -231,7 +236,27 @@ mod deepzoom {
             limit_bounds: false,
         };
         let err = DeepZoomGenerator::new(&slide, options).unwrap_err();
-        assert!(matches!(err, OpenSlideError::InvalidDeepZoom(_)));
+        assert_eq!(err, expected);
+    }
+
+    #[rstest]
+    #[case(boxes_tiff())]
+    fn test_invalid_address(#[case] filename: &Path) {
+        let slide = OpenSlide::new(filename).unwrap();
+        let dz = DeepZoomGenerator::new(&slide, DeepZoomOptions::default()).unwrap();
+        let err = dz.tile_rgb(9, Address { x: 2, y: 0 }).unwrap_err();
+        assert_eq!(
+            err,
+            OpenSlideError::InvalidAddress {
+                level: 9,
+                address: Address { x: 2, y: 0 },
+                grid: Size { w: 2, h: 1 },
+            }
+        );
+        assert_eq!(
+            err.to_string(),
+            "Invalid tile address (2, 0) at level 9 (level has 2x1 tiles)"
+        );
     }
 
     #[rstest]
