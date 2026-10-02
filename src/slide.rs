@@ -332,18 +332,15 @@ impl OpenSlide {
         Ok((region, preserve_aspect_ratio(size, &dimension_level0)))
     }
 
-    /// Get the ICC color profile of the whole slide image, if it has one.
+    /// Get the ICC color profile of the whole slide image, or `None` if it has none.
     #[cfg(feature = "openslide4")]
-    pub fn icc_profile(&self) -> Result<Vec<u8>> {
+    pub fn icc_profile(&self) -> Result<Option<Vec<u8>>> {
         self.osr.read_icc_profile()
     }
 
-    /// Get the ICC color profile of an associated image, if it has one.
-    ///
-    /// Args:
-    ///     name: name of the associated image we want the ICC profile of
+    /// Get the ICC color profile of associated image `name`, or `None` if it has none.
     #[cfg(feature = "openslide4")]
-    pub fn associated_image_icc_profile(&self, name: &str) -> Result<Vec<u8>> {
+    pub fn associated_image_icc_profile(&self, name: &str) -> Result<Option<Vec<u8>>> {
         self.osr.read_associated_image_icc_profile(name)
     }
 

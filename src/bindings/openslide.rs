@@ -60,6 +60,15 @@ fn path_to_cstring(path: &Path) -> Result<ffi::CString> {
     Ok(ffi::CString::new(bytes)?)
 }
 
+/// Maps an ICC profile size reported by `OpenSlide` to a buffer length; `0` means no profile.
+#[cfg(feature = "openslide4")]
+fn icc_buffer_len(size: i64) -> Result<Option<usize>> {
+    match size {
+        0 => Ok(None),
+        size => Ok(Some(usize::try_from(size)?)),
+    }
+}
+
 fn unsupported_file(path: &Path) -> OpenSlideError {
     OpenSlideError::UnsupportedFile(path.to_path_buf())
 }
@@ -255,7 +264,6 @@ impl OpenSlideWrapper {
     #[cfg(feature = "openslide4")]
     pub fn get_icc_profile_size(&self) -> Result<i64> {
         let size = unsafe { sys::openslide_get_icc_profile_size(self.as_ptr()) };
-        // TODO: check if size == 0 => no ICC profile
         if size == -1 {
             self.get_error()?;
             return Err(OpenSlideError::UnexpectedFailure {
@@ -266,11 +274,14 @@ impl OpenSlideWrapper {
     }
 
     #[cfg(feature = "openslide4")]
-    pub fn read_icc_profile(&self) -> Result<Vec<u8>> {
-        let size = self.get_icc_profile_size()? as usize;
+    pub fn read_icc_profile(&self) -> Result<Option<Vec<u8>>> {
+        let Some(size) = icc_buffer_len(self.get_icc_profile_size()?)? else {
+            return Ok(None);
+        };
         self.read_into_buffer(size, |p: *mut std::ffi::c_void| unsafe {
             sys::openslide_read_icc_profile(self.as_ptr(), p);
         })
+        .map(Some)
     }
 
     #[cfg(feature = "openslide4")]
@@ -279,7 +290,6 @@ impl OpenSlideWrapper {
         let size = unsafe {
             sys::openslide_get_associated_image_icc_profile_size(self.as_ptr(), c_name.as_ptr())
         };
-        // TODO: check if size == 0 => no ICC profile
         if size == -1 {
             self.get_error()?;
             return Err(OpenSlideError::UnexpectedFailure {
@@ -290,11 +300,14 @@ impl OpenSlideWrapper {
     }
 
     #[cfg(feature = "openslide4")]
-    pub fn read_associated_image_icc_profile(&self, name: &str) -> Result<Vec<u8>> {
+    pub fn read_associated_image_icc_profile(&self, name: &str) -> Result<Option<Vec<u8>>> {
         let c_name = ffi::CString::new(name)?;
-        let size = self.get_associated_image_icc_profile_size(name)? as usize;
+        let Some(size) = icc_buffer_len(self.get_associated_image_icc_profile_size(name)?)? else {
+            return Ok(None);
+        };
         self.read_into_buffer(size, |p: *mut std::ffi::c_void| unsafe {
             sys::openslide_read_associated_image_icc_profile(self.as_ptr(), c_name.as_ptr(), p);
         })
+        .map(Some)
     }
 }
