@@ -9,7 +9,7 @@ mod fixture;
 
 #[rstest]
 fn test_version() {
-    let version = OpenSlide::get_version().expect("Failed to get version");
+    let version = OpenSlide::version().expect("Failed to get version");
     Version::from(&version).expect("Failed to parse version");
 }
 
@@ -68,27 +68,15 @@ fn test_open_unsupported_tiff(#[case] filename: &Path) {
 fn test_slide_info(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
-    assert_eq!(slide.get_level_count(), 4);
+    assert_eq!(slide.level_count(), 4);
 
     // Level dimensions
+    assert_eq!(slide.level_dimensions(0).unwrap(), Size { w: 300, h: 250 });
+    assert_eq!(slide.level_dimensions(1).unwrap(), Size { w: 150, h: 125 });
+    assert_eq!(slide.level_dimensions(2).unwrap(), Size { w: 75, h: 62 });
+    assert_eq!(slide.level_dimensions(3).unwrap(), Size { w: 37, h: 31 });
     assert_eq!(
-        slide.get_level_dimensions(0).unwrap(),
-        Size { w: 300, h: 250 }
-    );
-    assert_eq!(
-        slide.get_level_dimensions(1).unwrap(),
-        Size { w: 150, h: 125 }
-    );
-    assert_eq!(
-        slide.get_level_dimensions(2).unwrap(),
-        Size { w: 75, h: 62 }
-    );
-    assert_eq!(
-        slide.get_level_dimensions(3).unwrap(),
-        Size { w: 37, h: 31 }
-    );
-    assert_eq!(
-        slide.get_all_level_dimensions(),
+        slide.all_level_dimensions(),
         &[
             Size { w: 300, h: 250 },
             Size { w: 150, h: 125 },
@@ -98,29 +86,23 @@ fn test_slide_info(#[case] filename: &Path) {
     );
 
     // Level downsample
-    assert_approx_eq!(slide.get_level_downsample(0).unwrap(), 1.0);
-    assert_approx_eq!(slide.get_level_downsample(1).unwrap(), 2.0);
-    assert_approx_eq!(
-        slide.get_level_downsample(2).unwrap(),
-        4.016_129_032_258_064
-    );
-    assert_approx_eq!(
-        slide.get_level_downsample(3).unwrap(),
-        8.086_312_118_570_184
-    );
+    assert_approx_eq!(slide.level_downsample(0).unwrap(), 1.0);
+    assert_approx_eq!(slide.level_downsample(1).unwrap(), 2.0);
+    assert_approx_eq!(slide.level_downsample(2).unwrap(), 4.016_129_032_258_064);
+    assert_approx_eq!(slide.level_downsample(3).unwrap(), 8.086_312_118_570_184);
 
-    let level_downsamples = slide.get_all_level_downsample();
+    let level_downsamples = slide.all_level_downsamples();
     let expect_level_downsamples = [1.0, 2.0, 4.016_129_032_258_064, 8.086_312_118_570_184];
     for index in 0..expect_level_downsamples.len() {
         assert_approx_eq!(level_downsamples[index], expect_level_downsamples[index]);
     }
 
-    assert_eq!(slide.get_best_level_for_downsample(1.0).unwrap(), 0);
-    assert_eq!(slide.get_best_level_for_downsample(2.0).unwrap(), 1);
-    assert_eq!(slide.get_best_level_for_downsample(4.0).unwrap(), 1);
-    assert_eq!(slide.get_best_level_for_downsample(4.1).unwrap(), 2);
-    assert_eq!(slide.get_best_level_for_downsample(8.0).unwrap(), 2);
-    assert_eq!(slide.get_best_level_for_downsample(8.1).unwrap(), 3);
+    assert_eq!(slide.best_level_for_downsample(1.0).unwrap(), 0);
+    assert_eq!(slide.best_level_for_downsample(2.0).unwrap(), 1);
+    assert_eq!(slide.best_level_for_downsample(4.0).unwrap(), 1);
+    assert_eq!(slide.best_level_for_downsample(4.1).unwrap(), 2);
+    assert_eq!(slide.best_level_for_downsample(8.0).unwrap(), 2);
+    assert_eq!(slide.best_level_for_downsample(8.1).unwrap(), 3);
 }
 
 #[rstest]
@@ -128,7 +110,7 @@ fn test_slide_info(#[case] filename: &Path) {
 #[case(boxes_tiff())]
 fn test_error_slide_level(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
-    slide.get_level_dimensions(10).unwrap();
+    slide.level_dimensions(10).unwrap();
 }
 
 #[rstest]
@@ -138,7 +120,7 @@ fn test_associated_images_rgba(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
     assert_eq!(
-        slide.get_associated_image_names().unwrap(),
+        slide.associated_image_names().unwrap(),
         vec!["thumbnail".to_string()]
     );
 
@@ -158,11 +140,11 @@ fn test_associated_images_rgb(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
     assert_eq!(
-        slide.get_associated_image_names().unwrap(),
+        slide.associated_image_names().unwrap(),
         vec!["thumbnail".to_string()]
     );
 
-    let size = slide.get_associated_image_dimensions("thumbnail").unwrap();
+    let size = slide.associated_image_dimensions("thumbnail").unwrap();
     assert_eq!(size, Size { w: 16, h: 16 });
 
     let (size, _) = slide.read_associated_buffer("thumbnail").unwrap();
@@ -179,7 +161,7 @@ fn test_associated_images_rgb(#[case] filename: &Path) {
 fn test_error_associated_images_dimension(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
-    slide.get_associated_image_dimensions("missing").unwrap();
+    slide.associated_image_dimensions("missing").unwrap();
 }
 
 #[rstest]
@@ -198,7 +180,7 @@ fn test_slide_read_region(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
     let region = Region {
-        size: slide.get_level_dimensions(0).unwrap(),
+        size: slide.level_dimensions(0).unwrap(),
         level: 0,
         address: Address { x: 0, y: 0 },
     };
@@ -214,7 +196,7 @@ fn test_slide_read_image_rgb(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
     let region = Region {
-        size: slide.get_level_dimensions(0).unwrap(),
+        size: slide.level_dimensions(0).unwrap(),
         level: 0,
         address: Address { x: 0, y: 0 },
     };
@@ -231,7 +213,7 @@ fn test_slide_read_image_rgba(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
     let region = Region {
-        size: slide.get_level_dimensions(0).unwrap(),
+        size: slide.level_dimensions(0).unwrap(),
         level: 0,
         address: Address { x: 0, y: 0 },
     };
@@ -282,10 +264,10 @@ fn test_open_with_cache_size(
 ) {
     let slide = OpenSlide::new_with_cache(filename, cache_size).unwrap();
 
-    assert_eq!(slide.get_level_count(), 4);
+    assert_eq!(slide.level_count(), 4);
 
     let region = Region {
-        size: slide.get_level_dimensions(0).unwrap(),
+        size: slide.level_dimensions(0).unwrap(),
         level: 0,
         address: Address { x: 0, y: 0 },
     };

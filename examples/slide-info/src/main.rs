@@ -34,8 +34,8 @@ fn run(cli: &Cli) -> Result<(), Box<dyn Error>> {
     info!("Opening slide: {}", cli.slide_path.display());
     let slide = OpenSlide::new(&cli.slide_path)?;
     let slide_props = &slide.properties().openslide_properties;
-    let level_count = slide.get_level_count();
-    let associated = slide.get_associated_image_names()?;
+    let level_count = slide.level_count();
+    let associated = slide.associated_image_names()?;
 
     info!("Slide: {}", cli.slide_path.display());
     info!(
@@ -50,7 +50,7 @@ fn run(cli: &Cli) -> Result<(), Box<dyn Error>> {
     if let (Some(mpp_x), Some(mpp_y)) = (slide_props.mpp_x, slide_props.mpp_y) {
         info!("MPP: {mpp_x:.4} x {mpp_y:.4} um/px");
     }
-    let bounds = slide.get_bounds();
+    let bounds = slide.bounds();
     info!(
         "Bounds: x={}, y={}, w={}, h={}",
         bounds.origin.x, bounds.origin.y, bounds.size.w, bounds.size.h
@@ -58,9 +58,9 @@ fn run(cli: &Cli) -> Result<(), Box<dyn Error>> {
 
     info!("Levels:");
     let levels = slide
-        .get_all_level_dimensions()
+        .all_level_dimensions()
         .iter()
-        .zip(slide.get_all_level_downsample());
+        .zip(slide.all_level_downsamples());
     for (level, (size, downsample)) in levels.enumerate() {
         info!(
             "  - level {level}: {}x{} (downsample {downsample:.4})",
@@ -73,16 +73,16 @@ fn run(cli: &Cli) -> Result<(), Box<dyn Error>> {
     } else {
         info!("Associated images:");
         for name in associated {
-            let size = slide.get_associated_image_dimensions(&name)?;
+            let size = slide.associated_image_dimensions(&name)?;
             info!("  - {name}: {}x{}", size.w, size.h);
         }
     }
 
-    let mut property_names = slide.get_property_names()?;
+    let mut property_names = slide.property_names()?;
     property_names.sort_unstable();
     info!("Properties ({})", property_names.len());
     for name in property_names {
-        let value = slide.get_property_value(&name)?;
+        let value = slide.property_value(&name)?;
         info!("  - {name}={value}");
     }
 
