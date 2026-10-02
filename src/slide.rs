@@ -12,7 +12,7 @@ use std::path::Path;
 #[cfg(feature = "image")]
 use {
     crate::image::{
-        bgra_to_rgb, bgra_to_rgba_inplace, preserve_aspect_ratio, resize_rgb_image,
+        bgra_to_rgb, bgra_to_rgba_inplace, image_from_vec, preserve_aspect_ratio, resize_rgb_image,
         resize_rgba_image,
     },
     image::{RgbImage, RgbaImage},
@@ -36,15 +36,6 @@ pub struct OpenSlide {
     properties: Properties,
     level_dimensions: Vec<Size>,
     level_downsamples: Vec<f64>,
-}
-
-/// Builds an `RgbaImage` from a BGRA buffer returned by `OpenSlide`.
-///
-/// `buffer.len()` always equals `size.w * size.h * 4`, since that's exactly the
-/// capacity `bindings::read_region`/`read_associated_image` allocate.
-#[cfg(feature = "image")]
-fn buffer_to_rgba(size: Size, buffer: Vec<u8>) -> RgbaImage {
-    RgbaImage::from_vec(size.w, size.h, buffer).expect("buffer size matches width * height * 4")
 }
 
 /// Parses an `RRGGBB` hex color.
@@ -259,10 +250,9 @@ impl OpenSlide {
     /// Areas outside the scanned tissue come back fully transparent.
     #[cfg(feature = "image")]
     pub fn read_image_rgba(&self, region: &Region) -> Result<RgbaImage> {
-        let buffer = self.read_region(region)?;
-        let mut image = buffer_to_rgba(region.size, buffer);
-        bgra_to_rgba_inplace(&mut image);
-        Ok(image)
+        let mut buffer = self.read_region(region)?;
+        bgra_to_rgba_inplace(&mut buffer);
+        image_from_vec(region.size, buffer)
     }
 
     /// Reads a region of the slide as RGB.
@@ -272,25 +262,22 @@ impl OpenSlide {
     #[cfg(feature = "image")]
     pub fn read_image_rgb(&self, region: &Region) -> Result<RgbImage> {
         let buffer = self.read_region(region)?;
-        let image = buffer_to_rgba(region.size, buffer);
-        Ok(bgra_to_rgb(&image, self.background_rgb()))
+        image_from_vec(region.size, bgra_to_rgb(&buffer, self.background_rgb()))
     }
 
     /// Reads associated image `name` as straight (non-premultiplied) alpha RGBA.
     #[cfg(feature = "image")]
     pub fn read_associated_image_rgba(&self, name: &str) -> Result<RgbaImage> {
-        let (size, buffer) = self.read_associated_buffer(name)?;
-        let mut image = buffer_to_rgba(size, buffer);
-        bgra_to_rgba_inplace(&mut image);
-        Ok(image)
+        let (size, mut buffer) = self.read_associated_buffer(name)?;
+        bgra_to_rgba_inplace(&mut buffer);
+        image_from_vec(size, buffer)
     }
 
     /// Reads associated image `name` as RGB, compositing any transparency over white.
     #[cfg(feature = "image")]
     pub fn read_associated_image_rgb(&self, name: &str) -> Result<RgbImage> {
         let (size, buffer) = self.read_associated_buffer(name)?;
-        let image = buffer_to_rgba(size, buffer);
-        Ok(bgra_to_rgb(&image, [255, 255, 255]))
+        image_from_vec(size, bgra_to_rgb(&buffer, [255, 255, 255]))
     }
 
     /// The slide's `openslide.background-color` (`RRGGBB`) as RGB, white if absent or malformed.
