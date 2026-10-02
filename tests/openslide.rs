@@ -290,8 +290,7 @@ fn test_open_with_cache_size(
 fn test_icc_profile(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
-    let icc_profile = slide.icc_profile().unwrap();
-    assert_eq!(icc_profile.len(), 0);
+    assert_eq!(slide.icc_profile().unwrap(), None);
 }
 
 #[rstest]
@@ -300,6 +299,8 @@ fn test_icc_profile(#[case] filename: &Path) {
 fn test_associated_image_icc_profile(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
-    let icc_profile = slide.associated_image_icc_profile("thumbnail").unwrap();
-    assert_eq!(icc_profile.len(), 0);
+    assert_eq!(
+        slide.associated_image_icc_profile("thumbnail").unwrap(),
+        None
+    );
 }
