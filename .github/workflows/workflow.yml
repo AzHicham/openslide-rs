@@ -20,8 +20,14 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-          os: [ "ubuntu-22.04", "macos-14" ]
+          os: [ "ubuntu-22.04", "macos-26" ]
           feature: [ "--no-default-features", "--features deepzoom", "--features openslide4" ]
+          exclude:
+            # no openslide 3.x Homebrew formula newer than 3.4.1_8 (macOS 14 bottles only)
+            - os: "macos-26"
+              feature: "--no-default-features"
+            - os: "macos-26"
+              feature: "--features deepzoom"
 
     env:
       INSTALL_DEPS_CMD: install-deps-${{ contains(matrix.os, 'ubuntu') && 'ubuntu' || 'macos' }}-${{ contains(matrix.feature, 'openslide4') && 'openslide4' || 'openslide3' }}
