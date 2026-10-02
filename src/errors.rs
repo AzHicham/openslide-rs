@@ -79,6 +79,24 @@ pub enum OpenSlideError {
     #[error("Slide area is empty ({}x{})", .0.w, .0.h)]
     EmptySlide(Size),
 
+    // --- Buffers ---
+    /// The requested region or image is too large to hold in memory
+    /// (`width * height * 4` bytes overflows `usize`).
+    #[error("Image too large: {width}x{height} pixels")]
+    ImageTooLarge {
+        /// Requested width, in pixels.
+        width: i64,
+        /// Requested height, in pixels.
+        height: i64,
+    },
+
+    /// Allocating a pixel buffer failed.
+    #[error("Cannot allocate {bytes} bytes")]
+    OutOfMemory {
+        /// Size of the allocation that failed.
+        bytes: usize,
+    },
+
     // --- Image conversion ---
     /// A pixel buffer is smaller than its image dimensions require.
     #[error("Image buffer too small: expected {expected} bytes, got {actual}")]
