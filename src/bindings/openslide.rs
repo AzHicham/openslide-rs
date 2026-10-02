@@ -8,9 +8,15 @@ use std::{ffi, ops::Deref};
 
 use openslide_sys::sys;
 
-/// wrapper around `OpenSlideT`, this is usefull for implementing Send and Sync
+/// Owning wrapper around `openslide_t`: closes the handle on drop, and implements Send and Sync
 #[derive(Debug)]
 pub(crate) struct OpenSlideWrapper(pub(crate) *mut sys::openslide_t);
+
+impl Drop for OpenSlideWrapper {
+    fn drop(&mut self) {
+        close(self.0);
+    }
+}
 
 impl Deref for OpenSlideWrapper {
     type Target = *mut sys::openslide_t;
