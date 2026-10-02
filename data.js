@@ -1,92 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790946602391,
+  "lastUpdate": 1790949032405,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "hicham.azimani@owkin.com",
-            "name": "Hicham Azimani",
-            "username": "AzHicham"
-          },
-          "committer": {
-            "email": "hicham.azimani@owkin.com",
-            "name": "Hicham Azimani",
-            "username": "AzHicham"
-          },
-          "distinct": true,
-          "id": "a3d69cf6c211288c1cabd84666f6dfcb67b46013",
-          "message": "chore: simplify deps",
-          "timestamp": "2025-08-22T16:24:04+02:00",
-          "tree_id": "ccfceff73c9d74d5dca23a019e6464a4691f7477",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/a3d69cf6c211288c1cabd84666f6dfcb67b46013"
-        },
-        "date": 1755872776316,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1154459,
-            "range": "± 6077",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_arc",
-            "value": 1154702,
-            "range": "± 8333",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_recreate_dz",
-            "value": 1155710,
-            "range": "± 24010",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 4608122,
-            "range": "± 65647",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_arc",
-            "value": 4608472,
-            "range": "± 71177",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_recreate_dz",
-            "value": 4610135,
-            "range": "± 71427",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1120777,
-            "range": "± 5479",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 4621527,
-            "range": "± 77984",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1068499,
-            "range": "± 5763",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 4390461,
-            "range": "± 27350",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2519,6 +2435,90 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 3852861,
             "range": "± 68796",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hicham.azimani-ext@wearewaiv.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "email": "hicham.azimani-ext@wearewaiv.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "distinct": true,
+          "id": "85d17e4297c42eff11146c86e124811e1957b10f",
+          "message": "fix: weight colors by alpha when resizing RGBA images\n\nSince RGBA reads return straight alpha, resizing with `mul_div_alpha: false`\nblended the black of transparent pixels into their opaque neighbors: an\nopaque white pixel next to a transparent one came out grey\n(`[128, 128, 128, 128]` instead of `[255, 255, 255, 128]`). This showed as\ndark fringes on transparent edges in `thumbnail_rgba` and in resized\n`DeepZoomGenerator::tile_rgba` tiles. RGB output is unaffected.",
+          "timestamp": "2026-10-02T14:47:48+01:00",
+          "tree_id": "9931a1ba01b4bb73d87b73715871dd98ca678530",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/85d17e4297c42eff11146c86e124811e1957b10f"
+        },
+        "date": 1790949031906,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1314358,
+            "range": "± 11170",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1314429,
+            "range": "± 16231",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_recreate_dz",
+            "value": 1314848,
+            "range": "± 10090",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 5255880,
+            "range": "± 122214",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 5261019,
+            "range": "± 115964",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_recreate_dz",
+            "value": 5252186,
+            "range": "± 104735",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1272064,
+            "range": "± 10737",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 5267025,
+            "range": "± 96862",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 1071087,
+            "range": "± 15080",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 4440932,
+            "range": "± 35157",
             "unit": "ns/iter"
           }
         ]
