@@ -24,7 +24,7 @@
 //! assert_eq!(image.dimensions(), (64, 64));
 //!
 //! // Serve Deep Zoom tiles from the same slide.
-//! let dz = DeepZoomGenerator::new(&slide, DeepZoomOptions::default())?;
+//! let dz = DeepZoomGenerator::new(&slide, DeepZoomOptions::new(254))?;
 //! let tile = dz.tile_rgb(dz.level_count() - 1, Address { x: 0, y: 0 })?;
 //! assert_eq!(tile.dimensions(), (254, 250));
 //! # Ok(())

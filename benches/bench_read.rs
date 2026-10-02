@@ -3,11 +3,7 @@ use openslide_rs::{Address, DeepZoomGenerator, DeepZoomOptions, OpenSlide, Regio
 use std::{path::Path, sync::Arc};
 
 fn options(tile_size: u32) -> DeepZoomOptions {
-    DeepZoomOptions {
-        tile_size,
-        overlap: 0,
-        limit_bounds: false,
-    }
+    DeepZoomOptions::new(tile_size)
 }
 
 fn openslide_read_region_256(bench: &mut Bencher) {

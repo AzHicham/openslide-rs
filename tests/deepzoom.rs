@@ -15,15 +15,8 @@ mod deepzoom {
     #[case(boxes_tiff())]
     fn test_slide_no_limit_bounds(#[case] filename: &Path) {
         let slide = OpenSlide::new(filename).unwrap();
-        let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(
-            &slide,
-            DeepZoomOptions {
-                tile_size: 254,
-                overlap: 1,
-                limit_bounds: false,
-            },
-        )
-        .unwrap();
+        let dz: DeepZoomGenerator<_> =
+            DeepZoomGenerator::new(&slide, DeepZoomOptions::new(254).with_overlap(1)).unwrap();
 
         assert_eq!(dz.level_count(), 10);
         assert_eq!(dz.tile_count(), 11);
@@ -86,15 +79,9 @@ mod deepzoom {
     #[case(boxes_tiff())]
     fn test_slide_no_limit_bounds_arc(#[case] filename: &Path) {
         let slide = Arc::new(OpenSlide::new(filename).unwrap());
-        let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(
-            slide.clone(),
-            DeepZoomOptions {
-                tile_size: 254,
-                overlap: 1,
-                limit_bounds: false,
-            },
-        )
-        .unwrap();
+        let dz: DeepZoomGenerator<_> =
+            DeepZoomGenerator::new(slide.clone(), DeepZoomOptions::new(254).with_overlap(1))
+                .unwrap();
 
         drop(slide);
 
@@ -161,11 +148,9 @@ mod deepzoom {
         let slide = OpenSlide::new(filename).unwrap();
         let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(
             &slide,
-            DeepZoomOptions {
-                tile_size: 254,
-                overlap: 1,
-                limit_bounds: true,
-            },
+            DeepZoomOptions::new(254)
+                .with_overlap(1)
+                .with_limit_bounds(true),
         )
         .unwrap();
 
@@ -230,11 +215,7 @@ mod deepzoom {
         #[case] expected: OpenSlideError,
     ) {
         let slide = OpenSlide::new(filename).unwrap();
-        let options = DeepZoomOptions {
-            tile_size,
-            overlap,
-            limit_bounds: false,
-        };
+        let options = DeepZoomOptions::new(tile_size).with_overlap(overlap);
         let err = DeepZoomGenerator::new(&slide, options).unwrap_err();
         assert_eq!(err, expected);
     }
@@ -243,7 +224,7 @@ mod deepzoom {
     #[case(boxes_tiff())]
     fn test_invalid_address(#[case] filename: &Path) {
         let slide = OpenSlide::new(filename).unwrap();
-        let dz = DeepZoomGenerator::new(&slide, DeepZoomOptions::default()).unwrap();
+        let dz = DeepZoomGenerator::new(&slide, DeepZoomOptions::new(254)).unwrap();
         let err = dz.tile_rgb(9, Address { x: 2, y: 0 }).unwrap_err();
         assert_eq!(
             err,
@@ -263,11 +244,7 @@ mod deepzoom {
     #[case(boxes_tiff())]
     fn test_overlap_equal_to_tile_size(#[case] filename: &Path) {
         let slide = OpenSlide::new(filename).unwrap();
-        let options = DeepZoomOptions {
-            tile_size: 4,
-            overlap: 4,
-            limit_bounds: false,
-        };
+        let options = DeepZoomOptions::new(4).with_overlap(4);
         let dz = DeepZoomGenerator::new(&slide, options).unwrap();
         let last = dz.level_count() - 1;
         let grid = dz.level_tiles()[last as usize];
