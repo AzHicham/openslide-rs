@@ -1,32 +1,31 @@
 //! This module contains errors defined in this library
 //!
 
-use std::{borrow::Cow, ffi::NulError, num::TryFromIntError};
+use std::{ffi::NulError, num::TryFromIntError, path::PathBuf};
 
 use thiserror::Error;
 
+use crate::geometry::{Address, Size};
+
 /// Enum defining all possible error when manipulating `OpenSlide` struct
-#[derive(Error, Debug, Clone)]
+#[derive(Error, Debug, Clone, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum OpenSlideError {
-    /// FFI string conversion error, integer conversion error, or another
-    /// defensive check that should never fail in practice.
-    #[error("Internal error: {0}")]
-    InternalError(Cow<'static, str>),
-
-    /// Image feature related error
-    /// Example: Error while resizing, bad dimension ..
-    #[error("Image error: {0}")]
-    ImageError(Cow<'static, str>),
-
+    // --- Opening a slide ---
     /// The given path does not exist.
-    #[error("File {0} does not exist")]
-    MissingFile(Cow<'static, str>),
+    #[error("File {} does not exist", .0.display())]
+    MissingFile(PathBuf),
 
     /// The file exists but `OpenSlide` cannot open it (unrecognized/unsupported vendor format).
-    #[error("Unsupported file format: {0}")]
-    UnsupportedFile(Cow<'static, str>),
+    #[error("Unsupported file format: {}", .0.display())]
+    UnsupportedFile(PathBuf),
 
+    /// The path can't be passed to `OpenSlide` (not valid UTF-8, on platforms where
+    /// `OpenSlide` requires UTF-8 paths).
+    #[error("Path is not valid UTF-8: {}", .0.display())]
+    InvalidPath(PathBuf),
+
+    // --- Lookups ---
     /// The requested level does not exist on this slide.
     #[error("Invalid level {level} (slide has {level_count} levels)")]
     InvalidLevel {
@@ -36,18 +35,18 @@ pub enum OpenSlideError {
         level_count: u32,
     },
 
-    /// Deep Zoom options that can't build a pyramid (e.g. zero tile size), or a slide
-    /// whose geometry can't back one (no levels, empty level 0).
-    #[error("Invalid Deep Zoom configuration: {0}")]
-    InvalidDeepZoom(Cow<'static, str>),
-
     /// The requested tile address is out of bounds for the given Deep Zoom level.
-    #[error("Invalid tile address ({x}, {y})")]
+    #[error(
+        "Invalid tile address ({}, {}) at level {level} (level has {}x{} tiles)",
+        address.x, address.y, grid.w, grid.h
+    )]
     InvalidAddress {
-        /// The out-of-range tile column that was requested.
-        x: u32,
-        /// The out-of-range tile row that was requested.
-        y: u32,
+        /// The Deep Zoom level the tile was requested at.
+        level: u32,
+        /// The out-of-range tile address that was requested.
+        address: Address,
+        /// Number of tiles (columns, rows) available at `level`.
+        grid: Size,
     },
 
     /// The requested property name does not exist on this slide.
@@ -58,20 +57,66 @@ pub enum OpenSlideError {
     #[error("Unknown associated image: {0}")]
     UnknownAssociatedImage(String),
 
+    // --- Deep Zoom configuration ---
+    /// `DeepZoomOptions::tile_size` is 0.
+    #[error("Deep Zoom tile size must be greater than 0")]
+    InvalidTileSize,
+
+    /// `DeepZoomOptions::overlap` is larger than `DeepZoomOptions::tile_size`.
+    #[error("Deep Zoom overlap ({overlap}) must not exceed tile size ({tile_size})")]
+    OverlapTooLarge {
+        /// The requested overlap.
+        overlap: u32,
+        /// The requested tile size.
+        tile_size: u32,
+    },
+
+    /// The slide has no levels, so no Deep Zoom pyramid can be built from it.
+    #[error("Slide has no levels")]
+    NoLevels,
+
+    /// The slide's level 0 (or its bounds, with `limit_bounds`) has no pixels.
+    #[error("Slide area is empty ({}x{})", .0.w, .0.h)]
+    EmptySlide(Size),
+
+    // --- Image conversion ---
+    /// A pixel buffer is smaller than its image dimensions require.
+    #[error("Image buffer too small: expected {expected} bytes, got {actual}")]
+    ImageBufferTooSmall {
+        /// Bytes required by the image dimensions and pixel type.
+        expected: usize,
+        /// Bytes actually available.
+        actual: usize,
+    },
+
+    /// A pixel buffer's alignment doesn't match its pixel type.
+    #[error("Image buffer is misaligned for its pixel type")]
+    ImageBufferMisaligned,
+
+    /// Resizing an image failed.
+    #[cfg(feature = "image")]
+    #[error("Image resize failed: {0}")]
+    ImageResize(#[from] fast_image_resize::ResizeError),
+
+    // --- FFI / conversions ---
+    /// A string passed to `OpenSlide` (path, property or image name) contains a NUL byte.
+    #[error("String contains an interior NUL byte: {0}")]
+    InteriorNul(#[from] NulError),
+
+    /// A value reported by `OpenSlide` doesn't fit the type exposed by this crate
+    /// (e.g. a dimension larger than `u32::MAX`).
+    #[error("Value out of range: {0}")]
+    ValueOutOfRange(#[from] TryFromIntError),
+
+    /// An `OpenSlide` call signalled failure without setting an error message.
+    #[error("{function} failed without reporting an error")]
+    UnexpectedFailure {
+        /// Name of the C function that failed.
+        function: &'static str,
+    },
+
     /// The `OpenSlide` C library itself reported an error (`openslide_get_error`).
     /// Once this occurs, the only valid operation left on the slide handle is closing it.
     #[error("OpenSlide error: {0}")]
     LibraryError(String),
-}
-
-impl From<TryFromIntError> for OpenSlideError {
-    fn from(err: TryFromIntError) -> Self {
-        OpenSlideError::InternalError(err.to_string().into())
-    }
-}
-
-impl From<NulError> for OpenSlideError {
-    fn from(err: NulError) -> Self {
-        OpenSlideError::InternalError(err.to_string().into())
-    }
 }

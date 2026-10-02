@@ -22,7 +22,9 @@ unsafe impl Send for CacheWrapper {}
 pub fn cache_create(capacity: usize) -> Result<*mut sys::openslide_cache_t> {
     let cache = unsafe { sys::openslide_cache_create(capacity) };
     if cache.is_null() {
-        Err(OpenSlideError::InternalError("Cannot create cache".into()))
+        Err(OpenSlideError::UnexpectedFailure {
+            function: "openslide_cache_create",
+        })
     } else {
         Ok(cache)
     }

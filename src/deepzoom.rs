@@ -87,8 +87,10 @@ pub struct DeepZoomGenerator<B: Borrow<OpenSlide>> {
 impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
     /// Builds a Deep Zoom pyramid over `slide`, shaped by `options`.
     ///
-    /// Returns [`OpenSlideError::InvalidDeepZoom`] if `tile_size` is 0, if `overlap` is
-    /// larger than `tile_size`, or if the slide (or its bounds) has no pixels.
+    /// Errors with [`OpenSlideError::InvalidTileSize`] if `tile_size` is 0,
+    /// [`OpenSlideError::OverlapTooLarge`] if `overlap` exceeds it, and
+    /// [`OpenSlideError::NoLevels`] / [`OpenSlideError::EmptySlide`] if the slide (or its
+    /// bounds) has no pixels.
     pub fn new(slide: B, options: DeepZoomOptions) -> Result<Self> {
         let DeepZoomOptions {
             tile_size,
@@ -97,20 +99,14 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
         } = options;
 
         if tile_size == 0 {
-            return Err(OpenSlideError::InvalidDeepZoom(
-                "tile_size must be greater than 0".into(),
-            ));
+            return Err(OpenSlideError::InvalidTileSize);
         }
         // Tile `x` starts `overlap` pixels before `x * tile_size`, which must not go negative.
         if overlap > tile_size {
-            return Err(OpenSlideError::InvalidDeepZoom(
-                format!("overlap ({overlap}) must not exceed tile_size ({tile_size})").into(),
-            ));
+            return Err(OpenSlideError::OverlapTooLarge { overlap, tile_size });
         }
         if slide.borrow().level_count() == 0 {
-            return Err(OpenSlideError::InvalidDeepZoom(
-                "slide has no levels".into(),
-            ));
+            return Err(OpenSlideError::NoLevels);
         }
 
         let (slide_dimensions, l0_offset) =
@@ -127,9 +123,7 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
 
         let level0 = slide_levels[0].dimensions;
         if level0.w == 0 || level0.h == 0 {
-            return Err(OpenSlideError::InvalidDeepZoom(
-                format!("slide area is empty ({}x{})", level0.w, level0.h).into(),
-            ));
+            return Err(OpenSlideError::EmptySlide(level0));
         }
 
         let level_dimensions = Self::compute_dz_pyramid(level0);
@@ -162,9 +156,7 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
         let bounds = slide.bounds();
         let level0_dimensions = slide.level_dimensions(0)?;
         if level0_dimensions.w == 0 || level0_dimensions.h == 0 {
-            return Err(OpenSlideError::InvalidDeepZoom(
-                "slide level 0 is empty".into(),
-            ));
+            return Err(OpenSlideError::EmptySlide(level0_dimensions));
         }
         let scale_w = f64::from(bounds.size.w) / f64::from(level0_dimensions.w);
         let scale_h = f64::from(bounds.size.h) / f64::from(level0_dimensions.h);
@@ -299,8 +291,9 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
         let tile_grid = self.level_tiles[level as usize];
         if address.x >= tile_grid.w || address.y >= tile_grid.h {
             return Err(OpenSlideError::InvalidAddress {
-                x: address.x,
-                y: address.y,
+                level,
+                address,
+                grid: tile_grid,
             });
         }
         Ok(())

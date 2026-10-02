@@ -74,17 +74,13 @@ fn path_to_cstring(path: &Path) -> Result<ffi::CString> {
     #[cfg(not(unix))]
     let bytes = path
         .to_str()
-        .ok_or_else(|| {
-            OpenSlideError::InternalError(
-                format!("Path is not valid UTF-8: {}", path.display()).into(),
-            )
-        })?
+        .ok_or_else(|| OpenSlideError::InvalidPath(path.to_path_buf()))?
         .as_bytes();
     Ok(ffi::CString::new(bytes)?)
 }
 
 fn unsupported_file(path: &Path) -> OpenSlideError {
-    OpenSlideError::UnsupportedFile(path.display().to_string().into())
+    OpenSlideError::UnsupportedFile(path.to_path_buf())
 }
 
 pub fn get_version() -> Result<String> {
@@ -93,7 +89,9 @@ pub fn get_version() -> Result<String> {
         let vendor = unsafe { ffi::CStr::from_ptr(version).to_string_lossy().into_owned() };
         Ok(vendor)
     } else {
-        Err(OpenSlideError::InternalError("Cannot get version".into()))
+        Err(OpenSlideError::UnexpectedFailure {
+            function: "openslide_get_version",
+        })
     }
 }
 
@@ -133,9 +131,9 @@ pub fn get_level_count(osr: *mut sys::openslide_t) -> Result<i32> {
     let num_levels = unsafe { sys::openslide_get_level_count(osr) };
     if num_levels == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::LibraryError(
-            "Cannot get level count".to_string(),
-        ));
+        return Err(OpenSlideError::UnexpectedFailure {
+            function: "openslide_get_level_count",
+        });
     }
     Ok(num_levels)
 }
@@ -148,9 +146,9 @@ pub fn get_level_dimensions(osr: *mut sys::openslide_t, level: i32) -> Result<(i
     }
     if width == -1 || height == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::LibraryError(format!(
-            "Cannot get dimensions of level {level}"
-        )));
+        return Err(OpenSlideError::UnexpectedFailure {
+            function: "openslide_get_level_dimensions",
+        });
     }
     Ok((width, height))
 }
@@ -159,9 +157,9 @@ pub fn get_level_downsample(osr: *mut sys::openslide_t, level: i32) -> Result<f6
     let downsampling_factor = unsafe { sys::openslide_get_level_downsample(osr, level) };
     if downsampling_factor == -1.0 {
         get_error(osr)?;
-        return Err(OpenSlideError::LibraryError(format!(
-            "Cannot get downsample of level {level}"
-        )));
+        return Err(OpenSlideError::UnexpectedFailure {
+            function: "openslide_get_level_downsample",
+        });
     }
     Ok(downsampling_factor)
 }
@@ -170,9 +168,9 @@ pub fn get_best_level_for_downsample(osr: *mut sys::openslide_t, downsample: f64
     let level = unsafe { sys::openslide_get_best_level_for_downsample(osr, downsample) };
     if level == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::LibraryError(format!(
-            "Cannot compute level for downsample {downsample}"
-        )));
+        return Err(OpenSlideError::UnexpectedFailure {
+            function: "openslide_get_best_level_for_downsample",
+        });
     }
     Ok(level)
 }
@@ -195,9 +193,9 @@ pub fn get_property_names(osr: *mut sys::openslide_t) -> Result<Vec<String>> {
     let ptr = unsafe { sys::openslide_get_property_names(osr) };
     if ptr.is_null() {
         get_error(osr)?;
-        return Err(OpenSlideError::LibraryError(
-            "Cannot get property names".to_string(),
-        ));
+        return Err(OpenSlideError::UnexpectedFailure {
+            function: "openslide_get_property_names",
+        });
     }
     Ok(unsafe { collect_string_array(ptr) })
 }
@@ -219,9 +217,9 @@ pub fn get_associated_image_names(osr: *mut sys::openslide_t) -> Result<Vec<Stri
     let ptr = unsafe { sys::openslide_get_associated_image_names(osr) };
     if ptr.is_null() {
         get_error(osr)?;
-        return Err(OpenSlideError::LibraryError(
-            "Cannot get associated image names".to_string(),
-        ));
+        return Err(OpenSlideError::UnexpectedFailure {
+            function: "openslide_get_associated_image_names",
+        });
     }
     Ok(unsafe { collect_string_array(ptr) })
 }
@@ -279,9 +277,9 @@ pub fn get_icc_profile_size(osr: *mut sys::openslide_t) -> Result<i64> {
     // TODO: check if size == 0 => no ICC profile
     if size == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::LibraryError(
-            "Cannot get ICC profile size".to_string(),
-        ));
+        return Err(OpenSlideError::UnexpectedFailure {
+            function: "openslide_get_icc_profile_size",
+        });
     }
     Ok(size)
 }
@@ -305,9 +303,9 @@ pub fn get_associated_image_icc_profile_size(
     // TODO: check if size == 0 => no ICC profile
     if size == -1 {
         get_error(osr)?;
-        return Err(OpenSlideError::LibraryError(
-            "Cannot get ICC profile size".to_string(),
-        ));
+        return Err(OpenSlideError::UnexpectedFailure {
+            function: "openslide_get_associated_image_icc_profile_size",
+        });
     }
     Ok(size)
 }

@@ -71,9 +71,7 @@ impl OpenSlide {
     pub fn new<T: AsRef<Path>>(path: T) -> Result<OpenSlide> {
         let path = path.as_ref();
         if !path.exists() {
-            return Err(OpenSlideError::MissingFile(
-                path.display().to_string().into(),
-            ));
+            return Err(OpenSlideError::MissingFile(path.to_path_buf()));
         }
 
         // The wrapper closes the handle if any later call fails.
@@ -132,9 +130,7 @@ impl OpenSlide {
     pub fn detect_vendor<T: AsRef<Path>>(path: T) -> Result<String> {
         let path = path.as_ref();
         if !path.exists() {
-            return Err(OpenSlideError::MissingFile(
-                path.display().to_string().into(),
-            ));
+            return Err(OpenSlideError::MissingFile(path.to_path_buf()));
         }
         bindings::detect_vendor(path)
     }
