@@ -34,7 +34,7 @@ fn run(cli: &Cli) -> Result<(), Box<dyn Error>> {
     info!("Opening slide: {}", cli.slide_path.display());
     let slide = OpenSlide::new(&cli.slide_path)?;
     let slide_props = &slide.properties().openslide_properties;
-    let level_count = slide.get_level_count()?;
+    let level_count = slide.get_level_count();
     let associated = slide.get_associated_image_names()?;
 
     info!("Slide: {}", cli.slide_path.display());
@@ -50,19 +50,18 @@ fn run(cli: &Cli) -> Result<(), Box<dyn Error>> {
     if let (Some(mpp_x), Some(mpp_y)) = (slide_props.mpp_x, slide_props.mpp_y) {
         info!("MPP: {mpp_x:.4} x {mpp_y:.4} um/px");
     }
-    if let (Some(x), Some(y), Some(w), Some(h)) = (
-        slide_props.bounds_x,
-        slide_props.bounds_y,
-        slide_props.bounds_width,
-        slide_props.bounds_height,
-    ) {
-        info!("Bounds: x={x}, y={y}, w={w}, h={h}");
-    }
+    let bounds = slide.get_bounds();
+    info!(
+        "Bounds: x={}, y={}, w={}, h={}",
+        bounds.origin.x, bounds.origin.y, bounds.size.w, bounds.size.h
+    );
 
     info!("Levels:");
-    for level in 0..level_count {
-        let size = slide.get_level_dimensions(level)?;
-        let downsample = slide.get_level_downsample(level)?;
+    let levels = slide
+        .get_all_level_dimensions()
+        .iter()
+        .zip(slide.get_all_level_downsample());
+    for (level, (size, downsample)) in levels.enumerate() {
         info!(
             "  - level {level}: {}x{} (downsample {downsample:.4})",
             size.w, size.h

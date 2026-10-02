@@ -1,6 +1,14 @@
 use bencher::{Bencher, benchmark_group, benchmark_main};
-use openslide_rs::{Address, DeepZoomGenerator, OpenSlide, Region, Size};
+use openslide_rs::{Address, DeepZoomGenerator, DeepZoomOptions, OpenSlide, Region, Size};
 use std::{path::Path, sync::Arc};
+
+fn options(tile_size: u32) -> DeepZoomOptions {
+    DeepZoomOptions {
+        tile_size,
+        overlap: 0,
+        limit_bounds: false,
+    }
+}
 
 fn openslide_read_region_256(bench: &mut Bencher) {
     let slide = OpenSlide::new(Path::new("tests/assets/default.svs")).unwrap();
@@ -52,14 +60,14 @@ fn openslide_read_image_512(bench: &mut Bencher) {
 
 fn deepzoom_read_image_256(bench: &mut Bencher) {
     let slide = OpenSlide::new(Path::new("tests/assets/default.svs")).unwrap();
-    let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(&slide, 257, 0, false).unwrap();
+    let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(&slide, options(257)).unwrap();
 
     bench.iter(|| dz.get_tile_rgb(12, Address { x: 0, y: 0 }));
 }
 
 fn deepzoom_read_image_512(bench: &mut Bencher) {
     let slide = OpenSlide::new(Path::new("tests/assets/default.svs")).unwrap();
-    let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(&slide, 511, 0, false).unwrap();
+    let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(&slide, options(511)).unwrap();
 
     bench.iter(|| dz.get_tile_rgb(12, Address { x: 0, y: 0 }));
 }
@@ -68,7 +76,7 @@ fn deepzoom_read_image_256_recreate_dz(bench: &mut Bencher) {
     let slide = OpenSlide::new(Path::new("tests/assets/default.svs")).unwrap();
 
     bench.iter(|| {
-        let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(&slide, 257, 0, false).unwrap();
+        let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(&slide, options(257)).unwrap();
         dz.get_tile_rgb(12, Address { x: 0, y: 0 })
     });
 }
@@ -77,21 +85,21 @@ fn deepzoom_read_image_512_recreate_dz(bench: &mut Bencher) {
     let slide = OpenSlide::new(Path::new("tests/assets/default.svs")).unwrap();
 
     bench.iter(|| {
-        let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(&slide, 511, 0, false).unwrap();
+        let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(&slide, options(511)).unwrap();
         dz.get_tile_rgb(12, Address { x: 0, y: 0 })
     });
 }
 
 fn deepzoom_read_image_256_arc(bench: &mut Bencher) {
     let slide = Arc::new(OpenSlide::new(Path::new("tests/assets/default.svs")).unwrap());
-    let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(slide, 257, 0, false).unwrap();
+    let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(slide, options(257)).unwrap();
 
     bench.iter(|| dz.get_tile_rgb(12, Address { x: 0, y: 0 }));
 }
 
 fn deepzoom_read_image_512_arc(bench: &mut Bencher) {
     let slide = Arc::new(OpenSlide::new(Path::new("tests/assets/default.svs")).unwrap());
-    let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(slide, 511, 0, false).unwrap();
+    let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(slide, options(511)).unwrap();
 
     bench.iter(|| dz.get_tile_rgb(12, Address { x: 0, y: 0 }));
 }

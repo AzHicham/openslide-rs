@@ -29,3 +29,15 @@ pub struct Address {
     /// Y coordinate, in pixels.
     pub y: u32,
 }
+
+/// Level-0 rectangle bounding a slide's non-empty region.
+///
+/// Built from the `openslide.bounds-*` properties; any missing property falls back
+/// to the full level-0 extent (origin `0`, level-0 width/height).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Bounds {
+    /// Top-left corner of the rectangle, in level-0 pixels.
+    pub origin: Address,
+    /// Size of the rectangle, in level-0 pixels.
+    pub size: Size,
+}

@@ -19,11 +19,11 @@ mod image;
 pub mod properties;
 mod slide;
 
-pub use geometry::{Address, Region, Size};
+pub use geometry::{Address, Bounds, Region, Size};
 pub use slide::OpenSlide;
 
 #[cfg(feature = "deepzoom")]
-pub use deepzoom::DeepZoomGenerator;
+pub use deepzoom::{DeepZoomGenerator, DeepZoomOptions, TileInfo};
 
 /// The corresponding result type used by the crate.
 pub type Result<T, E = errors::OpenSlideError> = std::result::Result<T, E>;

@@ -68,7 +68,7 @@ fn test_open_unsupported_tiff(#[case] filename: &Path) {
 fn test_slide_info(#[case] filename: &Path) {
     let slide = OpenSlide::new(filename).unwrap();
 
-    assert_eq!(slide.get_level_count().unwrap(), 4);
+    assert_eq!(slide.get_level_count(), 4);
 
     // Level dimensions
     assert_eq!(
@@ -88,8 +88,8 @@ fn test_slide_info(#[case] filename: &Path) {
         Size { w: 37, h: 31 }
     );
     assert_eq!(
-        slide.get_all_level_dimensions().unwrap(),
-        vec![
+        slide.get_all_level_dimensions(),
+        &[
             Size { w: 300, h: 250 },
             Size { w: 150, h: 125 },
             Size { w: 75, h: 62 },
@@ -109,7 +109,7 @@ fn test_slide_info(#[case] filename: &Path) {
         8.086_312_118_570_184
     );
 
-    let level_downsamples = slide.get_all_level_downsample().unwrap();
+    let level_downsamples = slide.get_all_level_downsample();
     let expect_level_downsamples = [1.0, 2.0, 4.016_129_032_258_064, 8.086_312_118_570_184];
     for index in 0..expect_level_downsamples.len() {
         assert_approx_eq!(level_downsamples[index], expect_level_downsamples[index]);
@@ -282,7 +282,7 @@ fn test_open_with_cache_size(
 ) {
     let slide = OpenSlide::new_with_cache(filename, cache_size).unwrap();
 
-    assert_eq!(slide.get_level_count().unwrap(), 4);
+    assert_eq!(slide.get_level_count(), 4);
 
     let region = Region {
         size: slide.get_level_dimensions(0).unwrap(),
