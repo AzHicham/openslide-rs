@@ -66,9 +66,8 @@ impl OpenSlide {
             ));
         }
 
-        let filename = path.display().to_string();
-        // Wrap the handle before any further fallible call so it is closed on early return.
-        let osr = bindings::OpenSlideWrapper(bindings::open(&filename)?);
+        // The wrapper closes the handle if any later call fails.
+        let osr = bindings::open(path)?;
 
         let property_names = bindings::get_property_names(*osr)?;
 
@@ -127,8 +126,7 @@ impl OpenSlide {
                 path.display().to_string().into(),
             ));
         }
-        let filename = path.display().to_string();
-        bindings::detect_vendor(&filename)
+        bindings::detect_vendor(path)
     }
 
     /// Get the openslide and vendor-specific properties found in the slide.
