@@ -36,6 +36,11 @@ pub enum OpenSlideError {
         level_count: u32,
     },
 
+    /// Deep Zoom options that can't build a pyramid (e.g. zero tile size), or a slide
+    /// whose geometry can't back one (no levels, empty level 0).
+    #[error("Invalid Deep Zoom configuration: {0}")]
+    InvalidDeepZoom(Cow<'static, str>),
+
     /// The requested tile address is out of bounds for the given Deep Zoom level.
     #[error("Invalid tile address ({x}, {y})")]
     InvalidAddress {

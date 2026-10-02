@@ -3,7 +3,9 @@ mod fixture;
 #[cfg(feature = "deepzoom")]
 mod deepzoom {
 
-    use openslide_rs::{Address, DeepZoomGenerator, DeepZoomOptions, OpenSlide, Size};
+    use openslide_rs::{
+        Address, DeepZoomGenerator, DeepZoomOptions, OpenSlide, Size, errors::OpenSlideError,
+    };
     use rstest::rstest;
     use std::{path::Path, sync::Arc};
 
@@ -216,5 +218,42 @@ mod deepzoom {
 
         let image = dz.tile_rgba(10, Address { x: 0, y: 0 });
         assert!(image.is_err());
+    }
+
+    #[rstest]
+    #[case(boxes_tiff(), 0, 0)]
+    #[case(boxes_tiff(), 4, 5)]
+    fn test_invalid_options(#[case] filename: &Path, #[case] tile_size: u32, #[case] overlap: u32) {
+        let slide = OpenSlide::new(filename).unwrap();
+        let options = DeepZoomOptions {
+            tile_size,
+            overlap,
+            limit_bounds: false,
+        };
+        let err = DeepZoomGenerator::new(&slide, options).unwrap_err();
+        assert!(matches!(err, OpenSlideError::InvalidDeepZoom(_)));
+    }
+
+    #[rstest]
+    #[case(boxes_tiff())]
+    fn test_overlap_equal_to_tile_size(#[case] filename: &Path) {
+        let slide = OpenSlide::new(filename).unwrap();
+        let options = DeepZoomOptions {
+            tile_size: 4,
+            overlap: 4,
+            limit_bounds: false,
+        };
+        let dz = DeepZoomGenerator::new(&slide, options).unwrap();
+        let last = dz.level_count() - 1;
+        let grid = dz.level_tiles()[last as usize];
+        dz.tile_rgb(last, Address { x: 1, y: 1 }).unwrap();
+        dz.tile_rgb(
+            last,
+            Address {
+                x: grid.w - 1,
+                y: grid.h - 1,
+            },
+        )
+        .unwrap();
     }
 }
