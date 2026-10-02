@@ -49,7 +49,7 @@ fn buffer_to_rgba(size: Size, buffer: Vec<u8>) -> RgbaImage {
 
 impl OpenSlide {
     /// Get the version of the `OpenSlide` library.
-    pub fn get_version() -> Result<String> {
+    pub fn version() -> Result<String> {
         bindings::get_version()
     }
 
@@ -139,7 +139,7 @@ impl OpenSlide {
 
     /// Get the number of levels in the whole slide image.
     #[must_use]
-    pub fn get_level_count(&self) -> u32 {
+    pub fn level_count(&self) -> u32 {
         // Built from `openslide_get_level_count`, a non-negative `i32`: always fits.
         self.level_dimensions.len() as u32
     }
@@ -147,7 +147,7 @@ impl OpenSlide {
     /// Get the dimensions of a given level.
     ///
     /// Returns [`OpenSlideError::InvalidLevel`] if `level` is out of range.
-    pub fn get_level_dimensions(&self, level: u32) -> Result<Size> {
+    pub fn level_dimensions(&self, level: u32) -> Result<Size> {
         self.level_dimensions
             .get(level as usize)
             .copied()
@@ -156,14 +156,14 @@ impl OpenSlide {
 
     /// Get dimensions of all available levels, indexed by level.
     #[must_use]
-    pub fn get_all_level_dimensions(&self) -> &[Size] {
+    pub fn all_level_dimensions(&self) -> &[Size] {
         &self.level_dimensions
     }
 
     /// Get the downsampling factor of a given level.
     ///
     /// Returns [`OpenSlideError::InvalidLevel`] if `level` is out of range.
-    pub fn get_level_downsample(&self, level: u32) -> Result<f64> {
+    pub fn level_downsample(&self, level: u32) -> Result<f64> {
         self.level_downsamples
             .get(level as usize)
             .copied()
@@ -172,29 +172,29 @@ impl OpenSlide {
 
     /// Get all downsampling factors for all available levels, indexed by level.
     #[must_use]
-    pub fn get_all_level_downsample(&self) -> &[f64] {
+    pub fn all_level_downsamples(&self) -> &[f64] {
         &self.level_downsamples
     }
 
     fn invalid_level(&self, level: u32) -> OpenSlideError {
         OpenSlideError::InvalidLevel {
             level,
-            level_count: Some(self.get_level_count()),
+            level_count: Some(self.level_count()),
         }
     }
 
     /// Get the best level to use for displaying the given downsample factor.
-    pub fn get_best_level_for_downsample(&self, downsample: f64) -> Result<u32> {
+    pub fn best_level_for_downsample(&self, downsample: f64) -> Result<u32> {
         Ok(bindings::get_best_level_for_downsample(*self.osr, downsample)? as u32)
     }
 
     /// Get the list of all available properties.
-    pub fn get_property_names(&self) -> Result<Vec<String>> {
+    pub fn property_names(&self) -> Result<Vec<String>> {
         bindings::get_property_names(*self.osr)
     }
 
     /// Get the value of a single property.
-    pub fn get_property_value(&self, name: &str) -> Result<String> {
+    pub fn property_value(&self, name: &str) -> Result<String> {
         bindings::get_property_value(*self.osr, name)
     }
 
@@ -220,7 +220,7 @@ impl OpenSlide {
     }
 
     /// Get the list name of all available associated image.
-    pub fn get_associated_image_names(&self) -> Result<Vec<String>> {
+    pub fn associated_image_names(&self) -> Result<Vec<String>> {
         bindings::get_associated_image_names(*self.osr)
     }
 
@@ -242,7 +242,7 @@ impl OpenSlide {
     }
 
     /// Get the size of an associated image
-    pub fn get_associated_image_dimensions(&self, name: &str) -> Result<Size> {
+    pub fn associated_image_dimensions(&self, name: &str) -> Result<Size> {
         let (width, height) = bindings::get_associated_image_dimensions(*self.osr, name)?;
         Ok(Size {
             w: width.try_into()?,
@@ -332,17 +332,17 @@ impl OpenSlide {
     /// aspect-ratio-preserving size a thumbnail of `size` should be resized to.
     #[cfg(feature = "image")]
     fn thumbnail_region(&self, size: &Size) -> Result<(Region, Size)> {
-        let dimension_level0 = self.get_level_dimensions(0)?;
+        let dimension_level0 = self.level_dimensions(0)?;
 
         let downsample = f64::max(
             f64::from(dimension_level0.w) / f64::from(size.w),
             f64::from(dimension_level0.h) / f64::from(size.h),
         );
 
-        let level = self.get_best_level_for_downsample(downsample)?;
+        let level = self.best_level_for_downsample(downsample)?;
 
         let region = Region {
-            size: self.get_level_dimensions(level)?,
+            size: self.level_dimensions(level)?,
             level,
             address: Address { x: 0, y: 0 },
         };
@@ -370,7 +370,7 @@ impl OpenSlide {
     /// Falls back to the full level-0 extent for any `openslide.bounds-*` property
     /// the slide doesn't report.
     #[must_use]
-    pub fn get_bounds(&self) -> Bounds {
+    pub fn bounds(&self) -> Bounds {
         let properties = &self.properties.openslide_properties;
         let level0 = self
             .level_dimensions
