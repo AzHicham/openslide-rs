@@ -1,3 +1,125 @@
+## [3.0.0](https://github.com/AzHicham/openslide-rs/compare/2.4.0...3.0.0) (2026-10-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* `DeepZoomGenerator::tile_count` returns `u64` instead of `u32`.
+* `OpenSlideError::ImageResize` holds `errors::ResizeError`
+instead of `fast_image_resize::ResizeError`, and there is no longer a
+`From<fast_image_resize::ResizeError>` impl.
+* `DeepZoomOptions` no longer implements `Default` and can no
+longer be built with a struct literal outside the crate; use
+`DeepZoomOptions::new(tile_size).with_overlap(..).with_limit_bounds(..)`.
+* `properties::openslide::OpenSlide` is renamed to
+`OpenSlideProperties`; `Properties::new` is no longer public.
+* `icc_profile` and `associated_image_icc_profile`
+(`openslide4` feature) return `Result<Option<Vec<u8>>>`.
+* `InternalError`, `ImageError` and `InvalidDeepZoom` are
+removed; `MissingFile` / `UnsupportedFile` hold a `PathBuf`;
+`InvalidAddress` fields changed. With the `image` feature,
+`fast_image_resize::ResizeError` is part of the public API.
+* RGB reads return the background color instead of black in
+transparent areas, and RGBA reads return straight instead of premultiplied
+alpha.
+* `OpenSlideError::InvalidLevel::level_count` is `u32`
+instead of `Option<u32>`.
+* renamed `OpenSlide::get_version` -> `version`,
+`get_level_count` -> `level_count`, `get_level_dimensions` ->
+`level_dimensions`, `get_all_level_dimensions` -> `all_level_dimensions`,
+`get_level_downsample` -> `level_downsample`, `get_all_level_downsample` ->
+`all_level_downsamples`, `get_best_level_for_downsample` ->
+`best_level_for_downsample`, `get_property_names` -> `property_names`,
+`get_property_value` -> `property_value`, `get_associated_image_names` ->
+`associated_image_names`, `get_associated_image_dimensions` ->
+`associated_image_dimensions`, `get_bounds` -> `bounds`, and on
+`DeepZoomGenerator`: `get_tile_rgba` -> `tile_rgba`, `get_tile_rgb` ->
+`tile_rgb`, `get_tile_info` -> `tile_info`.
+* `get_level_count` returns `u32`; `get_all_level_dimensions`
+and `get_all_level_downsample` return slices; `DeepZoomGenerator::new` takes
+`DeepZoomOptions`; `get_tile_info` returns `TileInfo`; DZ `level_count`
+returns `u32`; `Bounds` fields changed and it is exported from the crate
+root; the `OpenSlide::properties` field is private (use `properties()`);
+`detect_vendor` takes `impl AsRef<Path>`.
+* error rework
+* remove Slide trait and improve properties loading
+
+### Features
+
+* build DeepZoomOptions with new(tile_size), make it non-exhaustive ([310e665](https://github.com/AzHicham/openslide-rs/commit/310e66588c28640dfb29e2d9c82d11f53bbc8e36))
+* return None when a slide has no ICC profile ([4085491](https://github.com/AzHicham/openslide-rs/commit/4085491297135fc97ecb91af0862b3842f5375d0))
+* upgrade MSRV + update deps ([baf75b2](https://github.com/AzHicham/openslide-rs/commit/baf75b2cc1de27806d217852a556fd532237d38c))
+
+
+### Bug Fixes
+
+* always report the level count in InvalidLevel ([4c7df6e](https://github.com/AzHicham/openslide-rs/commit/4c7df6ec92ff67b07984324b1b529744779a8fe0))
+* check pixel buffer sizes instead of overflowing ([c79bfa3](https://github.com/AzHicham/openslide-rs/commit/c79bfa3c872e90c1041a4516a1d7bc309a90f2b1))
+* close the handle when openslide_open reports an error, pass paths losslessly ([0fcc0c5](https://github.com/AzHicham/openslide-rs/commit/0fcc0c57d44cda75e6bb7f8c2039ac936d93f42b))
+* convert pixels before building the image ([f238ac0](https://github.com/AzHicham/openslide-rs/commit/f238ac0c52b07fe1a2c301707a4c47abd7c721a1))
+* **deepzoom:** reject options and slides that cannot build a pyramid ([81202fd](https://github.com/AzHicham/openslide-rs/commit/81202fd04a2636c1fa43004b58f5d828508b5324))
+* **deps:** update cargo ([11afcaa](https://github.com/AzHicham/openslide-rs/commit/11afcaafd8d4ff1dd7ccb2a9d550355817ee3ac6))
+* **deps:** update rust crate fast_image_resize to v6 ([4c8efcb](https://github.com/AzHicham/openslide-rs/commit/4c8efcbc5215d8e66011d04139fe6e7177b59899))
+* **deps:** update rust crate regex to v1.11.2 ([ee09fb8](https://github.com/AzHicham/openslide-rs/commit/ee09fb8bc34e066a1968247a70d5ceca4452f958))
+* handle OpenSlide's premultiplied alpha ([62c8147](https://github.com/AzHicham/openslide-rs/commit/62c8147396f1738bbd8690ea9e64e2bd3c3ea8d8))
+* return the Deep Zoom tile count as u64 ([dd8ce1c](https://github.com/AzHicham/openslide-rs/commit/dd8ce1cd1bd1f087fc313c6386ad8892d584fcae))
+* weight colors by alpha when resizing RGBA images ([85d17e4](https://github.com/AzHicham/openslide-rs/commit/85d17e4297c42eff11146c86e124811e1957b10f))
+
+
+### Documentation
+
+* fix stale API docs, add a crate example and README usage ([c5a4f32](https://github.com/AzHicham/openslide-rs/commit/c5a4f32f43d21b226dc69479388cf2c7a9c25591))
+
+
+### CI/CD
+
+* add docker build workflow ([c957add](https://github.com/AzHicham/openslide-rs/commit/c957add570a67832de02047f693938dcfd5ec03c))
+* fix pre commit [skip ci] ([dd41458](https://github.com/AzHicham/openslide-rs/commit/dd41458199035283fbc16b57b548d76fe207a0f3))
+* run macOS on macos-26, drop macOS openslide3 ([626a43f](https://github.com/AzHicham/openslide-rs/commit/626a43f5c822599f7b58e8429283c2949260b623))
+* update audit workflow ([579e2a5](https://github.com/AzHicham/openslide-rs/commit/579e2a5d93976635b8e062fb1bff9919ccebf995))
+
+
+### Miscellaneous Chores
+
+* cargo update ([70a608f](https://github.com/AzHicham/openslide-rs/commit/70a608f684baff3792606b96eaaf7d574e7946ee))
+* **deps:** update actions/cache action to v5 ([41edcc8](https://github.com/AzHicham/openslide-rs/commit/41edcc8af6111ae714a8fab4ce66ea5e9708212e))
+* **deps:** update actions/checkout action to v5 ([1818a3b](https://github.com/AzHicham/openslide-rs/commit/1818a3b02fb1ef028e58b95c760ed4947f1e99ed))
+* **deps:** update actions/checkout action to v6 ([f2ae830](https://github.com/AzHicham/openslide-rs/commit/f2ae830f2b500a854cf4b5b2228d8350677671df))
+* **deps:** update actions/setup-python action to v6 ([0de2599](https://github.com/AzHicham/openslide-rs/commit/0de2599e499de684e06f0c64193038df73bdf240))
+* **deps:** update cargo ([2ccfb42](https://github.com/AzHicham/openslide-rs/commit/2ccfb42387a8f900652702d526208f07da2d724d))
+* **deps:** update cargo ([aafc311](https://github.com/AzHicham/openslide-rs/commit/aafc311afb13b3ab56873f10f92de4f953735323))
+* **deps:** update cargo to v1.12.4 ([e7d1aea](https://github.com/AzHicham/openslide-rs/commit/e7d1aea01cb93f77fca77f3ccdc3e1c812e438b6))
+* **deps:** update cycjimmy/semantic-release-action action to v6 ([be16480](https://github.com/AzHicham/openslide-rs/commit/be16480b4ce82490fb2e8a84b3962b046d0c5ad0))
+* **deps:** update dependency python to 3.14 ([1a511e7](https://github.com/AzHicham/openslide-rs/commit/1a511e721d8f83659cd7068d608ea458497e26a1))
+* **deps:** update peter-evans/create-pull-request action to v8 ([fed9698](https://github.com/AzHicham/openslide-rs/commit/fed96984f4206a3445e8f5e628e22fc33e4672d4))
+* **deps:** update pre-commit ([1a818e9](https://github.com/AzHicham/openslide-rs/commit/1a818e9119dd1b10827c58a4fa510559d7eafac5))
+* **deps:** update pre-commit ([b32dfe0](https://github.com/AzHicham/openslide-rs/commit/b32dfe0cd1c5f8ea928547116d5c2ba9328c5baf))
+* **deps:** update pre-commit ([cb68df1](https://github.com/AzHicham/openslide-rs/commit/cb68df1525c0d7c47e986c3fbdc9a43a1875feb0))
+* **deps:** update pre-commit ([1aee7c8](https://github.com/AzHicham/openslide-rs/commit/1aee7c8bdb439177f99c5325c4ff0d37144acebb))
+* **deps:** update pre-commit hook pre-commit/pre-commit to v4.4.0 ([f5de69c](https://github.com/AzHicham/openslide-rs/commit/f5de69c0a4416f9d8da8e67f4aa251a8d29f61e1))
+* **deps:** update pre-commit hook pre-commit/pre-commit-hooks to v6 ([ae037db](https://github.com/AzHicham/openslide-rs/commit/ae037db2e0b2a062a4d8f3b6e3a92aa77b5d8a13))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v42 ([a39b6a0](https://github.com/AzHicham/openslide-rs/commit/a39b6a04c3c34d5dc67a95e05e8b61789e7f635d))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v43 ([68eae12](https://github.com/AzHicham/openslide-rs/commit/68eae127a002cc398fd53f92f0083bb080de2def))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v43.113.0 ([3259e98](https://github.com/AzHicham/openslide-rs/commit/3259e98a926b90dbd4bbe8123cab4e9bef2a4dfb))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v43.252.0 ([d9bb723](https://github.com/AzHicham/openslide-rs/commit/d9bb723cfc5bb2b4beb20a83213fe7cd7375c03b))
+* **deps:** update pre-commit hook renovatebot/pre-commit-hooks to v43.263.6 ([741b46d](https://github.com/AzHicham/openslide-rs/commit/741b46df05d6fd430c8e5e3ec1c8b8b16ba7842d))
+* **deps:** update rust crate image to v0.25.9 ([3ef968c](https://github.com/AzHicham/openslide-rs/commit/3ef968c26d28b41893438f60ee835492b7cebbba))
+* **deps:** update rust crate regex to v1.13.0 ([c9f7649](https://github.com/AzHicham/openslide-rs/commit/c9f7649f137badf7b00148f3a66abbbaebb7991d))
+* **deps:** update ubuntu docker tag to v26 ([dfc7a31](https://github.com/AzHicham/openslide-rs/commit/dfc7a3191044d990b7eeb56112e07907f878f75f))
+* example docker + app ([1ee35ee](https://github.com/AzHicham/openslide-rs/commit/1ee35eefa486beec6c67d3274d5dfa1494903a17))
+* simplify deps ([a3d69cf](https://github.com/AzHicham/openslide-rs/commit/a3d69cf6c211288c1cabd84666f6dfcb67b46013))
+* use an SPDX license expression ([feea24b](https://github.com/AzHicham/openslide-rs/commit/feea24bec8d075d834309052530bcf1efbb3d431))
+
+
+### Code Refactoring
+
+* cache level geometry and rework the Deep Zoom options ([6f8e1e2](https://github.com/AzHicham/openslide-rs/commit/6f8e1e2ef43d78da67166deafc0284dc8f2ccbe6))
+* drop the get_ prefix from getters ([29cd7d1](https://github.com/AzHicham/openslide-rs/commit/29cd7d12db08b77f31d868ff2dcb84c794144884))
+* error rework ([2dbb004](https://github.com/AzHicham/openslide-rs/commit/2dbb004c0bda7b9eedaf88f96957c8eba934ec96))
+* hide fast_image_resize's error behind an opaque ResizeError ([00bbea5](https://github.com/AzHicham/openslide-rs/commit/00bbea5f73828b562bbedfdbadba4b0fab8001f6))
+* remove Slide trait and improve properties loading ([f6bf7cf](https://github.com/AzHicham/openslide-rs/commit/f6bf7cfca44935096c43e780b31e08d97011072d))
+* rename properties::openslide::OpenSlide to OpenSlideProperties ([1d0efc1](https://github.com/AzHicham/openslide-rs/commit/1d0efc17d779b152cd18f66e2078997e76e114d0))
+* replace string errors with structured variants ([760d7c7](https://github.com/AzHicham/openslide-rs/commit/760d7c743bf5239c5bb77d7fb8dbf1ba01bda296))
+
 ## [2.4.0](https://github.com/AzHicham/openslide-rs/compare/2.3.0...2.4.0) (2025-08-21)
 
 
