@@ -55,10 +55,10 @@ pub struct LevelProperties {
     pub tile_width: Option<u32>,
 }
 
-/// Common properties that are available under the name `openslide.<property>` in the `HashMap`
-/// returned from the `OpenSlide::get_properties()` method.
+/// Common `openslide.<property>` properties, available through
+/// [`Properties::openslide_properties`](crate::properties::Properties::openslide_properties).
 #[derive(Clone, Debug, Default)]
-pub struct OpenSlide {
+pub struct OpenSlideProperties {
     /// Name of the vendor backend used to read the slide.
     pub vendor: Option<String>,
     /// Non-cryptographic hash identifying the slide's data.
@@ -89,13 +89,13 @@ pub struct OpenSlide {
     pub levels: Vec<LevelProperties>,
 }
 
-impl OpenSlide {
+impl OpenSlideProperties {
     /// Initialises the `OpenSlide` properties.
     ///
     /// This needs a property map in order to compute the number of levels. This is needed because
     /// of the properties that are listed as `openslide.level[<level>].<property>`.
     pub(crate) fn new(properties: &[(String, String)]) -> Self {
-        let mut openslide_property = OpenSlide::default();
+        let mut openslide_property = OpenSlideProperties::default();
 
         properties
             .iter()
