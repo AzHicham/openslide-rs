@@ -28,17 +28,21 @@ struct SlideLevel {
 
 /// Parameters of a Deep Zoom pyramid, see [`DeepZoomGenerator::new`].
 ///
-/// Defaults: 254px tiles, no overlap, full image extent (openslide-python uses a
-/// 1px overlap by default).
-/// Override only what you need:
+/// Build it with [`DeepZoomOptions::new`], which takes the tile size, then override
+/// the other options with the `with_*` setters. Unless overridden there is no overlap
+/// (openslide-python uses 1px) and the pyramid covers the full image extent.
+///
+/// The struct is `#[non_exhaustive]` so options can be added without a breaking change.
 ///
 /// ```
 /// use openslide_rs::DeepZoomOptions;
 ///
-/// let options = DeepZoomOptions { limit_bounds: true, ..Default::default() };
+/// let options = DeepZoomOptions::new(254).with_overlap(1).with_limit_bounds(true);
 /// assert_eq!(options.tile_size, 254);
+/// assert_eq!(options.overlap, 1);
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct DeepZoomOptions {
     /// Width/height of a tile before overlap is added.
     pub tile_size: u32,
@@ -49,13 +53,29 @@ pub struct DeepZoomOptions {
     pub limit_bounds: bool,
 }
 
-impl Default for DeepZoomOptions {
-    fn default() -> Self {
+impl DeepZoomOptions {
+    /// Options for `tile_size`-pixel tiles, with no overlap, covering the full image.
+    #[must_use]
+    pub fn new(tile_size: u32) -> Self {
         DeepZoomOptions {
-            tile_size: 254,
+            tile_size,
             overlap: 0,
             limit_bounds: false,
         }
+    }
+
+    /// Sets [`overlap`](Self::overlap).
+    #[must_use]
+    pub fn with_overlap(mut self, overlap: u32) -> Self {
+        self.overlap = overlap;
+        self
+    }
+
+    /// Sets [`limit_bounds`](Self::limit_bounds).
+    #[must_use]
+    pub fn with_limit_bounds(mut self, limit_bounds: bool) -> Self {
+        self.limit_bounds = limit_bounds;
+        self
     }
 }
 

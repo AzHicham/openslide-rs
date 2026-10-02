@@ -101,7 +101,7 @@ let image = slide.read_image_rgb(&Region {
 })?;
 
 // Deep Zoom tiles, e.g. for a tile server.
-let dz = DeepZoomGenerator::new(&slide, DeepZoomOptions { limit_bounds: true, ..Default::default() })?;
+let dz = DeepZoomGenerator::new(&slide, DeepZoomOptions::new(254).with_limit_bounds(true))?;
 let tile = dz.tile_rgb(dz.level_count() - 1, Address { x: 0, y: 0 })?;
 ```
 
