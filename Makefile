@@ -1,11 +1,4 @@
-.PHONY: install-deps-macos-openslide3 install-deps-macos-openslide4 install-deps-ubuntu-openslide3 install-deps-ubuntu-openslide4 dl-test-images
-
-install-deps-macos-openslide3:
-	brew update
-	curl https://raw.githubusercontent.com/Homebrew/homebrew-core/e6e41a54ec4d05000c1b95e515c85adb6f8f35af/Formula/o/openslide.rb > openslide.rb
-	brew tap-new AzHicham/openslide
-	cp openslide.rb /opt/homebrew/Library/Taps/azhicham/homebrew-openslide/Formula/
-	HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 brew install AzHicham/openslide/openslide
+.PHONY: install-deps-macos-openslide4 install-deps-ubuntu-openslide3 install-deps-ubuntu-openslide4 dl-test-images
 
 install-deps-macos-openslide4:
 	brew update
