@@ -50,7 +50,7 @@ OpenSlide can read virtual slides in several formats:
 
 ## Requirements
 
-* Rust &ge; 1.56
+* Rust &ge; 1.88
 * OpenSlide build dependencies, required because of [openslide-sys](https://github.com/AzHicham/openslide-sys) dependency
 
 ## Installation
@@ -58,7 +58,7 @@ OpenSlide can read virtual slides in several formats:
 OpenSlide-rs requires [OpenSlide].
 
 You will find a Makefile to help you install all required dependencies for Ubuntu and MacOs.
-Bellow you will find command to run to be able to build this crate
+Below are the commands to run to build this crate.
 
 ## Dependencies
 
@@ -85,9 +85,32 @@ apt-get install -y --no-install-recommends libopenslide-dev
 Container build and usage instructions for the `slide-info` CLI are available in [`dockerfiles/README.md`](dockerfiles/README.md).
 Use Docker Buildx bake to build the image and run the binary against mounted slide files.
 
+## Usage
+
+```rust
+use openslide_rs::{Address, DeepZoomGenerator, DeepZoomOptions, OpenSlide, Region, Size};
+
+let slide = OpenSlide::new("slide.svs")?;
+println!("{} levels: {:?}", slide.level_count(), slide.all_level_dimensions());
+
+// Read a region (address in level-0 coordinates) as an RGB image.
+let image = slide.read_image_rgb(&Region {
+    address: Address { x: 0, y: 0 },
+    level: 0,
+    size: Size { w: 512, h: 512 },
+})?;
+
+// Deep Zoom tiles, e.g. for a tile server.
+let dz = DeepZoomGenerator::new(&slide, DeepZoomOptions { limit_bounds: true, ..Default::default() })?;
+let tile = dz.tile_rgb(dz.level_count() - 1, Address { x: 0, y: 0 })?;
+```
+
+Features: `image` (RGB/RGBA images, thumbnails), `deepzoom` (default, implies `image`),
+`openslide4` (tile cache, ICC color profiles; requires OpenSlide 4.x).
+
 ## More Information
 
-- [API documentation](https://docs.rs/openslide_rs/latest/openslide/)
+- [API documentation](https://docs.rs/openslide-rs/latest/openslide_rs/)
 - [Website][OpenSlide]
 - [GitHub](https://github.com/AzHicham/openslide-rs)
 - [Sample data](https://openslide.cs.cmu.edu/download/openslide-testdata/)
