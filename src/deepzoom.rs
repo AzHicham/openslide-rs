@@ -261,7 +261,7 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
         if level >= self.level_count() {
             return Err(OpenSlideError::InvalidLevel {
                 level,
-                level_count: Some(self.level_count()),
+                level_count: self.level_count(),
             });
         }
         let tile_grid = self.level_tiles[level as usize];

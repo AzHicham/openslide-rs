@@ -177,7 +177,7 @@ impl OpenSlide {
     fn invalid_level(&self, level: u32) -> OpenSlideError {
         OpenSlideError::InvalidLevel {
             level,
-            level_count: Some(self.level_count()),
+            level_count: self.level_count(),
         }
     }
 
