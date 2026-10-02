@@ -1,92 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790949032405,
+  "lastUpdate": 1790949643460,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "29139614+renovate[bot]@users.noreply.github.com",
-            "name": "renovate[bot]",
-            "username": "renovate[bot]"
-          },
-          "committer": {
-            "email": "hicham.azimani@owkin.com",
-            "name": "Hicham Azimani",
-            "username": "AzHicham"
-          },
-          "distinct": true,
-          "id": "1818a3b02fb1ef028e58b95c760ed4947f1e99ed",
-          "message": "chore(deps): update actions/checkout action to v5",
-          "timestamp": "2025-08-25T08:48:44+02:00",
-          "tree_id": "354f3f01e4a5ccfe80063aa7e6a17514bd131c21",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/1818a3b02fb1ef028e58b95c760ed4947f1e99ed"
-        },
-        "date": 1756104645129,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1155794,
-            "range": "± 12030",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_arc",
-            "value": 1159421,
-            "range": "± 14396",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_recreate_dz",
-            "value": 1161012,
-            "range": "± 118206",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 4616654,
-            "range": "± 71080",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_arc",
-            "value": 4608612,
-            "range": "± 99019",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_recreate_dz",
-            "value": 4613793,
-            "range": "± 121550",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1121315,
-            "range": "± 12736",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 4624755,
-            "range": "± 98145",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1069281,
-            "range": "± 8281",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 4389700,
-            "range": "± 23674",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2519,6 +2435,90 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 4440932,
             "range": "± 35157",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hicham.azimani-ext@wearewaiv.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "email": "hicham.azimani-ext@wearewaiv.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "distinct": false,
+          "id": "dd8ce1cd1bd1f087fc313c6386ad8892d584fcae",
+          "message": "fix!: return the Deep Zoom tile count as u64\n\n`tile_count()` summed `columns * rows` per level in `u32`. A single level's\ngrid can exceed `u32::MAX` (small tiles on a very large slide, e.g.\n277504x294144 px with 1px tiles), which panicked in debug builds and wrapped\nin release. The count is now computed and returned as `u64`.\n\nBREAKING CHANGE: `DeepZoomGenerator::tile_count` returns `u64` instead of `u32`.",
+          "timestamp": "2026-10-02T14:58:02+01:00",
+          "tree_id": "81d01b7aa85564df29aa4757780ecf4d2852f058",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/dd8ce1cd1bd1f087fc313c6386ad8892d584fcae"
+        },
+        "date": 1790949642443,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 804774,
+            "range": "± 34320",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 802650,
+            "range": "± 18211",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_recreate_dz",
+            "value": 804260,
+            "range": "± 38304",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 3241134,
+            "range": "± 193791",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 3249632,
+            "range": "± 209304",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_recreate_dz",
+            "value": 3238513,
+            "range": "± 222821",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 792004,
+            "range": "± 33818",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 3251655,
+            "range": "± 403072",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 673601,
+            "range": "± 34468",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 2744101,
+            "range": "± 145200",
             "unit": "ns/iter"
           }
         ]
