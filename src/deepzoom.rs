@@ -257,8 +257,11 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
     }
 
     /// Total number of tiles across all Deep Zoom levels.
-    pub fn tile_count(&self) -> u32 {
-        self.level_tiles.iter().map(|&size| size.w * size.h).sum()
+    ///
+    /// A `u64`: a single level's grid (`u32` columns times `u32` rows) can already
+    /// exceed `u32::MAX`, e.g. small tiles on a very large slide.
+    pub fn tile_count(&self) -> u64 {
+        total_tiles(&self.level_tiles)
     }
 
     /// Get an RGBA image for tile `location` at Deep Zoom `level`.
@@ -431,5 +434,33 @@ impl TileImage for RgbImage {
 
     fn resize(self, size: &Size) -> Result<Self> {
         resize_rgb_image(self, size)
+    }
+}
+
+/// Sums the tiles of every level's grid without overflowing.
+fn total_tiles(level_tiles: &[Size]) -> u64 {
+    level_tiles
+        .iter()
+        .map(|&Size { w, h }| u64::from(w) * u64::from(h))
+        .sum()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_total_tiles_does_not_overflow_u32() {
+        let grids = [
+            Size { w: 1, h: 1 },
+            Size {
+                w: u32::MAX,
+                h: u32::MAX,
+            },
+        ];
+        assert_eq!(
+            total_tiles(&grids),
+            1 + u64::from(u32::MAX) * u64::from(u32::MAX)
+        );
     }
 }
