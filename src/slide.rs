@@ -21,15 +21,17 @@ use {
 #[cfg(feature = "openslide4")]
 use crate::cache::Cache;
 
-/// `OpenSlide` object is a simple wrapper around `openslide_t` "C" type.
-/// Implementation provides all functions available in the "C" API
-/// It contains also openslide and vendor specific properties found in WSI.
+/// An open whole-slide image, wrapping the C library's `openslide_t` handle.
+///
+/// It exposes the C API (levels, regions, associated images, properties) and the
+/// slide's parsed openslide and vendor-specific [`Properties`].
 ///
 /// Level geometry (count, dimensions, downsamples) is read once when the slide is
 /// opened, so the corresponding getters don't go through the C library.
 ///
-/// Note : As stated by the `OpenSlide` documentation, all function are thread-safe except close()
-/// For this reason the underlying handle implements the Drop trait which call close() automatically
+/// `OpenSlide` is `Send + Sync`: every C function is thread-safe except
+/// `openslide_close`, which only runs when the value is dropped. Share one instance
+/// across threads (e.g. in an `Arc`) rather than reopening the slide.
 #[derive(Debug)]
 pub struct OpenSlide {
     osr: bindings::OpenSlideWrapper,
@@ -54,7 +56,11 @@ impl OpenSlide {
         bindings::get_version()
     }
 
-    /// This method tries to open the slide at the given filename location.
+    /// Opens the slide at `path`.
+    ///
+    /// Errors with [`OpenSlideError::MissingFile`] if `path` doesn't exist,
+    /// [`OpenSlideError::UnsupportedFile`] if no `OpenSlide` backend recognizes it, and
+    /// [`OpenSlideError::LibraryError`] if the file is recognized but can't be read.
     ///
     /// This function can be expensive; avoid calling it unnecessarily. For example, a tile server
     /// should not create a new object on every tile request. Instead, it should maintain a cache
@@ -193,16 +199,18 @@ impl OpenSlide {
         self.osr.get_property_value(name)
     }
 
-    /// Copy pre-multiplied ARGB data from a whole slide image.
+    /// Reads and decompresses `region` into a raw pixel buffer.
     ///
-    /// This function reads and decompresses a region of a whole slide image into a Vec
+    /// `region.address` is the top-left corner in **level-0** coordinates;
+    /// `region.size` is in pixels of `region.level`.
     ///
-    /// Args:
-    ///     offset: (x, y) coordinate (increasing downwards/to the right) of top left pixel position
-    ///     level: At which level to grab the region from
-    ///     size: (width, height) in pixels of the outputted region
+    /// The buffer holds `size.w * size.h` pixels of premultiplied ARGB, one native-endian
+    /// `u32` each (i.e. `B, G, R, A` bytes on little-endian). Use
+    /// [`read_image_rgba`](Self::read_image_rgba) / [`read_image_rgb`](Self::read_image_rgb)
+    /// for ready-to-use images.
     ///
-    /// Size of output Vec is Width * Height * 4 (RGBA pixels)
+    /// Errors with [`OpenSlideError::ImageTooLarge`] / [`OpenSlideError::OutOfMemory`] if
+    /// the buffer can't be allocated.
     pub fn read_region(&self, region: &Region) -> Result<Vec<u8>> {
         self.osr.read_region(
             i64::from(region.address.x),
@@ -213,19 +221,17 @@ impl OpenSlide {
         )
     }
 
-    /// Get the list name of all available associated image.
+    /// Get the names of all associated images (label, macro, thumbnail, ...).
     pub fn associated_image_names(&self) -> Result<Vec<String>> {
         self.osr.get_associated_image_names()
     }
 
-    /// Copy pre-multiplied ARGB data from a whole slide image.
+    /// Reads and decompresses associated image `name` into a raw pixel buffer, returned
+    /// with the image's size.
     ///
-    /// This function reads and decompresses an associated image into an Vec
-    ///
-    /// Args:
-    ///     name: name of the associated image we want to read
-    ///
-    /// Size of output Vec is width * height * 4 (RGBA pixels)
+    /// Same pixel format as [`read_region`](Self::read_region): premultiplied ARGB, one
+    /// native-endian `u32` per pixel. Errors with [`OpenSlideError::UnknownAssociatedImage`]
+    /// if the slide has no image called `name`.
     pub fn read_associated_buffer(&self, name: &str) -> Result<(Size, Vec<u8>)> {
         let ((width, height), buffer) = self.osr.read_associated_image(name)?;
         let size = Size {
@@ -235,7 +241,7 @@ impl OpenSlide {
         Ok((size, buffer))
     }
 
-    /// Get the size of an associated image
+    /// Get the size of associated image `name`.
     pub fn associated_image_dimensions(&self, name: &str) -> Result<Size> {
         let (width, height) = self.osr.get_associated_image_dimensions(name)?;
         Ok(Size {
@@ -290,9 +296,8 @@ impl OpenSlide {
             .unwrap_or([255, 255, 255])
     }
 
-    /// Get a RGBA image thumbnail of desired size of the whole slide image.
-    /// Args:
-    ///     size: (width, height) in pixels of the thumbnail
+    /// Renders an RGBA thumbnail of the whole slide that fits within `size`,
+    /// preserving the slide's aspect ratio.
     #[cfg(feature = "image")]
     pub fn thumbnail_rgba(&self, size: &Size) -> Result<RgbaImage> {
         let (region, target_size) = self.thumbnail_region(size)?;
@@ -300,9 +305,9 @@ impl OpenSlide {
         resize_rgba_image(image, &target_size)
     }
 
-    /// Get a RGB image thumbnail of desired size of the whole slide image.
-    /// Args:
-    ///     size: (width, height) in pixels of the thumbnail
+    /// Renders an RGB thumbnail of the whole slide that fits within `size`,
+    /// preserving the slide's aspect ratio. Transparent areas take the slide's
+    /// background color, as in [`read_image_rgb`](Self::read_image_rgb).
     #[cfg(feature = "image")]
     pub fn thumbnail_rgb(&self, size: &Size) -> Result<RgbImage> {
         let (region, target_size) = self.thumbnail_region(size)?;
