@@ -111,10 +111,11 @@ pub enum OpenSlideError {
     #[error("Image buffer is misaligned for its pixel type")]
     ImageBufferMisaligned,
 
-    /// Resizing an image failed.
+    /// Resizing an image failed. The resizer's own error is available through
+    /// [`std::error::Error::source`].
     #[cfg(feature = "image")]
-    #[error("Image resize failed: {0}")]
-    ImageResize(#[from] fast_image_resize::ResizeError),
+    #[error("Image resize failed")]
+    ImageResize(#[source] ResizeError),
 
     // --- FFI / conversions ---
     /// A string passed to `OpenSlide` (path, property or image name) contains a NUL byte.
@@ -138,3 +139,12 @@ pub enum OpenSlideError {
     #[error("OpenSlide error: {0}")]
     LibraryError(String),
 }
+
+/// Error reported by the image resizer, see [`OpenSlideError::ImageResize`].
+///
+/// Opaque on purpose: it displays the resizer's message without making the
+/// resizing library's error type part of this crate's public API.
+#[cfg(feature = "image")]
+#[derive(Error, Debug, Clone, PartialEq, Eq)]
+#[error(transparent)]
+pub struct ResizeError(pub(crate) fast_image_resize::ResizeError);

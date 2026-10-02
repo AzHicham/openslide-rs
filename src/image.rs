@@ -1,6 +1,9 @@
 #[cfg(feature = "image")]
 use {
-    crate::{Result, Size, errors::OpenSlideError},
+    crate::{
+        Result, Size,
+        errors::{OpenSlideError, ResizeError},
+    },
     fast_image_resize as fr,
     fast_image_resize::images::Image,
     image::{ImageBuffer, Pixel, RgbImage, RgbaImage},
@@ -76,7 +79,9 @@ fn resize_image<P: Pixel<Subpixel = u8>>(
         cropping: fr::SrcCropping::None,
         mul_div_alpha: false,
     };
-    fr::Resizer::new().resize(&src_image, &mut dst_image, &option)?;
+    fr::Resizer::new()
+        .resize(&src_image, &mut dst_image, &option)
+        .map_err(|err| OpenSlideError::ImageResize(ResizeError(err)))?;
 
     image_from_vec(*new_size, dst_image.into_vec())
 }
@@ -177,6 +182,20 @@ mod tests {
                 expected: 12,
                 actual: 11
             }
+        );
+    }
+
+    #[test]
+    fn test_resize_error_is_opaque_with_source() {
+        use std::error::Error;
+
+        let err = OpenSlideError::ImageResize(ResizeError(fr::ResizeError::PixelTypesAreDifferent));
+        assert_eq!(err.to_string(), "Image resize failed");
+        let source = err.source().expect("resize error has a source");
+        assert!(source.is::<ResizeError>());
+        assert_eq!(
+            source.to_string(),
+            "Pixel type of source image does not match to destination image"
         );
     }
 
