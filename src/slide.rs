@@ -4,19 +4,16 @@
 use crate::{
     Result, bindings,
     errors::OpenSlideError,
-    geometry::{Region, Size},
+    geometry::{Address, Bounds, Region, Size},
     properties::Properties,
 };
 use std::path::Path;
 
 #[cfg(feature = "image")]
 use {
-    crate::{
-        geometry::Address,
-        image::{
-            _bgra_to_rgb, _bgra_to_rgba_inplace, preserve_aspect_ratio, resize_rgb_image,
-            resize_rgba_image,
-        },
+    crate::image::{
+        _bgra_to_rgb, _bgra_to_rgba_inplace, preserve_aspect_ratio, resize_rgb_image,
+        resize_rgba_image,
     },
     image::{RgbImage, RgbaImage},
 };
@@ -28,19 +25,17 @@ use crate::cache::Cache;
 /// Implementation provides all functions available in the "C" API
 /// It contains also openslide and vendor specific properties found in WSI.
 ///
+/// Level geometry (count, dimensions, downsamples) is read once when the slide is
+/// opened, so the corresponding getters don't go through the C library.
+///
 /// Note : As stated by the `OpenSlide` documentation, all function are thread-safe except close()
-/// For this reason `OpenSlide` implement the Drop trait which call close() automatically
+/// For this reason the underlying handle implements the Drop trait which call close() automatically
 #[derive(Debug)]
 pub struct OpenSlide {
     osr: bindings::OpenSlideWrapper,
-    /// Openslide and vendor-specific properties found in the slide.
-    pub properties: Properties,
-}
-
-impl Drop for OpenSlide {
-    fn drop(&mut self) {
-        bindings::close(*self.osr);
-    }
+    properties: Properties,
+    level_dimensions: Vec<Size>,
+    level_downsamples: Vec<f64>,
 }
 
 /// Builds an `RgbaImage` from a BGRA buffer returned by `OpenSlide`.
@@ -72,14 +67,15 @@ impl OpenSlide {
         }
 
         let filename = path.display().to_string();
-        let osr = bindings::open(&filename)?;
+        // Wrap the handle before any further fallible call so it is closed on early return.
+        let osr = bindings::OpenSlideWrapper(bindings::open(&filename)?);
 
-        let property_names = bindings::get_property_names(osr)?;
+        let property_names = bindings::get_property_names(*osr)?;
 
         let property_pairs: Vec<(String, String)> = property_names
             .into_iter()
             .filter_map(|name| {
-                bindings::get_property_value(osr, &name)
+                bindings::get_property_value(*osr, &name)
                     .map(|value| (name, value))
                     .ok()
             })
@@ -87,9 +83,25 @@ impl OpenSlide {
 
         let properties = Properties::new(&property_pairs);
 
+        let level_count = bindings::get_level_count(*osr)?;
+        let (level_dimensions, level_downsamples) = (0..level_count)
+            .map(|level| {
+                let (width, height) = bindings::get_level_dimensions(*osr, level)?;
+                let size = Size {
+                    w: width.try_into()?,
+                    h: height.try_into()?,
+                };
+                Ok((size, bindings::get_level_downsample(*osr, level)?))
+            })
+            .collect::<Result<Vec<_>>>()?
+            .into_iter()
+            .unzip();
+
         Ok(OpenSlide {
-            osr: bindings::OpenSlideWrapper(osr),
+            osr,
             properties,
+            level_dimensions,
+            level_downsamples,
         })
     }
 
@@ -108,7 +120,8 @@ impl OpenSlide {
     }
 
     /// Quickly determine whether a whole slide image is recognized.
-    pub fn detect_vendor(path: &Path) -> Result<String> {
+    pub fn detect_vendor<T: AsRef<Path>>(path: T) -> Result<String> {
+        let path = path.as_ref();
         if !path.exists() {
             return Err(OpenSlideError::MissingFile(
                 path.display().to_string().into(),
@@ -125,55 +138,49 @@ impl OpenSlide {
     }
 
     /// Get the number of levels in the whole slide image.
-    pub fn get_level_count(&self) -> Result<u32> {
-        let level_count = bindings::get_level_count(*self.osr)?;
-        let level_count: u32 = level_count.try_into()?;
-        Ok(level_count)
+    #[must_use]
+    pub fn get_level_count(&self) -> u32 {
+        // Built from `openslide_get_level_count`, a non-negative `i32`: always fits.
+        self.level_dimensions.len() as u32
     }
 
-    /// Get the dimensions of level 0 (the largest level).
+    /// Get the dimensions of a given level.
     ///
-    /// This method returns the Size { width, height } number of pixels of the whole slide image at the
-    /// specified level. Returns an error if the level is invalid
+    /// Returns [`OpenSlideError::InvalidLevel`] if `level` is out of range.
     pub fn get_level_dimensions(&self, level: u32) -> Result<Size> {
-        let level: i32 = level.try_into()?;
-        let (width, height) = bindings::get_level_dimensions(*self.osr, level)?;
-        Ok(Size {
-            w: width.try_into()?,
-            h: height.try_into()?,
-        })
+        self.level_dimensions
+            .get(level as usize)
+            .copied()
+            .ok_or_else(|| self.invalid_level(level))
     }
 
-    /// Get dimensions of all available levels
-    pub fn get_all_level_dimensions(&self) -> Result<Vec<Size>> {
-        let nb_levels = self.get_level_count()?;
-        let mut res = Vec::with_capacity(nb_levels as usize);
-        for level in 0..nb_levels {
-            let level: i32 = level.try_into()?;
-            let (width, height) = bindings::get_level_dimensions(*self.osr, level)?;
-            res.push(Size {
-                w: width.try_into()?,
-                h: height.try_into()?,
-            });
-        }
-        Ok(res)
+    /// Get dimensions of all available levels, indexed by level.
+    #[must_use]
+    pub fn get_all_level_dimensions(&self) -> &[Size] {
+        &self.level_dimensions
     }
 
     /// Get the downsampling factor of a given level.
+    ///
+    /// Returns [`OpenSlideError::InvalidLevel`] if `level` is out of range.
     pub fn get_level_downsample(&self, level: u32) -> Result<f64> {
-        let level: i32 = level.try_into()?;
-        bindings::get_level_downsample(*self.osr, level)
+        self.level_downsamples
+            .get(level as usize)
+            .copied()
+            .ok_or_else(|| self.invalid_level(level))
     }
 
-    /// Get all downsampling factors for all available levels.
-    pub fn get_all_level_downsample(&self) -> Result<Vec<f64>> {
-        let nb_levels = self.get_level_count()?;
-        let mut res = Vec::with_capacity(nb_levels as usize);
-        for level in 0..nb_levels {
-            let downsample = bindings::get_level_downsample(*self.osr, level as i32)?;
-            res.push(downsample);
+    /// Get all downsampling factors for all available levels, indexed by level.
+    #[must_use]
+    pub fn get_all_level_downsample(&self) -> &[f64] {
+        &self.level_downsamples
+    }
+
+    fn invalid_level(&self, level: u32) -> OpenSlideError {
+        OpenSlideError::InvalidLevel {
+            level,
+            level_count: Some(self.get_level_count()),
         }
-        Ok(res)
     }
 
     /// Get the best level to use for displaying the given downsample factor.
@@ -358,16 +365,27 @@ impl OpenSlide {
         bindings::read_associated_image_icc_profile(*self.osr, name)
     }
 
-    /// Get properties of the whole slide image through Properties struct.
-    #[cfg(feature = "deepzoom")]
+    /// Get the level-0 rectangle bounding the slide's non-empty region.
+    ///
+    /// Falls back to the full level-0 extent for any `openslide.bounds-*` property
+    /// the slide doesn't report.
     #[must_use]
-    pub fn get_bounds(&self) -> crate::deepzoom::Bounds {
-        let properties = &self.properties().openslide_properties;
-        crate::deepzoom::Bounds {
-            x: properties.bounds_x,
-            y: properties.bounds_y,
-            width: properties.bounds_width,
-            height: properties.bounds_height,
+    pub fn get_bounds(&self) -> Bounds {
+        let properties = &self.properties.openslide_properties;
+        let level0 = self
+            .level_dimensions
+            .first()
+            .copied()
+            .unwrap_or(Size { w: 0, h: 0 });
+        Bounds {
+            origin: Address {
+                x: properties.bounds_x.unwrap_or(0),
+                y: properties.bounds_y.unwrap_or(0),
+            },
+            size: Size {
+                w: properties.bounds_width.unwrap_or(level0.w),
+                h: properties.bounds_height.unwrap_or(level0.h),
+            },
         }
     }
 }

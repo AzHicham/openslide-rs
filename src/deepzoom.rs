@@ -26,6 +26,49 @@ struct SlideLevel {
     l0_downsample: f64,
 }
 
+/// Parameters of a Deep Zoom pyramid, see [`DeepZoomGenerator::new`].
+///
+/// Defaults: 254px tiles, no overlap, full image extent (openslide-python uses a
+/// 1px overlap by default).
+/// Override only what you need:
+///
+/// ```
+/// use openslide_rs::DeepZoomOptions;
+///
+/// let options = DeepZoomOptions { limit_bounds: true, ..Default::default() };
+/// assert_eq!(options.tile_size, 254);
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DeepZoomOptions {
+    /// Width/height of a tile before overlap is added.
+    pub tile_size: u32,
+    /// Number of extra pixels added on each tile edge that isn't on the slide boundary.
+    pub overlap: u32,
+    /// If `true`, the pyramid only covers the slide's non-empty bounding box
+    /// (see [`OpenSlide::get_bounds`]) instead of the full image.
+    pub limit_bounds: bool,
+}
+
+impl Default for DeepZoomOptions {
+    fn default() -> Self {
+        DeepZoomOptions {
+            tile_size: 254,
+            overlap: 0,
+            limit_bounds: false,
+        }
+    }
+}
+
+/// Where to read a Deep Zoom tile from, and the size it must end up at.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TileInfo {
+    /// Region to read from the slide; its address is in level-0 coordinates.
+    pub region: Region,
+    /// Final pixel size of the tile, overlap included. The read region is resized
+    /// to this when the two differ.
+    pub size: Size,
+}
+
 /// Generates Deep Zoom tiles and metadata.
 #[derive(Debug)]
 pub struct DeepZoomGenerator<B: Borrow<OpenSlide>> {
@@ -42,22 +85,20 @@ pub struct DeepZoomGenerator<B: Borrow<OpenSlide>> {
 }
 
 impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
-    /// Builds a Deep Zoom pyramid over `slide`.
-    ///
-    /// `tile_size` is the width/height of a tile before overlap is added, and `overlap`
-    /// is the number of extra pixels added on each tile edge that isn't on the slide
-    /// boundary. If `limit_bounds` is `true`, the pyramid only covers the slide's
-    /// non-empty bounding box (see [`OpenSlide::get_bounds`]) instead of the full image.
-    pub fn new(slide: B, tile_size: u32, overlap: u32, limit_bounds: bool) -> Result<Self> {
-        let nb_level = slide.borrow().get_level_count()?;
+    /// Builds a Deep Zoom pyramid over `slide`, shaped by `options`.
+    pub fn new(slide: B, options: DeepZoomOptions) -> Result<Self> {
+        let DeepZoomOptions {
+            tile_size,
+            overlap,
+            limit_bounds,
+        } = options;
 
         let (slide_dimensions, l0_offset) =
-            Self::compute_slide_dimensions(slide.borrow(), nb_level, limit_bounds)?;
-        let slide_downsamples = Self::compute_slide_downsamples(slide.borrow(), nb_level)?;
+            Self::compute_slide_dimensions(slide.borrow(), limit_bounds)?;
 
         let slide_levels: Vec<SlideLevel> = slide_dimensions
             .into_iter()
-            .zip(slide_downsamples)
+            .zip(slide.borrow().get_all_level_downsample().iter().copied())
             .map(|(dimensions, l0_downsample)| SlideLevel {
                 dimensions,
                 l0_downsample,
@@ -84,46 +125,27 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
     /// level, and the level-0 coordinate offset of the active area.
     fn compute_slide_dimensions(
         slide: &OpenSlide,
-        nb_level: u32,
         limit_bounds: bool,
     ) -> Result<(Vec<Size>, Address)> {
+        let dimensions = slide.get_all_level_dimensions();
         if !limit_bounds {
-            let dimensions = (0..nb_level)
-                .map(|level| slide.get_level_dimensions(level))
-                .collect::<Result<Vec<Size>>>()?;
-            return Ok((dimensions, Address { x: 0, y: 0 }));
+            return Ok((dimensions.to_vec(), Address { x: 0, y: 0 }));
         }
 
         let bounds = slide.get_bounds();
-        let l0_offset = Address {
-            x: bounds.x.unwrap_or(0),
-            y: bounds.y.unwrap_or(0),
-        };
-
         let level0_dimensions = slide.get_level_dimensions(0)?;
-        let bounds_width = bounds.width.unwrap_or(level0_dimensions.w);
-        let bounds_height = bounds.height.unwrap_or(level0_dimensions.h);
-        let scale_w = f64::from(bounds_width) / f64::from(level0_dimensions.w);
-        let scale_h = f64::from(bounds_height) / f64::from(level0_dimensions.h);
+        let scale_w = f64::from(bounds.size.w) / f64::from(level0_dimensions.w);
+        let scale_h = f64::from(bounds.size.h) / f64::from(level0_dimensions.h);
 
-        let dimensions = (0..nb_level)
-            .map(|level| {
-                let size = slide.get_level_dimensions(level)?;
-                Ok(Size {
-                    w: (f64::from(size.w) * scale_w).ceil() as u32,
-                    h: (f64::from(size.h) * scale_h).ceil() as u32,
-                })
+        let dimensions = dimensions
+            .iter()
+            .map(|size| Size {
+                w: (f64::from(size.w) * scale_w).ceil() as u32,
+                h: (f64::from(size.h) * scale_h).ceil() as u32,
             })
-            .collect::<Result<Vec<Size>>>()?;
+            .collect();
 
-        Ok((dimensions, l0_offset))
-    }
-
-    /// Computes each native slide level's downsample factor relative to level 0.
-    fn compute_slide_downsamples(slide: &OpenSlide, nb_level: u32) -> Result<Vec<f64>> {
-        (0..nb_level)
-            .map(|level| slide.get_level_downsample(level))
-            .collect()
+        Ok((dimensions, bounds.origin))
     }
 
     /// Computes the Deep Zoom pyramid dimensions: the 1x1 level up to the full slide size,
@@ -175,8 +197,9 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
     }
 
     /// Number of Deep Zoom levels (level 0 is the 1x1 level, the last is the full slide).
-    pub fn level_count(&self) -> usize {
-        self.level_dimensions.len()
+    pub fn level_count(&self) -> u32 {
+        // One level per halving of a `u32` dimension: at most 33, always fits.
+        self.level_dimensions.len() as u32
     }
 
     /// Number of tiles (width, height) at each Deep Zoom level.
@@ -216,29 +239,29 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
         location: Address,
         read: impl FnOnce(&OpenSlide, &Region) -> Result<T>,
     ) -> Result<T> {
-        let (region, final_size) = self.get_tile_info(level, location)?;
+        let TileInfo { region, size } = self.get_tile_info(level, location)?;
         let image = read(self.slide.borrow(), &region)?;
-        if image.dimensions() == final_size {
+        if image.dimensions() == size {
             Ok(image)
         } else {
-            image.resize(&final_size)
+            image.resize(&size)
         }
     }
 
-    /// Returns the level-0 [`Region`] to read for tile `location` at Deep Zoom `level`,
-    /// and the final pixel size that tile should be resized to (including overlap).
+    /// Returns where to read tile `address` at Deep Zoom `level` from, and the final
+    /// pixel size that tile should be resized to (including overlap).
     ///
-    /// Errors if `level` or `location` is out of range for this generator.
-    pub fn get_tile_info(&self, level: u32, address: Address) -> Result<(Region, Size)> {
+    /// Errors if `level` or `address` is out of range for this generator.
+    pub fn get_tile_info(&self, level: u32, address: Address) -> Result<TileInfo> {
         self.validate_tile(level, address)?;
         Ok(self.tile_region(level, address))
     }
 
     fn validate_tile(&self, level: u32, address: Address) -> Result<()> {
-        if level as usize >= self.level_count() {
+        if level >= self.level_count() {
             return Err(OpenSlideError::InvalidLevel {
                 level,
-                level_count: u32::try_from(self.level_count()).ok(),
+                level_count: Some(self.level_count()),
             });
         }
         let tile_grid = self.level_tiles[level as usize];
@@ -252,7 +275,7 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
     }
 
     /// Computes the level-0 region and final pixel size of an already-validated tile address.
-    fn tile_region(&self, level: u32, address: Address) -> (Region, Size) {
+    fn tile_region(&self, level: u32, address: Address) -> TileInfo {
         let level = level as usize;
         let tile_grid = self.level_tiles[level];
         let level_dimensions = self.level_dimensions[level];
@@ -327,7 +350,10 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
             size: l_size,
         };
 
-        (region, z_size)
+        TileInfo {
+            region,
+            size: z_size,
+        }
     }
 }
 
@@ -361,18 +387,4 @@ impl TileImage for RgbImage {
     fn resize(self, size: &Size) -> Result<Self> {
         resize_rgb_image(self, size)
     }
-}
-
-/// Rectangle bounding a slide's non-empty region, as reported by its
-/// `openslide.bounds-*` properties. Any field is `None` if the slide doesn't
-/// report that property (in which case the full slide extent should be assumed).
-pub struct Bounds {
-    /// X coordinate of the bounding rectangle's top-left corner.
-    pub x: Option<u32>,
-    /// Y coordinate of the bounding rectangle's top-left corner.
-    pub y: Option<u32>,
-    /// Width of the bounding rectangle.
-    pub width: Option<u32>,
-    /// Height of the bounding rectangle.
-    pub height: Option<u32>,
 }

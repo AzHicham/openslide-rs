@@ -3,7 +3,7 @@ mod fixture;
 #[cfg(feature = "deepzoom")]
 mod deepzoom {
 
-    use openslide_rs::{Address, DeepZoomGenerator, OpenSlide, Size};
+    use openslide_rs::{Address, DeepZoomGenerator, DeepZoomOptions, OpenSlide, Size};
     use rstest::rstest;
     use std::{path::Path, sync::Arc};
 
@@ -13,7 +13,15 @@ mod deepzoom {
     #[case(boxes_tiff())]
     fn test_slide_no_limit_bounds(#[case] filename: &Path) {
         let slide = OpenSlide::new(filename).unwrap();
-        let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(&slide, 254, 1, false).unwrap();
+        let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(
+            &slide,
+            DeepZoomOptions {
+                tile_size: 254,
+                overlap: 1,
+                limit_bounds: false,
+            },
+        )
+        .unwrap();
 
         assert_eq!(dz.level_count(), 10);
         assert_eq!(dz.tile_count(), 11);
@@ -76,8 +84,15 @@ mod deepzoom {
     #[case(boxes_tiff())]
     fn test_slide_no_limit_bounds_arc(#[case] filename: &Path) {
         let slide = Arc::new(OpenSlide::new(filename).unwrap());
-        let dz: DeepZoomGenerator<_> =
-            DeepZoomGenerator::new(slide.clone(), 254, 1, false).unwrap();
+        let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(
+            slide.clone(),
+            DeepZoomOptions {
+                tile_size: 254,
+                overlap: 1,
+                limit_bounds: false,
+            },
+        )
+        .unwrap();
 
         drop(slide);
 
@@ -142,7 +157,15 @@ mod deepzoom {
     #[case(boxes_tiff())]
     fn test_slide_with_limit_bounds(#[case] filename: &Path) {
         let slide = OpenSlide::new(filename).unwrap();
-        let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(&slide, 254, 1, true).unwrap();
+        let dz: DeepZoomGenerator<_> = DeepZoomGenerator::new(
+            &slide,
+            DeepZoomOptions {
+                tile_size: 254,
+                overlap: 1,
+                limit_bounds: true,
+            },
+        )
+        .unwrap();
 
         assert_eq!(dz.level_count(), 10);
         assert_eq!(dz.tile_count(), 11);
