@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.SCOPED_GITHUB_TOKEN }}
         with:
-          semantic_version: 22.0.6
+          semantic_version: 22.0.12
           extra_plugins: |
             @semantic-release/changelog@6.0.3
             @semantic-release/git@10.0.1
