@@ -114,12 +114,20 @@ impl OpenSlide {
     #[cfg(feature = "openslide4")]
     pub fn new_with_cache<T: AsRef<Path>>(path: T, capacity: usize) -> Result<OpenSlide> {
         let osr = OpenSlide::new(path)?;
-        osr.set_cache(Cache::new(capacity)?);
+        osr.set_cache(&Cache::new(capacity)?);
         Ok(osr)
     }
 
+    /// Decodes the tiles of this slide into `cache`, which other slides may share, instead
+    /// of its own cache.
+    ///
+    /// Safe while other threads read the slide: `OpenSlide` takes its own reference to
+    /// `cache` and swaps it in under a lock, so `cache` may be dropped right after. The
+    /// tiles this slide already decoded stay in its previous cache, no longer found, until
+    /// they are evicted: in a shared cache they keep taking room. Does nothing if the slide
+    /// is in an error state.
     #[cfg(feature = "openslide4")]
-    fn set_cache(&self, cache: Cache) {
+    pub fn set_cache(&self, cache: &Cache) {
         self.osr.set_cache(&cache.0);
     }
 

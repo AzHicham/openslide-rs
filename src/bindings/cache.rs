@@ -21,8 +21,10 @@ impl Drop for CacheWrapper {
     }
 }
 
-// SAFETY: `OpenSlide` caches are reference-counted and internally synchronized.
+// SAFETY: `OpenSlide` caches are reference-counted and internally synchronized: a cache
+// "can be used from multiple threads without locking" (openslide.h).
 unsafe impl Send for CacheWrapper {}
+unsafe impl Sync for CacheWrapper {}
 
 impl CacheWrapper {
     /// Creates a cache of `capacity` bytes.
