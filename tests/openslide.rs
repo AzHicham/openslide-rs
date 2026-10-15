@@ -1,4 +1,6 @@
 use assert_approx_eq::assert_approx_eq;
+#[cfg(feature = "openslide4")]
+use fixture::default;
 use fixture::{boxes_tiff, missing_file, small_svs, unopenable_tiff, unsupported_file};
 use openslide_rs::{Address, OpenSlide, Region, Size, errors::OpenSlideError};
 use rstest::rstest;
@@ -282,6 +284,139 @@ fn test_open_with_cache_size(
 
     let buffer = slide.read_region(&region).unwrap();
     assert_eq!(buffer.len(), (region.size.h * region.size.w * 4) as usize);
+}
+
+/// Regions of a few tiles each over the whole level 0 of `slide`.
+#[cfg(feature = "openslide4")]
+fn regions(slide: &OpenSlide) -> Vec<Region> {
+    let size = slide.level_dimensions(0).unwrap();
+    let side = 300.min(size.w).min(size.h);
+    (0..4)
+        .flat_map(|i| (0..4).map(move |j| (i, j)))
+        .map(|(i, j)| Region {
+            size: Size { w: side, h: side },
+            level: 0,
+            address: Address {
+                x: (size.w - side) / 3 * i,
+                y: (size.h - side) / 3 * j,
+            },
+        })
+        .collect()
+}
+
+/// Pixels of `regions(path)` read by a slide with a cache of its own.
+#[cfg(feature = "openslide4")]
+fn expected_pixels(filename: &Path) -> Vec<Vec<u8>> {
+    let slide = OpenSlide::new(filename).unwrap();
+    regions(&slide)
+        .iter()
+        .map(|region| slide.read_region(region).unwrap())
+        .collect()
+}
+
+#[test]
+#[cfg(feature = "openslide4")]
+fn test_cache_is_send_sync_clone() {
+    fn assert_send_sync_clone<T: Send + Sync + Clone>() {}
+    assert_send_sync_clone::<openslide_rs::Cache>();
+}
+
+#[rstest]
+#[cfg(feature = "openslide4")]
+#[case(boxes_tiff())]
+#[case(default())]
+fn test_slides_share_a_cache(#[case] filename: &Path) {
+    let cache = openslide_rs::Cache::new(1 << 20).unwrap();
+    let slides: Vec<OpenSlide> = (0..4)
+        .map(|_| {
+            let slide = OpenSlide::new(filename).unwrap();
+            // A clone is the same cache.
+            slide.set_cache(&cache.clone());
+            slide
+        })
+        .collect();
+    // The slides keep the cache alive.
+    drop(cache);
+
+    let expected = expected_pixels(filename);
+    std::thread::scope(|scope| {
+        for slide in &slides {
+            for _ in 0..2 {
+                scope.spawn(|| {
+                    for (region, pixels) in regions(slide).iter().zip(&expected) {
+                        assert_eq!(&slide.read_region(region).unwrap(), pixels);
+                    }
+                });
+            }
+        }
+    });
+}
+
+#[rstest]
+#[cfg(feature = "openslide4")]
+fn test_slides_of_different_files_share_a_cache(
+    #[from(boxes_tiff)] tiff: &Path,
+    #[from(default)] svs: &Path,
+    #[from(small_svs)] small: &Path,
+) {
+    let cache = openslide_rs::Cache::new(1 << 20).unwrap();
+    let files = [tiff, svs, small];
+    let slides: Vec<OpenSlide> = files
+        .iter()
+        .map(|filename| {
+            let slide = OpenSlide::new(filename).unwrap();
+            slide.set_cache(&cache);
+            slide
+        })
+        .collect();
+
+    // Tiles of different slides at the same level and position do not mix in the cache.
+    for _ in 0..2 {
+        for (slide, filename) in slides.iter().zip(files) {
+            let pixels: Vec<Vec<u8>> = regions(slide)
+                .iter()
+                .map(|region| slide.read_region(region).unwrap())
+                .collect();
+            assert_eq!(pixels, expected_pixels(filename));
+        }
+    }
+}
+
+#[rstest]
+#[cfg(feature = "openslide4")]
+#[case(default())]
+fn test_set_cache_after_reading(#[case] filename: &Path) {
+    let expected = expected_pixels(filename);
+    let slide = OpenSlide::new(filename).unwrap();
+    let read = |slide: &OpenSlide| -> Vec<Vec<u8>> {
+        regions(slide)
+            .iter()
+            .map(|region| slide.read_region(region).unwrap())
+            .collect()
+    };
+    assert_eq!(read(&slide), expected);
+    for capacity in [1 << 20, 0, 1, 64 << 20] {
+        slide.set_cache(&openslide_rs::Cache::new(capacity).unwrap());
+        assert_eq!(read(&slide), expected, "capacity {capacity}");
+        assert_eq!(read(&slide), expected, "capacity {capacity}, cached");
+    }
+}
+
+#[rstest]
+#[cfg(feature = "openslide4")]
+#[case(default())]
+fn test_cache_outlives_its_slides(#[case] filename: &Path) {
+    let expected = expected_pixels(filename);
+    let cache = openslide_rs::Cache::new(1 << 20).unwrap();
+    for _ in 0..3 {
+        let slide = OpenSlide::new(filename).unwrap();
+        slide.set_cache(&cache);
+        let pixels: Vec<Vec<u8>> = regions(&slide)
+            .iter()
+            .map(|region| slide.read_region(region).unwrap())
+            .collect();
+        assert_eq!(pixels, expected);
+    }
 }
 
 #[rstest]
