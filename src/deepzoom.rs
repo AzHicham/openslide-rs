@@ -6,7 +6,7 @@ use crate::{
     Result,
     errors::OpenSlideError,
     geometry::{Address, Region, Size},
-    image::{resize_rgb_image, resize_rgba_image},
+    image::{ResizeFilter, resize_rgb_image, resize_rgba_image},
     slide::OpenSlide,
 };
 use image::{RgbImage, RgbaImage};
@@ -89,8 +89,9 @@ impl Eq for LevelSelection {}
 ///
 /// Build it with [`DeepZoomOptions::new`], which takes the tile size, then override
 /// the other options with the `with_*` setters. Unless overridden there is no overlap
-/// (openslide-python uses 1px), the pyramid covers the full image extent and native
-/// levels are picked with [`LevelSelection::Finer`].
+/// (openslide-python uses 1px), the pyramid covers the full image extent, native levels
+/// are picked with [`LevelSelection::Finer`] and tiles are resized with
+/// [`ResizeFilter::Lanczos3`].
 ///
 /// The struct is `#[non_exhaustive]` so options can be added without a breaking change.
 ///
@@ -113,6 +114,8 @@ pub struct DeepZoomOptions {
     pub limit_bounds: bool,
     /// How each Deep Zoom level picks the native level it reads from.
     pub level_selection: LevelSelection,
+    /// Filter used to resize tiles to their Deep Zoom size.
+    pub resize_filter: ResizeFilter,
 }
 
 impl DeepZoomOptions {
@@ -124,6 +127,7 @@ impl DeepZoomOptions {
             overlap: 0,
             limit_bounds: false,
             level_selection: LevelSelection::default(),
+            resize_filter: ResizeFilter::default(),
         }
     }
 
@@ -147,6 +151,13 @@ impl DeepZoomOptions {
         self.level_selection = level_selection;
         self
     }
+
+    /// Sets [`resize_filter`](Self::resize_filter).
+    #[must_use]
+    pub fn with_resize_filter(mut self, resize_filter: ResizeFilter) -> Self {
+        self.resize_filter = resize_filter;
+        self
+    }
 }
 
 /// Where to read a Deep Zoom tile from, and the size it must end up at.
@@ -167,6 +178,7 @@ pub struct DeepZoomGenerator<B: Borrow<OpenSlide>> {
     tile_size: u32,
     overlap: u32,
     l0_offset: Address,
+    resize_filter: ResizeFilter,
 
     level_tiles: Vec<Size>,
     level_dimensions: Vec<Size>,
@@ -189,6 +201,7 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
             overlap,
             limit_bounds,
             level_selection,
+            resize_filter,
         } = options;
 
         if tile_size == 0 {
@@ -238,6 +251,7 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
             tile_size,
             overlap,
             l0_offset,
+            resize_filter,
             level_tiles,
             level_dimensions,
             dz_links,
@@ -382,7 +396,7 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
         if image.dimensions() == size {
             Ok(image)
         } else {
-            image.resize(&size)
+            image.resize(&size, self.resize_filter)
         }
     }
 
@@ -508,7 +522,7 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
 /// Internal glue letting `tile` be written once for both `RgbImage` and `RgbaImage`.
 trait TileImage: Sized {
     fn dimensions(&self) -> Size;
-    fn resize(self, size: &Size) -> Result<Self>;
+    fn resize(self, size: &Size, filter: ResizeFilter) -> Result<Self>;
 }
 
 impl TileImage for RgbaImage {
@@ -519,8 +533,8 @@ impl TileImage for RgbaImage {
         }
     }
 
-    fn resize(self, size: &Size) -> Result<Self> {
-        resize_rgba_image(self, size)
+    fn resize(self, size: &Size, filter: ResizeFilter) -> Result<Self> {
+        resize_rgba_image(self, size, filter)
     }
 }
 
@@ -532,8 +546,8 @@ impl TileImage for RgbImage {
         }
     }
 
-    fn resize(self, size: &Size) -> Result<Self> {
-        resize_rgb_image(self, size)
+    fn resize(self, size: &Size, filter: ResizeFilter) -> Result<Self> {
+        resize_rgb_image(self, size, filter)
     }
 }
 

@@ -53,10 +53,58 @@ pub(crate) fn image_from_vec<P: Pixel<Subpixel = u8>>(
         .ok_or(OpenSlideError::ImageBufferTooSmall { expected, actual })
 }
 
+/// Filter used to resize an image read from the slide, e.g. a Deep Zoom tile whose
+/// native level doesn't match its Deep Zoom level. Sharper filters cost more.
+///
+/// The enum is `#[non_exhaustive]` so filters can be added without a breaking change.
+#[cfg(feature = "image")]
+// Only Deep Zoom picks a filter; without it, thumbnails use the default.
+#[cfg_attr(not(feature = "deepzoom"), allow(dead_code))]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum ResizeFilter {
+    /// Nearest neighbour: no interpolation, the fastest and blockiest.
+    Nearest,
+    /// Box filter: averages the source pixels each destination pixel covers.
+    Box,
+    /// Bilinear filter (triangle kernel).
+    Bilinear,
+    /// Hamming filter: the cost of bilinear, downscaling quality close to bicubic.
+    Hamming,
+    /// Catmull-Rom cubic filter: sharp, may ring slightly on hard edges.
+    CatmullRom,
+    /// Mitchell-Netravali cubic filter: between Catmull-Rom sharpness and bilinear blur.
+    Mitchell,
+    /// Gaussian filter: smooth, slightly blurry.
+    Gaussian,
+    /// Lanczos filter with a 3-lobe window: the sharpest and slowest, as
+    /// openslide-python (PIL `LANCZOS`).
+    #[default]
+    Lanczos3,
+}
+
+#[cfg(feature = "image")]
+impl ResizeFilter {
+    fn algorithm(self) -> fr::ResizeAlg {
+        let filter = match self {
+            ResizeFilter::Nearest => return fr::ResizeAlg::Nearest,
+            ResizeFilter::Box => fr::FilterType::Box,
+            ResizeFilter::Bilinear => fr::FilterType::Bilinear,
+            ResizeFilter::Hamming => fr::FilterType::Hamming,
+            ResizeFilter::CatmullRom => fr::FilterType::CatmullRom,
+            ResizeFilter::Mitchell => fr::FilterType::Mitchell,
+            ResizeFilter::Gaussian => fr::FilterType::Gaussian,
+            ResizeFilter::Lanczos3 => fr::FilterType::Lanczos3,
+        };
+        fr::ResizeAlg::Convolution(filter)
+    }
+}
+
 #[cfg(feature = "image")]
 fn resize_image<P: Pixel<Subpixel = u8>>(
     image: ImageBuffer<P, Vec<u8>>,
     new_size: &Size,
+    filter: ResizeFilter,
     pixel_type: fr::PixelType,
 ) -> Result<ImageBuffer<P, Vec<u8>>> {
     let (width, height) = image.dimensions();
@@ -75,7 +123,7 @@ fn resize_image<P: Pixel<Subpixel = u8>>(
 
     let mut dst_image = Image::new(new_size.w, new_size.h, pixel_type);
     let option = fr::ResizeOptions {
-        algorithm: fr::ResizeAlg::Convolution(fr::FilterType::Lanczos3),
+        algorithm: filter.algorithm(),
         cropping: fr::SrcCropping::None,
         // RGBA buffers hold straight alpha: weight colors by alpha while resizing so
         // transparent pixels don't bleed their (black) color into opaque neighbors.
@@ -90,13 +138,21 @@ fn resize_image<P: Pixel<Subpixel = u8>>(
 }
 
 #[cfg(feature = "image")]
-pub(crate) fn resize_rgb_image(image: RgbImage, new_size: &Size) -> Result<RgbImage> {
-    resize_image(image, new_size, fr::PixelType::U8x3)
+pub(crate) fn resize_rgb_image(
+    image: RgbImage,
+    new_size: &Size,
+    filter: ResizeFilter,
+) -> Result<RgbImage> {
+    resize_image(image, new_size, filter, fr::PixelType::U8x3)
 }
 
 #[cfg(feature = "image")]
-pub(crate) fn resize_rgba_image(image: RgbaImage, new_size: &Size) -> Result<RgbaImage> {
-    resize_image(image, new_size, fr::PixelType::U8x4)
+pub(crate) fn resize_rgba_image(
+    image: RgbaImage,
+    new_size: &Size,
+    filter: ResizeFilter,
+) -> Result<RgbaImage> {
+    resize_image(image, new_size, filter, fr::PixelType::U8x4)
 }
 
 /// Undoes alpha premultiplication of one channel (truncating, like openslide-python).
@@ -192,7 +248,8 @@ mod tests {
     fn test_resize_rgba_does_not_bleed_transparent_pixels() {
         // Opaque white next to fully transparent, downscaled to a single pixel.
         let image = RgbaImage::from_vec(2, 1, vec![255, 255, 255, 255, 0, 0, 0, 0]).unwrap();
-        let resized = resize_rgba_image(image, &Size { w: 1, h: 1 }).unwrap();
+        let resized =
+            resize_rgba_image(image, &Size { w: 1, h: 1 }, ResizeFilter::Lanczos3).unwrap();
         assert_eq!(resized.get_pixel(0, 0).0, [255, 255, 255, 128]);
     }
 

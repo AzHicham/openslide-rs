@@ -3,9 +3,10 @@ mod fixture;
 #[cfg(feature = "deepzoom")]
 mod deepzoom {
 
+    use image::RgbImage;
     use openslide_rs::{
-        Address, DeepZoomGenerator, DeepZoomOptions, LevelSelection, OpenSlide, Region, Size,
-        errors::OpenSlideError,
+        Address, DeepZoomGenerator, DeepZoomOptions, LevelSelection, OpenSlide, Region,
+        ResizeFilter, Size, errors::OpenSlideError,
     };
     use rstest::rstest;
     use std::{path::Path, sync::Arc};
@@ -336,5 +337,44 @@ mod deepzoom {
         assert_eq!(info.size, expected);
         let image = dz.tile_rgb(dz_level, origin).unwrap();
         assert_eq!((image.width(), image.height()), (expected.w, expected.h));
+    }
+
+    #[test]
+    fn test_resize_filter_default_is_lanczos3() {
+        assert_eq!(
+            DeepZoomOptions::new(254).resize_filter,
+            ResizeFilter::Lanczos3
+        );
+    }
+
+    // Deep Zoom level 7 of boxes.tiff reads 150x125 from native level 1 and downscales it.
+    #[rstest]
+    #[case(ResizeFilter::Nearest)]
+    #[case(ResizeFilter::Box)]
+    #[case(ResizeFilter::Bilinear)]
+    #[case(ResizeFilter::Hamming)]
+    #[case(ResizeFilter::CatmullRom)]
+    #[case(ResizeFilter::Mitchell)]
+    #[case(ResizeFilter::Gaussian)]
+    #[case(ResizeFilter::Lanczos3)]
+    fn test_resize_filter(#[case] resize_filter: ResizeFilter) {
+        assert_eq!(boxes_tile_7(resize_filter).dimensions(), (75, 63));
+    }
+
+    #[test]
+    fn test_resize_filter_is_applied() {
+        // nearest neighbour and Lanczos3 disagree on the boxes' edges
+        assert_ne!(
+            boxes_tile_7(ResizeFilter::Nearest),
+            boxes_tile_7(ResizeFilter::Lanczos3)
+        );
+    }
+
+    /// Tile (0, 0) of Deep Zoom level 7 of boxes.tiff, resized with `resize_filter`.
+    fn boxes_tile_7(resize_filter: ResizeFilter) -> RgbImage {
+        let slide = OpenSlide::new(boxes_tiff()).unwrap();
+        let options = DeepZoomOptions::new(254).with_resize_filter(resize_filter);
+        let dz = DeepZoomGenerator::new(&slide, options).unwrap();
+        dz.tile_rgb(7, Address { x: 0, y: 0 }).unwrap()
     }
 }
