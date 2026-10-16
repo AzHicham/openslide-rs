@@ -71,6 +71,10 @@ pub enum OpenSlideError {
         tile_size: u32,
     },
 
+    /// The tolerance of `LevelSelection::FinerWithin` is negative or not finite.
+    #[error("Deep Zoom level tolerance must be finite and non-negative")]
+    InvalidLevelTolerance,
+
     /// The slide has no levels, so no Deep Zoom pyramid can be built from it.
     #[error("Slide has no levels")]
     NoLevels,
