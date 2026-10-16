@@ -57,6 +57,9 @@ pub use geometry::{Address, Bounds, Region, Size};
 pub use slide::OpenSlide;
 
 #[cfg(feature = "deepzoom")]
+pub use image::ResizeFilter;
+
+#[cfg(feature = "deepzoom")]
 pub use deepzoom::{DeepZoomGenerator, DeepZoomOptions, LevelSelection, TileInfo};
 
 /// The corresponding result type used by the crate.
