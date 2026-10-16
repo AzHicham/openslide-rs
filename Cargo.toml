@@ -49,6 +49,10 @@ default-features = false
 features = ["image"]
 optional = true
 
+[package.metadata.docs.rs]
+# Document the `openslide4` API (tile cache, ICC profiles) too, not just the defaults.
+all-features = true
+
 [dev-dependencies]
 [dev-dependencies.rstest]
 version = "0.27"
