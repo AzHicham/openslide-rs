@@ -56,6 +56,9 @@ mod slide;
 pub use geometry::{Address, Bounds, Region, Size};
 pub use slide::OpenSlide;
 
+#[cfg(feature = "openslide4")]
+pub use cache::Cache;
+
 #[cfg(feature = "deepzoom")]
 pub use deepzoom::{DeepZoomGenerator, DeepZoomOptions, TileInfo};
 
