@@ -6,7 +6,7 @@ use crate::{
     Result,
     errors::OpenSlideError,
     geometry::{Address, Region, Size},
-    image::{resize_rgb_image, resize_rgba_image},
+    image::{ResizeFilter, resize_rgb_image, resize_rgba_image},
     slide::OpenSlide,
 };
 use image::{RgbImage, RgbaImage};
@@ -26,11 +26,72 @@ struct SlideLevel {
     l0_downsample: f64,
 }
 
+/// How a Deep Zoom level picks the native slide level its tiles are read from.
+///
+/// A Deep Zoom level has a power-of-two downsample from level 0. Native levels rarely
+/// match it exactly: a GT450 SVS has downsamples 1, 4.0001 and 16.0005, so its 16x
+/// Deep Zoom level is a hair finer than the third native level.
+///
+/// Whatever the strategy, a tile on the last row or column can also be stretched by up
+/// to 1 px: Deep Zoom level sizes are rounded up, native level sizes are rounded down.
+/// The upscale bounds below are for the other tiles.
+///
+/// Equality compares the tolerance of [`FinerWithin`](Self::FinerWithin) bit for bit,
+/// after mapping `-0.0` to `0.0`, so it stays an equivalence even for NaN.
+///
+/// The enum is `#[non_exhaustive]` so strategies can be added without a breaking change.
+#[derive(Debug, Clone, Copy, Default)]
+#[non_exhaustive]
+pub enum LevelSelection {
+    /// The coarsest native level that is not coarser than the Deep Zoom level, i.e.
+    /// [`OpenSlide::best_level_for_downsample`], as openslide-python does. Tiles are never
+    /// upscaled, but a level coarser by a rounding error is skipped: the 16x level of a
+    /// GT450 SVS reads 16 times the pixels from the 4x level.
+    #[default]
+    Finer,
+    /// [`Finer`](Self::Finer), unless a coarser native level is within the given relative
+    /// tolerance (`0.01` = 1%): the coarsest level whose downsample is at most
+    /// `1 + tolerance` times the Deep Zoom level's. Tiles are upscaled by at most that
+    /// factor (see the edge tiles above), and the pick is the same as `Finer` when no
+    /// level is that close. With 1%
+    /// the 16x level of a GT450 SVS reads from the 16.0005x level. The tolerance must be
+    /// finite and non-negative; `0.0` is `Finer`.
+    FinerWithin(f64),
+    /// The native level whose downsample is closest to the Deep Zoom level's (smallest
+    /// absolute difference; the finer level on a tie), as fastslide does.
+    ///
+    /// # Warning
+    ///
+    /// The pick is unbounded: it can be a level up to 2x coarser than the Deep Zoom level,
+    /// whose tiles are then upscaled up to 2x and visibly blurred. With downsamples 1 and
+    /// 2.9, the 2x level reads from 2.9 and upscales 1.45x. Prefer
+    /// [`FinerWithin`](Self::FinerWithin).
+    Closest,
+}
+
+impl PartialEq for LevelSelection {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (LevelSelection::Finer, LevelSelection::Finer)
+            | (LevelSelection::Closest, LevelSelection::Closest) => true,
+            // `+ 0.0` maps -0.0 to 0.0 and leaves every other value, NaN included, alone
+            (LevelSelection::FinerWithin(a), LevelSelection::FinerWithin(b)) => {
+                (a + 0.0).to_bits() == (b + 0.0).to_bits()
+            }
+            _ => false,
+        }
+    }
+}
+
+impl Eq for LevelSelection {}
+
 /// Parameters of a Deep Zoom pyramid, see [`DeepZoomGenerator::new`].
 ///
 /// Build it with [`DeepZoomOptions::new`], which takes the tile size, then override
 /// the other options with the `with_*` setters. Unless overridden there is no overlap
-/// (openslide-python uses 1px) and the pyramid covers the full image extent.
+/// (openslide-python uses 1px), the pyramid covers the full image extent, native levels
+/// are picked with [`LevelSelection::Finer`] and tiles are resized with
+/// [`ResizeFilter::Lanczos3`].
 ///
 /// The struct is `#[non_exhaustive]` so options can be added without a breaking change.
 ///
@@ -51,6 +112,10 @@ pub struct DeepZoomOptions {
     /// If `true`, the pyramid only covers the slide's non-empty bounding box
     /// (see [`OpenSlide::bounds`]) instead of the full image.
     pub limit_bounds: bool,
+    /// How each Deep Zoom level picks the native level it reads from.
+    pub level_selection: LevelSelection,
+    /// Filter used to resize tiles to their Deep Zoom size.
+    pub resize_filter: ResizeFilter,
 }
 
 impl DeepZoomOptions {
@@ -61,6 +126,8 @@ impl DeepZoomOptions {
             tile_size,
             overlap: 0,
             limit_bounds: false,
+            level_selection: LevelSelection::default(),
+            resize_filter: ResizeFilter::default(),
         }
     }
 
@@ -75,6 +142,20 @@ impl DeepZoomOptions {
     #[must_use]
     pub fn with_limit_bounds(mut self, limit_bounds: bool) -> Self {
         self.limit_bounds = limit_bounds;
+        self
+    }
+
+    /// Sets [`level_selection`](Self::level_selection).
+    #[must_use]
+    pub fn with_level_selection(mut self, level_selection: LevelSelection) -> Self {
+        self.level_selection = level_selection;
+        self
+    }
+
+    /// Sets [`resize_filter`](Self::resize_filter).
+    #[must_use]
+    pub fn with_resize_filter(mut self, resize_filter: ResizeFilter) -> Self {
+        self.resize_filter = resize_filter;
         self
     }
 }
@@ -97,6 +178,7 @@ pub struct DeepZoomGenerator<B: Borrow<OpenSlide>> {
     tile_size: u32,
     overlap: u32,
     l0_offset: Address,
+    resize_filter: ResizeFilter,
 
     level_tiles: Vec<Size>,
     level_dimensions: Vec<Size>,
@@ -108,7 +190,9 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
     /// Builds a Deep Zoom pyramid over `slide`, shaped by `options`.
     ///
     /// Errors with [`OpenSlideError::InvalidTileSize`] if `tile_size` is 0,
-    /// [`OpenSlideError::OverlapTooLarge`] if `overlap` exceeds it, and
+    /// [`OpenSlideError::OverlapTooLarge`] if `overlap` exceeds it,
+    /// [`OpenSlideError::InvalidLevelTolerance`] if the tolerance of
+    /// [`LevelSelection::FinerWithin`] is negative or not finite, and
     /// [`OpenSlideError::NoLevels`] / [`OpenSlideError::EmptySlide`] if the slide (or its
     /// bounds) has no pixels.
     pub fn new(slide: B, options: DeepZoomOptions) -> Result<Self> {
@@ -116,6 +200,8 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
             tile_size,
             overlap,
             limit_bounds,
+            level_selection,
+            resize_filter,
         } = options;
 
         if tile_size == 0 {
@@ -124,6 +210,11 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
         // Tile `x` starts `overlap` pixels before `x * tile_size`, which must not go negative.
         if overlap > tile_size {
             return Err(OpenSlideError::OverlapTooLarge { overlap, tile_size });
+        }
+        if let LevelSelection::FinerWithin(tolerance) = level_selection
+            && (!tolerance.is_finite() || tolerance < 0.0)
+        {
+            return Err(OpenSlideError::InvalidLevelTolerance);
         }
         if slide.borrow().level_count() == 0 {
             return Err(OpenSlideError::NoLevels);
@@ -148,13 +239,19 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
 
         let level_dimensions = Self::compute_dz_pyramid(level0);
         let level_tiles = Self::compute_tile_grid(&level_dimensions, tile_size);
-        let dz_links = Self::compute_dz_links(slide.borrow(), &level_dimensions, &slide_levels)?;
+        let dz_links = Self::compute_dz_links(
+            slide.borrow(),
+            &level_dimensions,
+            &slide_levels,
+            level_selection,
+        )?;
 
         Ok(DeepZoomGenerator {
             slide,
             tile_size,
             overlap,
             l0_offset,
+            resize_filter,
             level_tiles,
             level_dimensions,
             dz_links,
@@ -224,12 +321,20 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
         slide: &OpenSlide,
         pyramid: &[Size],
         slide_levels: &[SlideLevel],
+        level_selection: LevelSelection,
     ) -> Result<Vec<DzLink>> {
         let level_count = pyramid.len();
         (0..level_count)
             .map(|dz_level| {
                 let l0_z_downsample = 2_u64.pow((level_count - dz_level - 1) as u32) as f64;
-                let slide_level = slide.best_level_for_downsample(l0_z_downsample)?;
+                let slide_level = match level_selection {
+                    LevelSelection::Finer => slide.best_level_for_downsample(l0_z_downsample)?,
+                    // OpenSlide picks the coarsest level not coarser than the downsample asked.
+                    LevelSelection::FinerWithin(tolerance) => {
+                        slide.best_level_for_downsample(l0_z_downsample * (1.0 + tolerance))?
+                    }
+                    LevelSelection::Closest => closest_level(slide_levels, l0_z_downsample),
+                };
                 let l_z_downsample =
                     l0_z_downsample / slide_levels[slide_level as usize].l0_downsample;
                 Ok(DzLink {
@@ -291,7 +396,7 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
         if image.dimensions() == size {
             Ok(image)
         } else {
-            image.resize(&size)
+            image.resize(&size, self.resize_filter)
         }
     }
 
@@ -385,11 +490,20 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
             y: (l0_downsample * l_location.1 + f64::from(self.l0_offset.y)) as u32,
         };
 
+        // A native level coarser than the Deep Zoom level (`FinerWithin`, `Closest`) can
+        // round its dimensions down past the tile's start. Read at least one pixel: it lies
+        // outside the level, comes back transparent, and the tile is blank.
         let l_size = Size {
-            w: (slide_level_dimensions.w - l_location.0.ceil() as u32)
-                .min((l_z_downsample * f64::from(z_size.w)).ceil() as u32),
-            h: (slide_level_dimensions.h - l_location.1.ceil() as u32)
-                .min((l_z_downsample * f64::from(z_size.h)).ceil() as u32),
+            w: (slide_level_dimensions
+                .w
+                .saturating_sub(l_location.0.ceil() as u32))
+            .min((l_z_downsample * f64::from(z_size.w)).ceil() as u32)
+            .max(1),
+            h: (slide_level_dimensions
+                .h
+                .saturating_sub(l_location.1.ceil() as u32))
+            .min((l_z_downsample * f64::from(z_size.h)).ceil() as u32)
+            .max(1),
         };
 
         let region = Region {
@@ -408,7 +522,7 @@ impl<B: Borrow<OpenSlide>> DeepZoomGenerator<B> {
 /// Internal glue letting `tile` be written once for both `RgbImage` and `RgbaImage`.
 trait TileImage: Sized {
     fn dimensions(&self) -> Size;
-    fn resize(self, size: &Size) -> Result<Self>;
+    fn resize(self, size: &Size, filter: ResizeFilter) -> Result<Self>;
 }
 
 impl TileImage for RgbaImage {
@@ -419,8 +533,8 @@ impl TileImage for RgbaImage {
         }
     }
 
-    fn resize(self, size: &Size) -> Result<Self> {
-        resize_rgba_image(self, size)
+    fn resize(self, size: &Size, filter: ResizeFilter) -> Result<Self> {
+        resize_rgba_image(self, size, filter)
     }
 }
 
@@ -432,9 +546,23 @@ impl TileImage for RgbImage {
         }
     }
 
-    fn resize(self, size: &Size) -> Result<Self> {
-        resize_rgb_image(self, size)
+    fn resize(self, size: &Size, filter: ResizeFilter) -> Result<Self> {
+        resize_rgb_image(self, size, filter)
     }
+}
+
+/// Index of the level whose downsample is closest to `downsample` (smallest absolute
+/// difference); the finer (first) level wins a tie.
+fn closest_level(slide_levels: &[SlideLevel], downsample: f64) -> u32 {
+    let distance = |level: &SlideLevel| (level.l0_downsample - downsample).abs();
+    let mut best = 0;
+    for (index, level) in slide_levels.iter().enumerate().skip(1) {
+        if distance(level) < distance(&slide_levels[best]) {
+            best = index;
+        }
+    }
+    // Slides have far fewer than `u32::MAX` levels.
+    best as u32
 }
 
 /// Sums the tiles of every level's grid without overflowing.

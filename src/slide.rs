@@ -12,8 +12,8 @@ use std::path::Path;
 #[cfg(feature = "image")]
 use {
     crate::image::{
-        bgra_to_rgb, bgra_to_rgba_inplace, image_from_vec, preserve_aspect_ratio, resize_rgb_image,
-        resize_rgba_image,
+        ResizeFilter, bgra_to_rgb, bgra_to_rgba_inplace, image_from_vec, preserve_aspect_ratio,
+        resize_rgb_image, resize_rgba_image,
     },
     image::{RgbImage, RgbaImage},
 };
@@ -302,7 +302,7 @@ impl OpenSlide {
     pub fn thumbnail_rgba(&self, size: &Size) -> Result<RgbaImage> {
         let (region, target_size) = self.thumbnail_region(size)?;
         let image = self.read_image_rgba(&region)?;
-        resize_rgba_image(image, &target_size)
+        resize_rgba_image(image, &target_size, ResizeFilter::Lanczos3)
     }
 
     /// Renders an RGB thumbnail of the whole slide that fits within `size`,
@@ -312,7 +312,7 @@ impl OpenSlide {
     pub fn thumbnail_rgb(&self, size: &Size) -> Result<RgbImage> {
         let (region, target_size) = self.thumbnail_region(size)?;
         let image = self.read_image_rgb(&region)?;
-        resize_rgb_image(image, &target_size)
+        resize_rgb_image(image, &target_size, ResizeFilter::Lanczos3)
     }
 
     /// Computes the level-0 region covering the whole slide and the final
