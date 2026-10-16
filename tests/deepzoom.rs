@@ -4,7 +4,8 @@ mod fixture;
 mod deepzoom {
 
     use openslide_rs::{
-        Address, DeepZoomGenerator, DeepZoomOptions, OpenSlide, Size, errors::OpenSlideError,
+        Address, DeepZoomGenerator, DeepZoomOptions, LevelSelection, OpenSlide, Region, Size,
+        errors::OpenSlideError,
     };
     use rstest::rstest;
     use std::{path::Path, sync::Arc};
@@ -257,5 +258,83 @@ mod deepzoom {
             },
         )
         .unwrap();
+    }
+
+    #[test]
+    fn test_level_selection_default_is_finer() {
+        assert_eq!(
+            DeepZoomOptions::new(254).level_selection,
+            LevelSelection::Finer
+        );
+    }
+
+    #[rstest]
+    #[case(-0.01)]
+    #[case(f64::NAN)]
+    #[case(f64::INFINITY)]
+    fn test_invalid_level_tolerance(#[case] tolerance: f64) {
+        let slide = OpenSlide::new(boxes_tiff()).unwrap();
+        let options =
+            DeepZoomOptions::new(254).with_level_selection(LevelSelection::FinerWithin(tolerance));
+        let err = DeepZoomGenerator::new(&slide, options).unwrap_err();
+        assert_eq!(err, OpenSlideError::InvalidLevelTolerance);
+    }
+
+    #[test]
+    fn test_level_selection_eq() {
+        let within = LevelSelection::FinerWithin(0.01);
+        assert_eq!(within, LevelSelection::FinerWithin(0.01));
+        assert_ne!(within, LevelSelection::FinerWithin(0.02));
+        assert_ne!(LevelSelection::FinerWithin(0.0), LevelSelection::Finer);
+        assert_eq!(
+            LevelSelection::FinerWithin(-0.0),
+            LevelSelection::FinerWithin(0.0)
+        );
+        // bit for bit, so a NaN tolerance still equals itself (`Eq` stays an equivalence)
+        let nan = LevelSelection::FinerWithin(f64::NAN);
+        let copy = nan;
+        assert_eq!(nan, copy);
+    }
+
+    // boxes.tiff level downsamples: 1, 2, 4.016, 8.086. Deep Zoom level 8 is 2x (150x125),
+    // level 7 is 4x (75x63), level 6 is 8x (38x32).
+    #[rstest]
+    #[case(LevelSelection::Finer, 7, 1, Size { w: 150, h: 125 })]
+    #[case(LevelSelection::FinerWithin(0.0), 7, 1, Size { w: 150, h: 125 })]
+    #[case(LevelSelection::FinerWithin(0.01), 7, 2, Size { w: 75, h: 62 })]
+    #[case(LevelSelection::Closest, 7, 2, Size { w: 75, h: 62 })]
+    #[case(LevelSelection::Finer, 6, 2, Size { w: 75, h: 62 })]
+    // 8.086 is 1.07% coarser than 8x: out of 1%, so the same pick as `Finer`
+    #[case(LevelSelection::FinerWithin(0.01), 6, 2, Size { w: 75, h: 62 })]
+    #[case(LevelSelection::FinerWithin(0.02), 6, 3, Size { w: 37, h: 31 })]
+    #[case(LevelSelection::Closest, 6, 3, Size { w: 37, h: 31 })]
+    #[case(LevelSelection::Finer, 8, 1, Size { w: 150, h: 125 })]
+    #[case(LevelSelection::FinerWithin(0.01), 8, 1, Size { w: 150, h: 125 })]
+    #[case(LevelSelection::Closest, 8, 1, Size { w: 150, h: 125 })]
+    fn test_level_selection(
+        #[case] level_selection: LevelSelection,
+        #[case] dz_level: u32,
+        #[case] slide_level: u32,
+        #[case] read_size: Size,
+    ) {
+        let slide = OpenSlide::new(boxes_tiff()).unwrap();
+        let options = DeepZoomOptions::new(254).with_level_selection(level_selection);
+        let dz = DeepZoomGenerator::new(&slide, options).unwrap();
+        let origin = Address { x: 0, y: 0 };
+
+        let info = dz.tile_info(dz_level, origin).unwrap();
+        assert_eq!(
+            info.region,
+            Region {
+                address: origin,
+                level: slide_level,
+                size: read_size,
+            }
+        );
+        // the tile always comes out at the Deep Zoom size, downscaled or upscaled
+        let expected = dz.level_dimensions()[dz_level as usize];
+        assert_eq!(info.size, expected);
+        let image = dz.tile_rgb(dz_level, origin).unwrap();
+        assert_eq!((image.width(), image.height()), (expected.w, expected.h));
     }
 }
