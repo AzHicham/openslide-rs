@@ -1,92 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792403003929,
+  "lastUpdate": 1792403133348,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "29139614+renovate[bot]@users.noreply.github.com",
-            "name": "renovate[bot]",
-            "username": "renovate[bot]"
-          },
-          "committer": {
-            "email": "hicham.azimani@owkin.com",
-            "name": "Hicham Azimani",
-            "username": "AzHicham"
-          },
-          "distinct": true,
-          "id": "0de2599e499de684e06f0c64193038df73bdf240",
-          "message": "chore(deps): update actions/setup-python action to v6",
-          "timestamp": "2025-09-21T07:43:17+02:00",
-          "tree_id": "0d51e5416c22d815d3629d2913d785051c556d41",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/0de2599e499de684e06f0c64193038df73bdf240"
-        },
-        "date": 1758433567910,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1160482,
-            "range": "± 19469",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_arc",
-            "value": 1167579,
-            "range": "± 18137",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_recreate_dz",
-            "value": 1161548,
-            "range": "± 9972",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 4633939,
-            "range": "± 99426",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_arc",
-            "value": 4645390,
-            "range": "± 80959",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_recreate_dz",
-            "value": 4645814,
-            "range": "± 99291",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1125081,
-            "range": "± 15407",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 4658696,
-            "range": "± 102152",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1070142,
-            "range": "± 6871",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 4439237,
-            "range": "± 60919",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2519,6 +2435,90 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 3830623,
             "range": "± 26607",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hicham.azimani-ext@wearewaiv.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "email": "hicham.azimani-ext@wearewaiv.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "distinct": true,
+          "id": "f8f59f57d1ab05d6230e2397c676bcbac52d901e",
+          "message": "docs: build the docs.rs documentation with all features\n\ndocs.rs builds the default features only, so everything behind `openslide4`\n(`Cache`, `OpenSlide::set_cache`, `new_with_cache`, ICC profiles) was missing\nfrom the published documentation. The crate has no build script and docs.rs\ndoes not link, so all features document without libopenslide.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-19T10:43:09+01:00",
+          "tree_id": "bcde795b920e32f7db166fb2b6d430522d894641",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/f8f59f57d1ab05d6230e2397c676bcbac52d901e"
+        },
+        "date": 1792403132435,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1128404,
+            "range": "± 9950",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1127525,
+            "range": "± 102563",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_recreate_dz",
+            "value": 1127187,
+            "range": "± 7668",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 4506963,
+            "range": "± 109036",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 4497110,
+            "range": "± 73193",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_recreate_dz",
+            "value": 4503233,
+            "range": "± 76184",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1087877,
+            "range": "± 6670",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 4519703,
+            "range": "± 115742",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 920592,
+            "range": "± 5809",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 3829188,
+            "range": "± 16556",
             "unit": "ns/iter"
           }
         ]
