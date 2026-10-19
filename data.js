@@ -1,92 +1,8 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791888788440,
+  "lastUpdate": 1792403003929,
   "repoUrl": "https://github.com/AzHicham/openslide-rs",
   "entries": {
     "openslide-rs Benchmark": [
-      {
-        "commit": {
-          "author": {
-            "email": "29139614+renovate[bot]@users.noreply.github.com",
-            "name": "renovate[bot]",
-            "username": "renovate[bot]"
-          },
-          "committer": {
-            "email": "hicham.azimani@owkin.com",
-            "name": "Hicham Azimani",
-            "username": "AzHicham"
-          },
-          "distinct": true,
-          "id": "ee09fb8bc34e066a1968247a70d5ceca4452f958",
-          "message": "fix(deps): update rust crate regex to v1.11.2",
-          "timestamp": "2025-08-25T09:23:35+02:00",
-          "tree_id": "51cfe97d5e90ffdec04c13cd3c19f3fa8e4694ee",
-          "url": "https://github.com/AzHicham/openslide-rs/commit/ee09fb8bc34e066a1968247a70d5ceca4452f958"
-        },
-        "date": 1756106797136,
-        "tool": "cargo",
-        "benches": [
-          {
-            "name": "deepzoom_read_image_256",
-            "value": 1154210,
-            "range": "± 7834",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_arc",
-            "value": 1153544,
-            "range": "± 6610",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_256_recreate_dz",
-            "value": 1154093,
-            "range": "± 5698",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512",
-            "value": 4589254,
-            "range": "± 87014",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_arc",
-            "value": 4603287,
-            "range": "± 81118",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "deepzoom_read_image_512_recreate_dz",
-            "value": 4572469,
-            "range": "± 87935",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_256",
-            "value": 1120885,
-            "range": "± 13481",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_image_512",
-            "value": 4625410,
-            "range": "± 100373",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_256",
-            "value": 1068562,
-            "range": "± 6435",
-            "unit": "ns/iter"
-          },
-          {
-            "name": "openslide_read_region_512",
-            "value": 4390331,
-            "range": "± 26015",
-            "unit": "ns/iter"
-          }
-        ]
-      },
       {
         "commit": {
           "author": {
@@ -2519,6 +2435,90 @@ window.BENCHMARK_DATA = {
             "name": "openslide_read_region_512",
             "value": 4446836,
             "range": "± 52230",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "hicham.azimani-ext@wearewaiv.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "committer": {
+            "email": "hicham.azimani-ext@wearewaiv.com",
+            "name": "Hicham Azimani",
+            "username": "AzHicham"
+          },
+          "distinct": true,
+          "id": "f056a34dc146078d1f3e4be6c9bfb35ee0cc8d61",
+          "message": "feat: choose the filter used to resize Deep Zoom tiles\n\nAdd `ResizeFilter` (Nearest, Box, Bilinear, Hamming, CatmullRom, Mitchell,\nGaussian, Lanczos3) and `DeepZoomOptions::with_resize_filter`. The default stays\nLanczos3, as before and as openslide-python. The enum is the crate's own type,\nmapped to fast_image_resize internally, so fast_image_resize stays out of the\npublic API. It is exported with the `deepzoom` feature, the only one that takes\nit; thumbnails keep Lanczos3.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+          "timestamp": "2026-10-19T10:40:42+01:00",
+          "tree_id": "560770843180513971fc47fb14650b643fcc6195",
+          "url": "https://github.com/AzHicham/openslide-rs/commit/f056a34dc146078d1f3e4be6c9bfb35ee0cc8d61"
+        },
+        "date": 1792403002870,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "deepzoom_read_image_256",
+            "value": 1127824,
+            "range": "± 9903",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_arc",
+            "value": 1125363,
+            "range": "± 153161",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_256_recreate_dz",
+            "value": 1127028,
+            "range": "± 22670",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512",
+            "value": 4500931,
+            "range": "± 106848",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_arc",
+            "value": 4495984,
+            "range": "± 97014",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "deepzoom_read_image_512_recreate_dz",
+            "value": 4498030,
+            "range": "± 92046",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_256",
+            "value": 1088777,
+            "range": "± 5410",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_image_512",
+            "value": 4513769,
+            "range": "± 96383",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_256",
+            "value": 919836,
+            "range": "± 8581",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "openslide_read_region_512",
+            "value": 3830623,
+            "range": "± 26607",
             "unit": "ns/iter"
           }
         ]
